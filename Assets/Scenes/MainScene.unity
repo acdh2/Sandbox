@@ -759,6 +759,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 453084650579209855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1530429633}
+    - targetCorrespondingSourceObject: {fileID: 453084650579209855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1530429640}
   m_SourcePrefab: {fileID: 100100000, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
 --- !u!1 &776785229
 GameObject:
@@ -1185,7 +1188,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1530429625}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2b6e20a0d56af40c4b74d983414aa949, type: 3}
   m_Name: 
@@ -1195,6 +1198,23 @@ MonoBehaviour:
     m_Bits: 64
   pickupRange: 10000
   moveSpeed: 10
+  MaxAllowedPenetration: 0.025
+--- !u!114 &1530429640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530429625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e292a8f1cf54b78b1efa84411c5116, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  draggableLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  maxGrabDistance: 5
   MaxAllowedPenetration: 0.025
 --- !u!1 &1598533635
 GameObject:
