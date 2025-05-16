@@ -74,6 +74,10 @@ namespace StarterAssets
 
 		private const float _threshold = 0.01f;
 
+	    public void SetMovementEnabled(bool shouldBeEnabled) {
+	    	_controller.enabled = shouldBeEnabled;
+	    }
+
 		private bool IsCurrentDeviceMouse
 		{
 			get
@@ -195,7 +199,9 @@ namespace StarterAssets
 			}
 
 			// move the player
-			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+			if (_controller.enabled) {
+				_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+			}
 		}
 
 		private void JumpAndGravity()
