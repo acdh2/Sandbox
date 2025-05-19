@@ -429,7 +429,7 @@ GameObject:
   - component: {fileID: 345407768}
   - component: {fileID: 345407767}
   - component: {fileID: 345407766}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: motor block
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1631,9 +1631,9 @@ MonoBehaviour:
   selectableLayers:
     serializedVersion: 2
     m_Bits: 64
-  gridSize: {x: 0, y: 0, z: 0}
+  gridSize: {x: 1, y: 1, z: 1}
   gridCenter: {x: 0.5, y: 0.5, z: 0.5}
-  enableRotation: 1
+  enableRotation: 0
   rotationSnapDegrees: {x: 0, y: 0, z: 0}
 --- !u!114 &1865171220
 MonoBehaviour:
