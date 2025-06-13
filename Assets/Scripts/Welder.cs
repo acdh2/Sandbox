@@ -15,14 +15,27 @@ public class Welder : MonoBehaviour
     {
         selectionHandler = GetComponent<SelectionHandler>();
     }
-
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
-            WeldCurrentSelection();
+        {
+            ToggleWeldOnCurrentSelection();
+        }
+    }
 
-        if (Input.GetKeyDown(KeyCode.Z))
+    private void ToggleWeldOnCurrentSelection()
+    {
+        var selected = selectionHandler.CurrentSelection;
+        if (selected == null)
+        {
+            Debug.LogWarning("Geen object geselecteerd.");
+            return;
+        }
+
+        if (selected.GetComponent<Rigidbody>() != null)
             UnweldCurrentSelection();
+        else
+            WeldCurrentSelection();
     }
 
     private void WeldCurrentSelection()
@@ -33,6 +46,8 @@ public class Welder : MonoBehaviour
             Debug.LogWarning("Geen object geselecteerd.");
             return;
         }
+
+        selectionHandler.ClearSelection();
 
         var connectedObjects = FindConnectedObjects(selected);
         Debug.Log($"Overlappende objecten gevonden: {connectedObjects.Count}");
@@ -52,7 +67,37 @@ public class Welder : MonoBehaviour
             return;
         }
 
+        selectionHandler.ClearSelection();
+
+        UnparentWeldableChildrenRecursively(selected);
         RemoveRigidbody(selected);
+    }
+
+    /// <summary>
+    /// Verwijdert alle kinderen (en subkinderen) van het gegeven object als ze in een weldable layer zitten.
+    /// </summary>
+    private void UnparentWeldableChildrenRecursively(GameObject parent)
+    {
+        List<Transform> children = new List<Transform>();
+
+        // Kopie maken om problemen te vermijden tijdens iteratie
+        foreach (Transform child in parent.transform)
+            children.Add(child);
+
+        foreach (Transform child in children)
+        {
+            GameObject childObj = child.gameObject;
+
+            if (IsInWeldableLayer(childObj))
+            {
+                child.SetParent(null, worldPositionStays: true);
+                Debug.Log($"← {childObj.name} is losgemaakt van {parent.name}");
+                RemoveRigidbody(childObj);
+            }
+
+            // Recursief ook de dieper geneste kinderen controleren
+            UnparentWeldableChildrenRecursively(childObj);
+        }
     }
 
     private void RemoveRigidbodies(GameObject root, HashSet<GameObject> objects)
@@ -79,8 +124,8 @@ public class Welder : MonoBehaviour
             if ((weldableLayers.value & (1 << obj.layer)) == 0)
                 continue;
 
-            // if (obj.transform.parent == root.transform)
-            //     continue;
+            if (obj.transform.parent == root.transform)
+                continue;
 
             obj.transform.SetParent(root.transform, worldPositionStays: true);
             Debug.Log($"→ {obj.name} als child van {root.name}");

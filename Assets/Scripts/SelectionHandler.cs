@@ -1,38 +1,36 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class SelectionHandler : MonoBehaviour
 {
     public LayerMask selectableLayers;
-
     public GameObject CurrentSelection { get; private set; }
 
     private Camera cam;
     private bool selectionLocked = false;
 
-    // Voor het opslaan van originele materialen per renderer
-    private Dictionary<Renderer, Material> originalMaterials = new Dictionary<Renderer, Material>();
+    private int selectionLayer;
+    private int interactableLayer;
+
+    // C# event, niet zichtbaar in Inspector
+    public event Action<GameObject> OnSelectionChanged;
 
     void Start()
     {
         cam = Camera.main;
+        selectionLayer = LayerMask.NameToLayer("Selection");
+        interactableLayer = LayerMask.NameToLayer("Interactables");
     }
 
-    public void LockSelection()
+    public void ClearSelection()
     {
-        selectionLocked = true;
+        SetSelection(null);
     }
 
-    public void UnlockSelection()
-    {
-        selectionLocked = false;
-    }
-
-    Transform GetTopMostParent(Transform child)
-    {
-        if (child.parent == null) return child;
-        return child.parent;
-    }
+    public void LockSelection() => selectionLocked = true;
+    public void UnlockSelection() => selectionLocked = false;
 
     void Update()
     {
@@ -41,11 +39,12 @@ public class SelectionHandler : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, selectableLayers))
         {
-            SetSelection(GetTopMostParent(hit.collider.gameObject.transform).gameObject);
+            GameObject top = GetTopmostRoot(hit.collider.transform).gameObject;
+            SetSelection(top);
         }
         else
         {
-            SetSelection(null);
+            ClearSelection();
         }
     }
 
@@ -53,51 +52,37 @@ public class SelectionHandler : MonoBehaviour
     {
         if (CurrentSelection == newSelection) return;
 
-        ResetRendererColors(CurrentSelection);
+        if (CurrentSelection != null)
+            SetLayerIteratively(CurrentSelection, interactableLayer);
+
         CurrentSelection = newSelection;
 
         if (newSelection != null)
-        {
-            SetRendererColors(newSelection, Color.red);
-        }
+            SetLayerIteratively(newSelection, selectionLayer);
+
+        // Event aanroepen als de selectie wijzigt
+        OnSelectionChanged?.Invoke(CurrentSelection);
     }
 
-    private void SetRendererColors(GameObject target, Color color)
+    private Transform GetTopmostRoot(Transform transform)
     {
-        originalMaterials.Clear(); // Leegmaken voor nieuwe selectie
-
-        foreach (var renderer in GetRenderersInObjectAndChildren(target))
-        {
-            if (renderer != null)
-            {
-                originalMaterials[renderer] = renderer.sharedMaterial;
-                renderer.material.color = color;
-            }
-        }
+        while (transform.parent != null)
+            transform = transform.parent;
+        return transform;
     }
 
-    private void ResetRendererColors(GameObject target)
+    private void SetLayerIteratively(GameObject root, int layer)
     {
-        if (target == null) return;
+        Stack<GameObject> stack = new Stack<GameObject>();
+        stack.Push(root);
 
-        foreach (var kvp in originalMaterials)
+        while (stack.Count > 0)
         {
-            if (kvp.Key != null)
-                kvp.Key.sharedMaterial = kvp.Value;
-        }
+            GameObject obj = stack.Pop();
+            obj.layer = layer;
 
-        originalMaterials.Clear();
-    }
-
-    private IEnumerable<Renderer> GetRenderersInObjectAndChildren(GameObject target)
-    {
-        yield return target.GetComponent<Renderer>();
-
-        foreach (Transform child in target.transform)
-        {
-            var childRenderer = child.GetComponent<Renderer>();
-            if (childRenderer != null)
-                yield return childRenderer;
+            foreach (Transform child in obj.transform)
+                stack.Push(child.gameObject);
         }
     }
 }

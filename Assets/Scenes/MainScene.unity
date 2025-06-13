@@ -1651,7 +1651,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectableLayers:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 192
 --- !u!114 &1865171223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1684,7 +1684,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weldableLayers:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 192
 --- !u!1 &2020798839
 GameObject:
   m_ObjectHideFlags: 0

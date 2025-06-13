@@ -3,6 +3,12 @@ using UnityEngine;
 [RequireComponent(typeof(SelectionHandler))]
 public class DragAndPlace : MonoBehaviour
 {
+    public enum DragState
+    {
+        Idle,
+        Dragging
+    }
+
     [Header("Grid Settings")]
     public Vector3 gridSize = Vector3.one;
     public Vector3 gridCenter = Vector3.zero;
@@ -24,9 +30,10 @@ public class DragAndPlace : MonoBehaviour
 
     private SelectionHandler selectionHandler;
 
-    // Rigidbody info om terug te zetten
     private Rigidbody originalRigidbody;
     private bool originalKinematicState;
+
+    private DragState currentState = DragState.Idle;
 
     void Start()
     {
@@ -41,22 +48,30 @@ public class DragAndPlace : MonoBehaviour
 
     private void HandleInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        switch (currentState)
         {
-            StartDragging();
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            StopDragging();
-        }
-        else if (Input.GetMouseButton(0) && selectedTransform != null)
-        {
-            UpdateTargetTransform();
-            MoveSelectedObject();
+            case DragState.Idle:
+                if (Input.GetMouseButtonDown(0))
+                {
+                    TryStartDragging();
+                }
+                break;
+
+            case DragState.Dragging:
+                if (Input.GetMouseButtonUp(0))
+                {
+                    StopDragging();
+                }
+                else if (Input.GetMouseButton(0))
+                {
+                    UpdateTargetTransform();
+                    MoveSelectedObject();
+                }
+                break;
         }
     }
 
-    private void StartDragging()
+    private void TryStartDragging()
     {
         GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
@@ -69,13 +84,18 @@ public class DragAndPlace : MonoBehaviour
             rotationOffset = Quaternion.Inverse(cam.transform.rotation) * selectedTransform.rotation;
 
         DisableRigidbody(selectedObject);
+
+        currentState = DragState.Dragging;
     }
 
     private void StopDragging()
     {
         EnableRigidbody();
+
         selectedTransform = null;
         selectionHandler.UnlockSelection();
+
+        currentState = DragState.Idle;
     }
 
     private void UpdateTargetTransform()
