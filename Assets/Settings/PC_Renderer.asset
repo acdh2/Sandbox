@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8255230943321753065
+--- !u!114 &-3052529781518768631
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,7 +20,7 @@ MonoBehaviour:
       RenderQueueType: 0
       LayerMask:
         serializedVersion: 2
-        m_Bits: 128
+        m_Bits: 64
       PassNames: []
     overrideMaterial: {fileID: 2100000, guid: cf6382b12d4db47d49de8c4f1764ddb0, type: 2}
     overrideMaterialPassIndex: 0
@@ -68,8 +68,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
-  - {fileID: -8255230943321753065}
-  m_RendererFeatureMap: ad6b866f10d7b46c177a7ef431876f8d
+  - {fileID: -3052529781518768631}
+  m_RendererFeatureMap: ad6b866f10d7b46c09e64532563ca3d5
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}

@@ -20,7 +20,7 @@ namespace UnityFundamentals
 
     public class BetterRigidBodyPush : MonoBehaviour
     {
-        public LayerMask pushLayers;
+        public string pushTag;
         public bool canPush;
         [Range(0.5f, 5f)] public float strength = 1.1f;
 
@@ -39,8 +39,7 @@ namespace UnityFundamentals
                 if (rigidBodiesToPush.ContainsKey(body)) return;
 
                 // make sure we only push desired layer(s)
-                var bodyLayerMask = 1 << hit.gameObject.layer;
-                if ((bodyLayerMask & pushLayers.value) == 0) return;
+                if (!string.IsNullOrEmpty(pushTag) && !body.gameObject.CompareTag(pushTag)) return;
 
                 // Calculate push direction from move direction, horizontal motion only
                 Vector3 pushDirection = new Vector3(hit.moveDirection.x, 0.0f, hit.moveDirection.z);

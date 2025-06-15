@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Allows dragging and placing of a selected object on a grid using mouse input.
+/// Requires a SelectionHandler component to function.
+/// </summary>
 [RequireComponent(typeof(SelectionHandler))]
 public class DragAndPlace : MonoBehaviour
 {
@@ -29,7 +33,6 @@ public class DragAndPlace : MonoBehaviour
     private Quaternion targetRotation;
 
     private SelectionHandler selectionHandler;
-
     private Rigidbody originalRigidbody;
     private bool originalKinematicState;
 
@@ -46,31 +49,33 @@ public class DragAndPlace : MonoBehaviour
         HandleInput();
     }
 
+    /// <summary>
+    /// Handles mouse input depending on the current drag state.
+    /// </summary>
     private void HandleInput()
     {
         switch (currentState)
         {
             case DragState.Idle:
                 if (Input.GetMouseButtonDown(0))
-                {
                     TryStartDragging();
-                }
                 break;
 
             case DragState.Dragging:
                 if (Input.GetMouseButtonUp(0))
-                {
                     StopDragging();
-                }
                 else if (Input.GetMouseButton(0))
                 {
                     UpdateTargetTransform();
-                    MoveSelectedObject();
+                    ApplyTransformToSelection();
                 }
                 break;
         }
     }
 
+    /// <summary>
+    /// Attempts to start dragging the currently selected object.
+    /// </summary>
     private void TryStartDragging()
     {
         GameObject selectedObject = selectionHandler.CurrentSelection;
@@ -83,44 +88,88 @@ public class DragAndPlace : MonoBehaviour
         if (enableRotation)
             rotationOffset = Quaternion.Inverse(cam.transform.rotation) * selectedTransform.rotation;
 
-        DisableRigidbody(selectedObject);
+        DisableRigidbodyIfPresent(selectedObject);
+
+        InvokeGrabEvent(selectedObject);
 
         currentState = DragState.Dragging;
     }
 
+    /// <summary>
+    /// Invokes the grab event on the object if it has a SandboxBase component.
+    /// </summary>
+    /// <param name="targetObject">The object being grabbed.</param>
+    private void InvokeGrabEvent(GameObject targetObject)
+    {
+        targetObject.GetComponent<SandboxBase>()?.InvokeGrab();
+    }
+
+    /// <summary>
+    /// Stops dragging and restores the Rigidbody state.
+    /// </summary>
     private void StopDragging()
     {
-        EnableRigidbody();
+        if (selectedTransform != null)
+                InvokeReleaseEvent(selectedTransform.gameObject);
 
+        RestoreRigidbodyIfPresent();
         selectedTransform = null;
         selectionHandler.UnlockSelection();
-
         currentState = DragState.Idle;
     }
 
+    /// <summary>
+    /// Invokes the release event on the object if it has a SandboxBase.
+    /// </summary>
+    /// <param name="targetObject">The object being released.</param>
+    void InvokeReleaseEvent(GameObject targetObject)
+    {
+        targetObject.GetComponent<SandboxBase>()?.InvokeRelease();
+    }
+
+    /// <summary>
+    /// Updates the target position and rotation for the dragged object.
+    /// </summary>
     private void UpdateTargetTransform()
     {
         Vector3 worldTargetPosition = cam.transform.TransformPoint(localOffset);
-        targetPosition = ApplyBoundaries(SnapToGrid(worldTargetPosition));
-
+        targetPosition = ApplyPlacementConstraints(SnapToGrid(worldTargetPosition));
         targetRotation = enableRotation ? GetSnappedRotation() : selectedTransform.rotation;
     }
 
-    private void MoveSelectedObject()
+    /// <summary>
+    /// Moves the selected object to the target position and rotation.
+    /// </summary>
+    private void ApplyTransformToSelection()
     {
         if (smoothMovement)
         {
-            selectedTransform.position = Vector3.Lerp(selectedTransform.position, targetPosition, moveResponsiveness * Time.deltaTime);
-            Quaternion interpolated = Quaternion.Slerp(selectedTransform.rotation, targetRotation, moveResponsiveness * Time.deltaTime);
-            if (IsNormalized(interpolated)) selectedTransform.rotation = interpolated;
+            selectedTransform.position = Vector3.Lerp(
+                selectedTransform.position,
+                targetPosition,
+                moveResponsiveness * Time.deltaTime
+            );
+
+            Quaternion interpolated = Quaternion.Slerp(
+                selectedTransform.rotation,
+                targetRotation,
+                moveResponsiveness * Time.deltaTime
+            );
+
+            if (IsNormalized(interpolated))
+                selectedTransform.rotation = interpolated;
         }
         else
         {
             selectedTransform.position = targetPosition;
-            if (IsNormalized(targetRotation)) selectedTransform.rotation = targetRotation;
+            if (IsNormalized(targetRotation))
+                selectedTransform.rotation = targetRotation;
         }
     }
 
+    /// <summary>
+    /// Snaps the rotation to specified angular increments.
+    /// </summary>
     private Quaternion GetSnappedRotation()
     {
         Quaternion rawRotation = cam.transform.rotation * rotationOffset;
@@ -133,7 +182,10 @@ public class DragAndPlace : MonoBehaviour
         return Quaternion.Euler(euler);
     }
 
-    private void DisableRigidbody(GameObject obj)
+    /// <summary>
+    /// Disables the Rigidbody on the object if it exists, and stores its original state.
+    /// </summary>
+    private void DisableRigidbodyIfPresent(GameObject obj)
     {
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
@@ -144,7 +196,10 @@ public class DragAndPlace : MonoBehaviour
         }
     }
 
-    private void EnableRigidbody()
+    /// <summary>
+    /// Restores the original Rigidbody state if one was modified.
+    /// </summary>
+    private void RestoreRigidbodyIfPresent()
     {
         if (originalRigidbody != null)
         {
@@ -153,6 +208,9 @@ public class DragAndPlace : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Snaps a position to the configured grid size and center.
+    /// </summary>
     private Vector3 SnapToGrid(Vector3 position)
     {
         Vector3 localPos = position - gridCenter;
@@ -164,12 +222,18 @@ public class DragAndPlace : MonoBehaviour
         return localPos + gridCenter;
     }
 
-    private Vector3 ApplyBoundaries(Vector3 position)
+    /// <summary>
+    /// Applies any boundary constraints to the placement position.
+    /// </summary>
+    private Vector3 ApplyPlacementConstraints(Vector3 position)
     {
-        position.y = Mathf.Max(0.5f, position.y);
+        position.y = Mathf.Max(0.5f, position.y); // Prevent sinking below floor
         return position;
     }
 
+    /// <summary>
+    /// Returns true if the given quaternion is approximately normalized.
+    /// </summary>
     private bool IsNormalized(Quaternion q, float tolerance = 0.0001f)
     {
         float magnitude = Mathf.Sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);

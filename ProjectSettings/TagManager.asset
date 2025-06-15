@@ -5,16 +5,17 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
-  - SelectionCamera
+  - Draggable
+  - Pushable
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - Interactables
   - Selection
+  - Pushable
   - 
   - 
   - 
