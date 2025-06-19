@@ -63,7 +63,7 @@ public class ButtonScript : ActivatorBase, IWeldable
     /// Wordt aangeroepen wanneer het object wordt gelast.
     /// Zet de tag naar Untagged en maakt indrukken mogelijk.
     /// </summary>
-    public void OnWeld(Welder welder)
+    public void OnWeld()
     {
         gameObject.tag = Tags.Untagged;
         canBePressed = true;
@@ -73,7 +73,7 @@ public class ButtonScript : ActivatorBase, IWeldable
     /// Wordt aangeroepen wanneer het object wordt losgelast.
     /// Zet de tag naar Draggable en voorkomt indrukken.
     /// </summary>
-    public void OnUnweld(Welder welder)
+    public void OnUnweld()
     {
         gameObject.tag = Tags.Draggable;
         canBePressed = false;

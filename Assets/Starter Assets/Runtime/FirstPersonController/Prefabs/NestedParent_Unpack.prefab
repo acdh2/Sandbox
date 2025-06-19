@@ -80,7 +80,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridSize: {x: 0, y: 0, z: 0}
   gridCenter: {x: 0, y: 0, z: 0}
-  enableRotation: 1
+  allowRotation:
+    X: 1
+    Y: 1
+    Z: 1
   rotationSnapDegrees: {x: 0, y: 0, z: 0}
   smoothMovement: 0
   moveResponsiveness: 100
@@ -356,8 +359,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: f3fb331ae837b4f939c84e6c26ae2f24, type: 2}
     - target: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: GroundedOffset
+      value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: GroundLayers.m_Bits
-      value: 65
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_Name
