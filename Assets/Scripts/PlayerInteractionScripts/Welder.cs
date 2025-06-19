@@ -26,6 +26,7 @@ public class Welder : MonoBehaviour
     {
         GameObject selected = selectionHandler.CurrentSelection;
         if (selected == null) return;
+        selectionHandler.ClearSelection();
 
         if (WeldingUtils.IsWelded(selected))
         {
@@ -33,7 +34,6 @@ public class Welder : MonoBehaviour
         }
         else
         {
-            selectionHandler.ClearSelection();
             StartCoroutine(weldingService.Weld(selected));
         }
     }

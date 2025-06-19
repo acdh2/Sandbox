@@ -10,7 +10,7 @@ public class WeldingService
     {
     }
 
-    public IEnumerator Weld(GameObject target)
+    public IEnumerator Weld(GameObject target, System.Action<GameObject> onComplete = null)
     {
         if (WeldingUtils.IsWelded(target))
         {
@@ -42,6 +42,8 @@ public class WeldingService
             OnWeldEvent(weldable);
         }
         OnWeldEvent(root);
+
+        onComplete?.Invoke(root);
     }
 
     public void Unweld(GameObject target)
@@ -60,13 +62,13 @@ public class WeldingService
 
         foreach (GameObject obj in connected)
         {
-            obj.transform.SetParent(null, true);
-            WeldingUtils.RemoveRigidbody(obj);
+            OnUnweldEvent(obj);
         }
 
         foreach (GameObject obj in connected)
         {
-            OnUnweldEvent(obj);
+            obj.transform.SetParent(null, true);
+            WeldingUtils.RemoveRigidbody(obj);
         }
     }
 
