@@ -2,6 +2,6 @@ using UnityEngine;
 
 public interface IWeldable
 {
-    void InvokeWeld();
-    void InvokeUnweld();
+    void OnWeld(Welder welder);
+    void OnUnweld(Welder welder);
 }

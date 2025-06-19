@@ -27,22 +27,22 @@ public class SandboxBase : MonoBehaviour, IActivatable, IWeldable
     /// <summary>
     /// Called when the object is welded into place.
     /// </summary>
-    public void InvokeWeld() => onWeld?.Invoke();
+    public void OnWeld(Welder welder) => onWeld?.Invoke();
 
     /// <summary>
     /// Called when the object is unwelded.
     /// </summary>
-    public void InvokeUnweld() => onUnweld?.Invoke();
+    public void OnUnweld(Welder welder) => onUnweld?.Invoke();
 
     /// <summary>
     /// Called when the object is grabbed.
     /// </summary>
-    public void InvokeGrab() => onGrab?.Invoke();
+    public void OnGrab() => onGrab?.Invoke();
 
     /// <summary>
     /// Called when the object is released.
     /// </summary>
-    public void InvokeRelease() => onRelease?.Invoke();
+    public void OnRelease() => onRelease?.Invoke();
 
     // --- IActivatable interface implementation ---
 

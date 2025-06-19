@@ -1,3 +1,5 @@
+//EDITED
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -37,96 +39,82 @@ public class Welder : MonoBehaviour
         GameObject selected = selectionHandler.CurrentSelection;
         if (selected == null) return;
 
-        // If it has a Rigidbody, it's already welded → unweld it
-        if (selected.TryGetComponent(out Rigidbody _))
+        if (WeldingUtils.IsWelded(selected))
             Unweld(selected);
         else
             Weld(selected);
     }
 
     /// <summary>
-    /// Welds the root and all overlapping weldable objects.
+    /// Welds the root and all overlapping weldable objects connected recursively.
     /// </summary>
-    private void Weld(GameObject root)
+    public void Weld(GameObject target)
     {
+        if (WeldingUtils.IsWelded(target))
+        {
+            Debug.LogError("Object is already welded");
+            return;
+        }
         selectionHandler.ClearSelection();
 
-        var affectedObjects = new HashSet<GameObject>();
-        var overlappingObjects = FindConnectedObjects(root);
+        // Zoek de weldable root van het geselecteerde object
+        GameObject root = WeldingUtils.GetWeldableRoot(target);
+        if (root == null) return;
 
-        foreach (var obj in overlappingObjects)
+        // Vind alle verbonden weldable roots via overlap
+        HashSet<GameObject> weldGroup = FindAllConnectedWeldables(root);
+
+        // Pas weld aan: alle weldables in de groep aan dezelfde parent zetten en Rigidbody verwijderen
+        foreach (GameObject weldable in weldGroup)
         {
-            if (!IsWeldable(obj)) continue;
-
-            RemoveRigidbody(obj);
-            obj.transform.SetParent(root.transform, true);
-            affectedObjects.Add(obj);
+            WeldingUtils.RemoveRigidbody(weldable);
+            weldable.transform.SetParent(root.transform, true);
         }
 
-        RemoveRigidbody(root);
+        WeldingUtils.RemoveRigidbody(root);
         StartCoroutine(AddRigidbodyNextFrame(root));
-        affectedObjects.Add(root);
 
-        // Notify all welded objects
-        foreach (var obj in affectedObjects)
+        // Notify welded objects
+        foreach (GameObject weldable in weldGroup)
         {
-            InvokeWeldEvent(obj);
+            OnWeldEvent(weldable);
         }
+        OnWeldEvent(root);
     }
-
+        
     /// <summary>
-    /// Unwelds the given root and all its welded children recursively.
+    /// Unwelds the given root and all welded children recursively.
     /// </summary>
-    private void Unweld(GameObject root)
+    public void Unweld(GameObject target)
     {
+        if (!WeldingUtils.IsWelded(target))
+        {
+            Debug.LogError("Object is already welded");
+            return;
+        }
+
         selectionHandler.ClearSelection();
 
-        var affectedObjects = new HashSet<GameObject>();
-        DetachWeldedChildrenRecursive(root, affectedObjects);
+        GameObject root = WeldingUtils.GetWeldableRoot(target);
+        if (root == null) return;
 
-        RemoveRigidbody(root);
-        affectedObjects.Add(root);
+        // Verzamel alle verbonden weldables
+        HashSet<GameObject> connected = WeldingUtils.FindConnectedWeldables(root);
+        connected.Add(root); // root zelf ook losmaken
 
-        // Notify all unwelded objects
-        foreach (var obj in affectedObjects)
+        // Ontkoppel alle weldables
+        foreach (GameObject obj in connected)
         {
-            InvokeUnweldEvent(obj);
+            if (obj.transform.parent != null)
+                obj.transform.SetParent(null, true);
+
+            WeldingUtils.RemoveRigidbody(obj);
         }
-    }
 
-    /// <summary>
-    /// Recursively detaches all welded children from the given parent.
-    /// </summary>
-    private void DetachWeldedChildrenRecursive(GameObject parent, HashSet<GameObject> affected)
-    {
-        List<Transform> children = new();
-        foreach (Transform child in parent.transform)
-            children.Add(child); // Store list to avoid modifying while iterating
-
-        foreach (Transform child in children)
+        // Roep OnUnweldEvent aan voor elk losgemaakt object
+        foreach (GameObject obj in connected)
         {
-            GameObject childObj = child.gameObject;
-
-            if (IsWeldable(childObj))
-            {
-                child.SetParent(null, true);
-                RemoveRigidbody(childObj);
-                affected.Add(childObj);
-            }
-
-            DetachWeldedChildrenRecursive(childObj, affected);
-        }
-    }
-
-    /// <summary>
-    /// Removes the Rigidbody component if present.
-    /// </summary>
-    private void RemoveRigidbody(GameObject obj)
-    {
-        var rb = obj.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Destroy(rb);
+            OnUnweldEvent(obj);
         }
     }
 
@@ -143,116 +131,61 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Performs BFS to find all overlapping weldable objects starting from root.
+    /// Recursively finds all connected weldable root objects by collider overlap.
     /// </summary>
-    private HashSet<GameObject> FindConnectedObjects(GameObject root)
+    private HashSet<GameObject> FindAllConnectedWeldables(GameObject startRoot)
     {
         var visited = new HashSet<GameObject>();
-        var queue = new Queue<GameObject>();
-        queue.Enqueue(root);
+        var toVisit = new Queue<GameObject>();
 
-        while (queue.Count > 0)
+        toVisit.Enqueue(startRoot);
+        visited.Add(startRoot);
+
+        while (toVisit.Count > 0)
         {
-            var current = queue.Dequeue();
-            if (!visited.Add(current)) continue;
+            GameObject current = toVisit.Dequeue();
 
-            foreach (var col in FindOverlappingColliders(current))
+            // Alle colliders van de weldable root
+            Collider[] currentColliders = current.GetComponentsInChildren<Collider>();
+            if (currentColliders.Length == 0) continue;
+
+            // Voor iedere collider: zoek overlappende colliders
+            foreach (var col in currentColliders)
             {
-                var obj = col.gameObject;
-                if (!visited.Contains(obj))
-                    queue.Enqueue(obj);
+                // Zoek overlappende colliders die penetreren
+                Collider[] overlappingColliders = WeldingUtils.FindOverlappingCollidersBySingleCollider(col, maxAllowedPenetration);
+
+                foreach (Collider overlapCol in overlappingColliders)
+                {
+                    // Zoek weldable root van collider object
+                    GameObject otherRoot = WeldingUtils.GetWeldableRoot(overlapCol.gameObject);
+
+                    // Als weldable root gevonden en nog niet bezocht, toevoegen
+                    if (otherRoot != null && !visited.Contains(otherRoot))
+                    {
+                        visited.Add(otherRoot);
+                        toVisit.Enqueue(otherRoot);
+                    }
+                }
             }
         }
 
-        visited.Remove(root); // Exclude self
         return visited;
-    }
-
-    /// <summary>
-    /// Finds all colliders penetrating the colliders of the given object.
-    /// </summary>
-    private Collider[] FindOverlappingColliders(GameObject obj)
-    {
-        var ownColliders = obj.GetComponentsInChildren<Collider>();
-        if (ownColliders.Length == 0) return new Collider[0];
-
-        Bounds bounds = GetCombinedBounds(ownColliders);
-        var candidates = Physics.OverlapBox(bounds.center, bounds.extents, obj.transform.rotation);
-
-        var result = new List<Collider>();
-        foreach (var candidate in candidates)
-        {
-            if (IsOwnCollider(candidate, ownColliders)) continue;
-            if (!IsWeldable(candidate.gameObject)) continue;
-
-            if (IsPenetrating(ownColliders, candidate))
-                result.Add(candidate);
-        }
-
-        return result.ToArray();
-    }
-
-    /// <summary>
-    /// Calculates the combined bounds of multiple colliders.
-    /// </summary>
-    private Bounds GetCombinedBounds(Collider[] colliders)
-    {
-        Bounds bounds = new(colliders[0].bounds.center, Vector3.zero);
-        foreach (var col in colliders)
-            bounds.Encapsulate(col.bounds);
-        return bounds;
-    }
-
-    /// <summary>
-    /// Returns true if the collider is one of the given colliders.
-    /// </summary>
-    private bool IsOwnCollider(Collider candidate, Collider[] self)
-    {
-        foreach (var col in self)
-            if (col == candidate) return true;
-        return false;
-    }
-
-    /// <summary>
-    /// Returns true if the object is weldable (has proper tag or interface).
-    /// </summary>
-    private bool IsWeldable(GameObject obj)
-    {
-        return obj.CompareTag(Tags.Draggable) || obj.GetComponent<IWeldable>() != null;
-    }
-
-    /// <summary>
-    /// Checks if the given colliders are physically penetrating the candidate collider.
-    /// </summary>
-    private bool IsPenetrating(Collider[] selfColliders, Collider other)
-    {
-        foreach (var own in selfColliders)
-        {
-            if (Physics.ComputePenetration(
-                own, own.transform.position, own.transform.rotation,
-                other, other.transform.position, other.transform.rotation,
-                out _, out float distance))
-            {
-                if (distance > maxAllowedPenetration)
-                    return true;
-            }
-        }
-        return false;
     }
 
     /// <summary>
     /// Calls the weld event on the object if it implements IWeldable.
     /// </summary>
-    private void InvokeWeldEvent(GameObject obj)
+    private void OnWeldEvent(GameObject obj)
     {
-        obj.GetComponent<IWeldable>()?.InvokeWeld();
+        obj.GetComponent<IWeldable>()?.OnWeld(this);
     }
 
     /// <summary>
     /// Calls the unweld event on the object if it implements IWeldable.
     /// </summary>
-    private void InvokeUnweldEvent(GameObject obj)
+    private void OnUnweldEvent(GameObject obj)
     {
-        obj.GetComponent<IWeldable>()?.InvokeUnweld();
+        obj.GetComponent<IWeldable>()?.OnUnweld(this);
     }
 }
