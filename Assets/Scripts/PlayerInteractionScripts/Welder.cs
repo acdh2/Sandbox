@@ -30,7 +30,16 @@ public class Welder : MonoBehaviour
 
     public bool IsWelded(GameObject obj)
     {
-        return obj.transform.parent != null;
+        foreach (Transform child in obj.transform)
+        {
+            if (IsWeldable(child.gameObject)) return true;
+        }
+        if (obj.transform.parent != null)
+        {
+            GameObject ancestor = GetWeldableAncestor(obj.transform.parent.gameObject);
+            return ancestor != null;
+        }
+        return false;
     }
 
     public bool CanBeWelded(GameObject obj)
@@ -132,21 +141,40 @@ public class Welder : MonoBehaviour
 
     void UnweldImmediateChildren(GameObject target)
     {
-        Transform root = target.transform.root;
-        if (root == null) return;
+        List<GameObject> unwelded = new List<GameObject>();
 
         target = GetWeldableAncestor(target);
         if (target == null) return;
+
+        bool somethingWasUnwelded = false;
 
         foreach (Transform child in target.transform)
         {
             if (IsWeldable(child.gameObject))
             {
+                unwelded.Add(child.gameObject);
                 child.SetParent(null, true);
+                somethingWasUnwelded = true;
             }
         }
 
-        target.transform.SetParent(null, true);
+        if (target.transform.parent)
+        {
+            unwelded.Add(target.transform.parent.gameObject);
+            target.transform.SetParent(null, true);
+            somethingWasUnwelded = true;
+        }
+
+        if (somethingWasUnwelded)
+        {
+            unwelded.Add(target);
+        }
+
+        //send events
+        foreach (GameObject unweldedItem in unwelded)
+        {
+            unweldedItem.GetComponent<IWeldable>()?.OnUnweld();
+        }
     }
 
     void RecursivelyUnweldHierarchy(GameObject target)
@@ -163,12 +191,14 @@ public class Welder : MonoBehaviour
         }
     }
 
-    void RecursivelyWeldOverlaps(GameObject target)
+    void RecursivelyWeldOverlaps(GameObject target, List<GameObject> welded)
     {
         if (target == null) return;
 
         List<GameObject> visited = new List<GameObject>();
         Queue<GameObject> toVisit = new Queue<GameObject>();
+
+        bool somethingWasWelded = false;
 
         toVisit.Enqueue(target);
         while (toVisit.Count > 0)
@@ -193,10 +223,18 @@ public class Welder : MonoBehaviour
                         {
                             overlappingTransform.SetParent(candidate.transform);
                             toVisit.Enqueue(overlap.gameObject);
+                            somethingWasWelded = true;
+
+                            welded.Add(overlap.gameObject);
                         }
                     }
                 }
             }
+        }
+
+        if (somethingWasWelded)
+        {
+            welded.Add(target);
         }
 
     }
@@ -204,9 +242,7 @@ public class Welder : MonoBehaviour
     void Unweld(GameObject selected)
     {
         if (selected == null) return;
-
-        GameObject selectedItem = GetWeldableAncestor(selected);
-        UnweldImmediateChildren(selectedItem);
+        UnweldImmediateChildren(selected);
     }
 
     void Weld(GameObject selected)
@@ -221,9 +257,22 @@ public class Welder : MonoBehaviour
 
         RecursivelyUnweldHierarchy(selectedRoot);
 
+        List<GameObject> welded = new List<GameObject>();
+
+        welded.Add(selected);
+        if (!IsWelded(newParent))
+        {
+            welded.Add(newParent);
+        }
         selected.transform.SetParent(newParent.transform, true);
 
-        RecursivelyWeldOverlaps(selected);
+        RecursivelyWeldOverlaps(selected, welded);
+
+        //send events
+        foreach (GameObject weldedItem in welded)
+        {
+            weldedItem.GetComponent<IWeldable>()?.OnWeld();
+        }
     }
 
 
