@@ -19,7 +19,7 @@ public class ActivatorBase : MonoBehaviour
         {
             if (!target.IsActive() && target.MatchActivationGroup(activationGroup))
             {
-                target.Activate();
+                target.OnActivate();
             }
         }
     }
@@ -33,7 +33,7 @@ public class ActivatorBase : MonoBehaviour
         {
             if (target.IsActive())
             {
-                target.Deactivate();
+                target.OnDeactivate();
             }
         }
     }
@@ -47,11 +47,11 @@ public class ActivatorBase : MonoBehaviour
         {
             if (target.IsActive())
             {
-                target.Deactivate();
+                target.OnDeactivate();
             }
             else if (target.MatchActivationGroup(activationGroup))
             {
-                target.Activate();
+                target.OnActivate();
             }
         }
     }

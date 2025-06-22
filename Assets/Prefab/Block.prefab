@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 3005025116321078782}
   - component: {fileID: 4058689664537456268}
   - component: {fileID: 7512766341956569682}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Block
-  m_TagString: Draggable
+  m_TagString: Weldable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -133,18 +133,10 @@ MonoBehaviour:
   onRelease:
     m_PersistentCalls:
       m_Calls: []
-  onTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onCollisionExit:
-    m_PersistentCalls:
-      m_Calls: []
   onActivate:
     m_PersistentCalls:
       m_Calls: []
   onDeactivate:
     m_PersistentCalls:
       m_Calls: []
+  activationGroup: {r: 1, g: 1, b: 1, a: 1}

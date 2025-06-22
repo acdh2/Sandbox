@@ -5,7 +5,7 @@ using UnityEngine.Events;
 /// Base component for all sandbox elements that can be grabbed, welded and activated.
 /// Handles group-based activation and event invocation for interaction logic.
 /// </summary>
-public class SandboxBase : MonoBehaviour, IActivatable, IWeldable
+public class SandboxBase : MonoBehaviour, IActivatable, IWeldable, IGrabbable
 {
     [Header("Weld & Grab Events")]
     public UnityEvent onWeld;
@@ -54,7 +54,7 @@ public class SandboxBase : MonoBehaviour, IActivatable, IWeldable
     /// <summary>
     /// Activates the object and fires the onActivate event.
     /// </summary>
-    public void Activate()
+    public void OnActivate()
     {
         if (!enabled || isActive) return;
 
@@ -65,7 +65,7 @@ public class SandboxBase : MonoBehaviour, IActivatable, IWeldable
     /// <summary>
     /// Deactivates the object and fires the onDeactivate event.
     /// </summary>
-    public void Deactivate()
+    public void OnDeactivate()
     {
         if (!enabled || !isActive) return;
 

@@ -95,7 +95,7 @@ public class DragAndPlace : MonoBehaviour
         GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
 
-        selectedTransform = selectedObject.transform;
+        selectedTransform = selectedObject.transform.root;
         localOffset = cam.transform.InverseTransformPoint(selectedTransform.position);
         selectionHandler.LockSelection();
 
@@ -112,12 +112,12 @@ public class DragAndPlace : MonoBehaviour
     }
 
     /// <summary>
-    /// Invokes the grab event on the object if it has a SandboxBase component.
+    /// Invokes the grab event on the object if it has a IGrabbable component.
     /// </summary>
     /// <param name="targetObject">The object being grabbed.</param>
     private void OnGrabEvent(GameObject targetObject)
     {
-        targetObject.GetComponent<SandboxBase>()?.OnGrab();
+        targetObject.GetComponent<IGrabbable>()?.OnGrab();
     }
 
     /// <summary>
@@ -135,12 +135,12 @@ public class DragAndPlace : MonoBehaviour
     }
 
     /// <summary>
-    /// Invokes the release event on the object if it has a SandboxBase.
+    /// Invokes the release event on the object if it has a IGrabbable.
     /// </summary>
     /// <param name="targetObject">The object being released.</param>
     void OnReleaseEvent(GameObject targetObject)
     {
-        targetObject.GetComponent<SandboxBase>()?.OnRelease();
+        targetObject.GetComponent<IGrabbable>()?.OnRelease();
     }
 
     /// <summary>

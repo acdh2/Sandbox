@@ -3,29 +3,28 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// Handles object selection using raycasting against tagged objects (e.g., "Draggable").
+/// Handles object selection using raycasting against objects on specified layers (draggableLayers).
 /// Applies a temporary selection layer for highlighting and restores original layers on deselection.
 /// </summary>
 public class SelectionHandler : MonoBehaviour
 {
-    public GameObject CurrentSelection { get; private set; }
+    [Header("Selection Settings")]
+    [Tooltip("Which layers are considered draggable/selectable.")]
+    public LayerMask draggableLayers;
 
+    public GameObject CurrentSelection { get; private set; }
     public event Action<GameObject> OnSelectionChanged;
 
     private Camera cam;
     private bool selectionLocked = false;
-
     private int selectionLayer;
-    private int defaultLayer;
 
-    // Stores the original layers so we can restore them on deselection
     private readonly Dictionary<GameObject, int> originalLayer = new();
 
     private void Start()
     {
         cam = Camera.main;
         selectionLayer = LayerMask.NameToLayer("Selection");
-        defaultLayer = LayerMask.NameToLayer("Default");
     }
 
     private void Update()
@@ -41,87 +40,87 @@ public class SelectionHandler : MonoBehaviour
             ClearSelection();
     }
 
-    /// <summary>
-    /// Locks the current selection so it doesn't change automatically.
-    /// </summary>
     public void LockSelection() => selectionLocked = true;
-
-    /// <summary>
-    /// Unlocks the current selection to allow updates via raycasting.
-    /// </summary>
     public void UnlockSelection() => selectionLocked = false;
-
-    /// <summary>
-    /// Clears the current selection (if any).
-    /// </summary>
     public void ClearSelection() => SetSelection(null);
 
-    /// <summary>
-    /// Sets a new selection. Applies or restores layers as needed.
-    /// </summary>
     private void SetSelection(GameObject newSelection)
     {
-        if (CurrentSelection == newSelection)
-            return;
+        
+        //if (CurrentSelection == newSelection)
+          //  return;
 
-        // Restore layers of previously selected object
-        if (CurrentSelection != null)
-            RestoreOriginalLayers(CurrentSelection);
+        RestoreOriginalLayers();
 
         CurrentSelection = newSelection;
 
-        // Apply selection layer to new object
         if (CurrentSelection != null)
             ApplySelectionLayer(CurrentSelection);
 
         OnSelectionChanged?.Invoke(CurrentSelection);
     }
 
-    /// <summary>
-    /// Returns the topmost parent of a transform hierarchy.
-    /// </summary>
-    private Transform GetTopmostRoot(Transform t)
+    private GameObject GetDraggableRoot(GameObject item)
     {
-        while (t.parent != null)
-            t = t.parent;
-        return t;
+        Transform currentTransform = item.transform;
+
+        while (currentTransform != null)
+        {
+            GameObject candidate = currentTransform.gameObject;
+
+            bool isDraggable = ((draggableLayers.value & (1 << candidate.layer)) != 0);
+            bool isCurrentSelection = (candidate == CurrentSelection && candidate.layer == selectionLayer);
+
+            if (isDraggable || isCurrentSelection)
+            {
+                return candidate;
+            }
+
+            currentTransform = currentTransform.parent;
+        }
+
+        return null;
     }
 
-    /// <summary>
-    /// Performs a raycast and returns the topmost interactable object under the cursor.
-    /// </summary>
     private GameObject GetClosestInteractableUnderCursor()
     {
+        int combinedLayerMask = draggableLayers | (1 << selectionLayer);
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
+        RaycastHit[] hits = Physics.RaycastAll(ray, 100f, combinedLayerMask);
 
         GameObject closest = null;
         float closestDistance = float.MaxValue;
 
         foreach (var hit in hits)
         {
-            if (!hit.collider.CompareTag(Tags.Draggable))
-                continue;
+            GameObject candidate = GetDraggableRoot(hit.collider.gameObject);
+            if (candidate == null) continue;
 
             float distance = hit.distance;
             if (distance < closestDistance)
             {
                 closestDistance = distance;
-                closest = GetTopmostRoot(hit.collider.transform).gameObject;
+                closest = candidate;
             }
         }
 
         return closest;
     }
 
-    /// <summary>
-    /// Recursively applies the selection layer to the given GameObject and all its children.
-    /// Stores original layers for later restoration.
-    /// </summary>
+
     private void ApplySelectionLayer(GameObject root)
     {
+        // root = GetDraggableRoot(root.transform.root.gameObject);
+        // if (root)
+        // {
+        //     if (!originalLayer.ContainsKey(root))
+        //         originalLayer[root] = root.layer;
+        //     root.layer = selectionLayer;
+        // }
+
         Stack<GameObject> stack = new();
-        stack.Push(root);
+        stack.Push(root);//.transform.root.gameObject);
 
         while (stack.Count > 0)
         {
@@ -137,26 +136,16 @@ public class SelectionHandler : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Recursively restores original layers to the given GameObject and all its children.
-    /// </summary>
-    private void RestoreOriginalLayers(GameObject root)
+    private void RestoreOriginalLayers()
     {
-        Stack<GameObject> stack = new();
-        stack.Push(root);
-
-        while (stack.Count > 0)
+        foreach (var kvp in originalLayer)
         {
-            GameObject obj = stack.Pop();
+            GameObject obj = kvp.Key;
+            int original = kvp.Value;
 
-            if (originalLayer.TryGetValue(obj, out int layer))
-            {
-                obj.layer = layer;
-                originalLayer.Remove(obj);
-            }
-
-            foreach (Transform child in obj.transform)
-                stack.Push(child.gameObject);
+            if (obj != null)
+                obj.layer = original;
         }
+        originalLayer.Clear();
     }
 }

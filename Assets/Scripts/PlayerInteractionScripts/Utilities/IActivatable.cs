@@ -1,8 +1,8 @@
 
 public interface IActivatable
 {
-    public void Activate();
-    public void Deactivate();
+    public void OnActivate();
+    public void OnDeactivate();
 
     public bool IsActive();
 

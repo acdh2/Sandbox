@@ -5,8 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
-  - Draggable
-  - Pushable
+  - Weldable
   layers:
   - Default
   - TransparentFX
@@ -15,7 +14,7 @@ TagManager:
   - Water
   - UI
   - Selection
-  - 
+  - Draggable
   - 
   - 
   - 
