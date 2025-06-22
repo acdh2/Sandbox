@@ -1,11 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 [RequireComponent(typeof(SelectionHandler))]
 public class Welder : MonoBehaviour
 {
-    const float maxAllowedPenetration = 0.01f;
+    private const float MaxPenetrationThreshold = 0.01f;
 
     public string weldableTag;
 
@@ -19,261 +18,220 @@ public class Welder : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
-        {
             Weld(selectionHandler.CurrentSelection);
-        }
+
         if (Input.GetKeyDown(KeyCode.U))
-        {
             Unweld(selectionHandler.CurrentSelection);
-        }
     }
 
+    /// <summary>
+    /// Checks if the object is already welded to another weldable.
+    /// </summary>
     public bool IsWelded(GameObject obj)
     {
         foreach (Transform child in obj.transform)
-        {
             if (IsWeldable(child.gameObject)) return true;
-        }
+
         if (obj.transform.parent != null)
-        {
-            GameObject ancestor = GetWeldableAncestor(obj.transform.parent.gameObject);
-            return ancestor != null;
-        }
+            return GetWeldableAncestor(obj.transform.parent.gameObject) != null;
+
         return false;
     }
 
-    public bool CanBeWelded(GameObject obj)
-    {
-        GameObject weldable = GetWeldableAncestor(obj);
-        return (weldable != null);
-    }
+    /// <summary>
+    /// Determines if the object can be welded (i.e., has a weldable ancestor).
+    /// </summary>
+    public bool CanBeWelded(GameObject obj) => GetWeldableAncestor(obj) != null;
 
-    public bool IsWeldable(GameObject obj)
-    {
-        return obj.CompareTag(weldableTag);
-    }
+    /// <summary>
+    /// Checks if the object is weldable by tag.
+    /// </summary>
+    public bool IsWeldable(GameObject obj) => obj.CompareTag(weldableTag);
 
+    /// <summary>
+    /// Finds the nearest weldable ancestor in the hierarchy.
+    /// </summary>
     public GameObject GetWeldableAncestor(GameObject obj)
     {
         Transform current = obj.transform;
         while (current != null)
         {
-            if (IsWeldable(current.gameObject))
-                return current.gameObject;
+            if (IsWeldable(current.gameObject)) return current.gameObject;
             current = current.parent;
         }
         return null;
     }
 
+    /// <summary>
+    /// Finds the top-most weldable ancestor.
+    /// </summary>
     public GameObject GetTopmostWeldableAncestor(GameObject obj)
     {
-        GameObject topmostWeldable = null;
-
+        GameObject topmost = null;
         Transform current = obj.transform;
         while (current != null)
         {
-            if (IsWeldable(current.gameObject))
-                topmostWeldable = current.gameObject;
+            if (IsWeldable(current.gameObject)) topmost = current.gameObject;
             current = current.parent;
         }
-        return topmostWeldable;
+        return topmost;
     }
 
-    public Collider[] FindOverlappingCollidersBySingleCollider(Collider collider, float maxAllowedPenetration)
+    /// <summary>
+    /// Checks penetration between one collider and nearby colliders.
+    /// </summary>
+    public Collider[] FindPenetratingColliders(Collider collider)
     {
         Bounds bounds = collider.bounds;
         Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents, collider.transform.rotation);
 
-        var result = new List<Collider>();
-
+        List<Collider> result = new();
         foreach (var candidate in candidates)
         {
             if (candidate == collider) continue;
-
-            if (IsPenetrating(new Collider[] { collider }, candidate, maxAllowedPenetration))
-            {
+            if (IsPenetrating(collider, candidate))
                 result.Add(candidate);
-            }
         }
-
         return result.ToArray();
     }
 
-    public bool IsPenetrating(Collider[] selfColliders, Collider other, float maxAllowedPenetration)
+    /// <summary>
+    /// Determines whether two colliders are penetrating beyond the threshold.
+    /// </summary>
+    public bool IsPenetrating(Collider a, Collider b)
     {
-        foreach (var own in selfColliders)
-        {
-            if (Physics.ComputePenetration(
-                own, own.transform.position, own.transform.rotation,
-                other, other.transform.position, other.transform.rotation,
-                out _, out float distance))
-            {
-                if (distance > maxAllowedPenetration)
-                    return true;
-            }
-        }
-        return false;
+        return Physics.ComputePenetration(
+            a, a.transform.position, a.transform.rotation,
+            b, b.transform.position, b.transform.rotation,
+            out _, out float distance) && distance > MaxPenetrationThreshold;
     }
-
 
     private bool IsInSameHierarchy(GameObject a, GameObject b)
     {
         return a.transform.root == b.transform.root;
     }
 
-    GameObject FindNewOverlappingWeldable(GameObject target)
+    /// <summary>
+    /// Finds a suitable new parent for welding.
+    /// </summary>
+    private GameObject FindNewOverlappingWeldable(GameObject target)
     {
         Collider collider = target.GetComponent<Collider>();
-        if (collider)
-        {
-            foreach (Collider overlap in FindOverlappingCollidersBySingleCollider(collider, maxAllowedPenetration))
-            {
-                GameObject other = overlap.gameObject;
-                if (!IsInSameHierarchy(target, other) && CanBeWelded(other))
-                {
-                    return other;
-                }
-            }
-        }
+        if (!collider) return null;
 
+        foreach (Collider overlap in FindPenetratingColliders(collider))
+        {
+            GameObject other = overlap.gameObject;
+            if (!IsInSameHierarchy(target, other) && CanBeWelded(other))
+                return other;
+        }
         return null;
     }
 
-    void UnweldImmediateChildren(GameObject target)
+    /// <summary>
+    /// Unwelds direct children and parent if applicable.
+    /// </summary>
+    private void UnweldImmediateConnections(GameObject target)
     {
-        List<GameObject> unwelded = new List<GameObject>();
-
         target = GetWeldableAncestor(target);
         if (target == null) return;
 
-        bool somethingWasUnwelded = false;
+        List<GameObject> affected = new();
 
         foreach (Transform child in target.transform)
         {
             if (IsWeldable(child.gameObject))
             {
-                unwelded.Add(child.gameObject);
+                affected.Add(child.gameObject);
                 child.SetParent(null, true);
-                somethingWasUnwelded = true;
             }
         }
 
         if (target.transform.parent)
         {
-            unwelded.Add(target.transform.parent.gameObject);
+            affected.Add(target.transform.parent.gameObject);
             target.transform.SetParent(null, true);
-            somethingWasUnwelded = true;
         }
 
-        if (somethingWasUnwelded)
-        {
-            unwelded.Add(target);
-        }
+        affected.Add(target);
 
-        //send events
-        foreach (GameObject unweldedItem in unwelded)
-        {
-            unweldedItem.GetComponent<IWeldable>()?.OnUnweld();
-        }
+        foreach (GameObject obj in affected)
+            obj.GetComponent<IWeldable>()?.OnUnweld();
     }
 
-    void RecursivelyUnweldHierarchy(GameObject target)
+    /// <summary>
+    /// Fully unwelds all weldable objects in the hierarchy.
+    /// </summary>
+    private void UnweldHierarchy(GameObject target)
     {
         Transform root = target.transform.root;
-        if (root == null) return;
+        if (!root) return;
 
         foreach (Transform t in root.GetComponentsInChildren<Transform>())
         {
             if (IsWeldable(t.gameObject))
-            {
                 t.SetParent(null, true);
-            }
         }
     }
 
-    void RecursivelyWeldOverlaps(GameObject target, List<GameObject> welded)
+    /// <summary>
+    /// Recursively welds overlapping weldable objects.
+    /// </summary>
+    private void WeldOverlappingObjects(GameObject origin, HashSet<GameObject> welded)
     {
-        if (target == null) return;
+        Queue<GameObject> queue = new();
+        HashSet<GameObject> visited = new();
 
-        List<GameObject> visited = new List<GameObject>();
-        Queue<GameObject> toVisit = new Queue<GameObject>();
-
-        bool somethingWasWelded = false;
-
-        toVisit.Enqueue(target);
-        while (toVisit.Count > 0)
+        queue.Enqueue(origin);
+        while (queue.Count > 0)
         {
-            GameObject candidate = toVisit.Dequeue();
+            GameObject current = queue.Dequeue();
+            if (!visited.Add(current)) continue;
+            if (!IsWeldable(current)) continue;
 
-            if (visited.Contains(candidate)) continue;
-            visited.Add(candidate);
-
-            if (!IsWeldable(candidate)) continue;
-
-            foreach (Collider collider in candidate.GetComponentsInChildren<Collider>())
+            foreach (Collider col in current.GetComponentsInChildren<Collider>())
             {
-                foreach (Collider overlap in FindOverlappingCollidersBySingleCollider(collider, maxAllowedPenetration))
+                foreach (Collider overlap in FindPenetratingColliders(col))
                 {
-                    if (IsInSameHierarchy(overlap.gameObject, target)) continue;
-
-                    Transform overlappingTransform = overlap.gameObject.transform;
-                    if (CanBeWelded(overlappingTransform.gameObject))
+                    GameObject other = overlap.gameObject;
+                    if (IsInSameHierarchy(origin, other) || !CanBeWelded(other)) continue;
+                    if (other.transform.parent == null)
                     {
-                        if (overlappingTransform.parent == null)
-                        {
-                            overlappingTransform.SetParent(candidate.transform);
-                            toVisit.Enqueue(overlap.gameObject);
-                            somethingWasWelded = true;
-
-                            welded.Add(overlap.gameObject);
-                        }
+                        other.transform.SetParent(current.transform, true);
+                        queue.Enqueue(other);
+                        welded.Add(other);
                     }
                 }
             }
         }
-
-        if (somethingWasWelded)
-        {
-            welded.Add(target);
-        }
-
+        welded.Add(origin);
     }
 
-    void Unweld(GameObject selected)
+    private void Unweld(GameObject selected)
     {
-        if (selected == null) return;
-        UnweldImmediateChildren(selected);
+        if (selected)
+            UnweldImmediateConnections(selected);
     }
 
-    void Weld(GameObject selected)
+    private void Weld(GameObject selected)
     {
-        if (selected == null) return;
+        if (!selected) return;
 
-        GameObject selectedRoot = GetTopmostWeldableAncestor(selected);
-        if (selectedRoot == null) return;
+        GameObject root = GetTopmostWeldableAncestor(selected);
+        if (!root) return;
 
         GameObject newParent = FindNewOverlappingWeldable(selected);
-        if (newParent == null) return;
+        if (!newParent) return;
 
-        RecursivelyUnweldHierarchy(selectedRoot);
-
-        List<GameObject> welded = new List<GameObject>();
-
-        welded.Add(selected);
-        if (!IsWelded(newParent))
-        {
-            welded.Add(newParent);
-        }
+        UnweldHierarchy(root);
         selected.transform.SetParent(newParent.transform, true);
 
-        RecursivelyWeldOverlaps(selected, welded);
+        HashSet<GameObject> welded = new() { selected };
+        if (!IsWelded(newParent)) welded.Add(newParent);
 
-        //send events
-        foreach (GameObject weldedItem in welded)
-        {
-            weldedItem.GetComponent<IWeldable>()?.OnWeld();
-        }
+        WeldOverlappingObjects(selected, welded);
+
+        foreach (var obj in welded)
+            obj.GetComponent<IWeldable>()?.OnWeld();
     }
-
-
 }

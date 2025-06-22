@@ -1169,7 +1169,7 @@ GameObject:
   - component: {fileID: 1238343773}
   - component: {fileID: 1238343777}
   - component: {fileID: 1238343779}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Button
   m_TagString: Weldable
   m_Icon: {fileID: 0}
@@ -1503,6 +1503,7 @@ GameObject:
   - component: {fileID: 1725536823}
   - component: {fileID: 1725536822}
   - component: {fileID: 1725536821}
+  - component: {fileID: 1725536825}
   m_Layer: 7
   m_Name: Motor
   m_TagString: Weldable
@@ -1600,6 +1601,49 @@ Transform:
   - {fileID: 227523390}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1725536825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1725536820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98fced3f32438472caf18f8d3c7005fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onWeld:
+    m_PersistentCalls:
+      m_Calls: []
+  onUnweld:
+    m_PersistentCalls:
+      m_Calls: []
+  onGrab:
+    m_PersistentCalls:
+      m_Calls: []
+  onRelease:
+    m_PersistentCalls:
+      m_Calls: []
+  onActivate:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 227523391}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Spinning
+          m_BoolArgument: 0
+        m_CallState: 2
+  onDeactivate:
+    m_PersistentCalls:
+      m_Calls: []
+  activationGroup: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1001 &1767067448
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1920,7 +1964,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7512766341956569682, guid: 2dba375a05c8b47fc9f34f6d8a05db9f, type: 3}
       propertyPath: onGrab.m_PersistentCalls.m_Calls.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7512766341956569682, guid: 2dba375a05c8b47fc9f34f6d8a05db9f, type: 3}
       propertyPath: onWeld.m_PersistentCalls.m_Calls.Array.size
@@ -1932,7 +1976,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7512766341956569682, guid: 2dba375a05c8b47fc9f34f6d8a05db9f, type: 3}
       propertyPath: onRelease.m_PersistentCalls.m_Calls.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7512766341956569682, guid: 2dba375a05c8b47fc9f34f6d8a05db9f, type: 3}
       propertyPath: onActivate.m_PersistentCalls.m_Calls.Array.size
@@ -2056,7 +2100,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7512766341956569682, guid: 2dba375a05c8b47fc9f34f6d8a05db9f, type: 3}
       propertyPath: onActivate.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: activate is called
+      value: activate was called
       objectReference: {fileID: 0}
     - target: {fileID: 7512766341956569682, guid: 2dba375a05c8b47fc9f34f6d8a05db9f, type: 3}
       propertyPath: onGrab.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
