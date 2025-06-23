@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
@@ -12,11 +13,19 @@ public class Seat : MonoBehaviour
     public KeyCode exitKey = KeyCode.Space;
     public float debounceDuration = 1f;
 
+    public UnityEvent OnSeatedPlayer;
+    public UnityEvent OnUnseatedPlayer;
+
     private Transform seatedPlayer;
     private Transform originalParent;
     private int originalLayer;
     private StarterAssets.FirstPersonController playerController;
     private float debounceTimer = 0f;
+
+    public GameObject GetSeatedPlayer()
+    {
+        return seatedPlayer.gameObject;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -25,7 +34,7 @@ public class Seat : MonoBehaviour
         SeatPlayer(other.transform);
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         UpdateDebounceTimer();
 
@@ -62,6 +71,16 @@ public class Seat : MonoBehaviour
         // Snap player to seat position and attach to seat
         player.SetPositionAndRotation(seatPoint.position, seatPoint.rotation);
         player.parent.SetParent(seatPoint);
+
+        OnSeatedPlayer?.Invoke();
+        OnSeat(player.gameObject);
+    }
+
+    protected virtual void OnSeat(GameObject player)
+    {
+    }
+    protected virtual void OnUnseat(GameObject player)
+    {
     }
 
     /// <summary>
@@ -104,9 +123,14 @@ public class Seat : MonoBehaviour
         // Restore original layer
         playerTransform.gameObject.layer = originalLayer;
 
+        GameObject player = seatedPlayer.gameObject;
+
         // Clear state and start debounce
         seatedPlayer = null;
         playerController = null;
         debounceTimer = debounceDuration;
+
+        OnUnseatedPlayer?.Invoke();
+        OnUnseat(player);
     }
 }
