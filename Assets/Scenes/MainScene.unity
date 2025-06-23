@@ -251,6 +251,7 @@ GameObject:
   - component: {fileID: 227523393}
   - component: {fileID: 227523392}
   - component: {fileID: 227523391}
+  - component: {fileID: 227523395}
   m_Layer: 0
   m_Name: Axis
   m_TagString: Untagged
@@ -369,6 +370,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 227523389}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &227523395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227523389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d7887b4078fd4034984863e597a24a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  steeringSettings:
+    invert: 0
+    makeAbsolute: 0
+    cutoffMin: -1
+    cutoffMax: 1
+    mappingMin: -1
+    mappingMax: 1
+  onSteer:
+    m_PersistentCalls:
+      m_Calls: []
+  throttlingSettings:
+    invert: 0
+    makeAbsolute: 0
+    cutoffMin: 0
+    cutoffMax: 1
+    mappingMin: 0
+    mappingMax: 4
+  onThrottle:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 227523391}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: set_speed
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &381296730
 GameObject:
   m_ObjectHideFlags: 0
@@ -1933,24 +1978,6 @@ MonoBehaviour:
   OnUnseatedPlayer:
     m_PersistentCalls:
       m_Calls: []
-  OnSteer:
-    m_PersistentCalls:
-      m_Calls: []
-  OnThrottle:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 381296731}
-        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
-        m_MethodName: set_speed
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!65 &1938241563
 BoxCollider:
   m_ObjectHideFlags: 0

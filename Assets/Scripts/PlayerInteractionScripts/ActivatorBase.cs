@@ -61,19 +61,8 @@ public class ActivatorBase : MonoBehaviour
     /// </summary>
     private List<IActivatable> FindAllActivatables()
     {
-        Transform root = GetTopmostParent(transform);
+        Transform root = transform.root;
         return new List<IActivatable>(root.GetComponentsInChildren<IActivatable>(true));
     }
 
-    /// <summary>
-    /// Traverses up the transform hierarchy to find the topmost parent.
-    /// </summary>
-    private Transform GetTopmostParent(Transform current)
-    {
-        while (current.parent != null)
-        {
-            current = current.parent;
-        }
-        return current;
-    }
 }
