@@ -11,6 +11,13 @@ public class ButtonScript : ActivatorBase, IWeldable
     private bool canBePressed = false;
     private bool isDebouncing = false;
 
+    private int originalLayer = 0;
+
+    void Awake()
+    {
+        originalLayer = gameObject.layer;
+    }
+
     /// <summary>
     /// Zet de zichtbaarheid van de knop aan of uit.
     /// </summary>
@@ -61,21 +68,19 @@ public class ButtonScript : ActivatorBase, IWeldable
 
     /// <summary>
     /// Wordt aangeroepen wanneer het object wordt gelast.
-    /// Zet de tag naar Untagged en maakt indrukken mogelijk.
     /// </summary>
     public void OnWeld()
     {
-        gameObject.tag = Tags.Untagged;
+        gameObject.layer = 0;
         canBePressed = true;
     }
 
     /// <summary>
     /// Wordt aangeroepen wanneer het object wordt losgelast.
-    /// Zet de tag naar Draggable en voorkomt indrukken.
     /// </summary>
     public void OnUnweld()
     {
-        gameObject.tag = Tags.Draggable;
+        gameObject.layer = originalLayer;
         canBePressed = false;
     }
 }

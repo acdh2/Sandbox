@@ -49,8 +49,6 @@ public class VehicleSeat : Seat, IWeldable
     {
         foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
         {
-            print(steer + "," + throttle);
-
             vehicleListener.OnSteer(steer);
             vehicleListener.OnThrottle(throttle);
         }

@@ -74,6 +74,7 @@ public class Seat : MonoBehaviour
 
         OnSeatedPlayer?.Invoke();
         OnSeat(player.gameObject);
+        NotifyOnSeatListeners();
     }
 
     protected virtual void OnSeat(GameObject player)
@@ -81,6 +82,22 @@ public class Seat : MonoBehaviour
     }
     protected virtual void OnUnseat(GameObject player)
     {
+    }
+
+    void NotifyOnUnseatListeners()
+    {
+        foreach (ISeatListener seatListener in transform.root.GetComponentsInChildren<ISeatListener>(true))
+        {
+            seatListener.OnUnseat();
+        }
+    }
+
+    void NotifyOnSeatListeners()
+    {
+        foreach (ISeatListener seatListener in transform.root.GetComponentsInChildren<ISeatListener>(true))
+        {
+            seatListener.OnSeat();
+        }
     }
 
     /// <summary>
@@ -105,6 +122,13 @@ public class Seat : MonoBehaviour
     /// </summary>
     private void ExitSeat()
     {
+        if (seatedPlayer == null) return;
+        GameObject player = seatedPlayer.gameObject;
+
+        OnUnseatedPlayer?.Invoke();
+        OnUnseat(player);
+        NotifyOnUnseatListeners();
+
         // Reactivate controls
         if (playerController != null)
             playerController.SetMovementEnabled(true);
@@ -123,14 +147,9 @@ public class Seat : MonoBehaviour
         // Restore original layer
         playerTransform.gameObject.layer = originalLayer;
 
-        GameObject player = seatedPlayer.gameObject;
-
         // Clear state and start debounce
         seatedPlayer = null;
         playerController = null;
         debounceTimer = debounceDuration;
-
-        OnUnseatedPlayer?.Invoke();
-        OnUnseat(player);
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class VehicleListener : MonoBehaviour, IVehicleListener
+public class VehicleListener : MonoBehaviour, IVehicleListener, ISeatListener
 {
     [System.Serializable]
     public struct ValuePreprocessing
@@ -37,6 +37,14 @@ public class VehicleListener : MonoBehaviour, IVehicleListener
     [Header("Throttle")]
     public ValuePreprocessing throttlingSettings;
     public UnityEvent<float> onThrottle;
+
+    public UnityEvent onSeat;
+
+    public UnityEvent onUnseat;
+
+    public void OnSeat() => onSeat?.Invoke();
+
+    public void OnUnseat() => onUnseat?.Invoke();
 
     void Reset()
     {
