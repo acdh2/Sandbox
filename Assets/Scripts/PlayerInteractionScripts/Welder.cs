@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class Welder : MonoBehaviour
 {
     private const float MaxPenetrationThreshold = 0.01f;
+    private const float WeldProximityThreshold = 0.01f;
 
     public string weldableTag;
 
@@ -83,7 +84,8 @@ public class Welder : MonoBehaviour
     public Collider[] FindPenetratingColliders(Collider collider)
     {
         Bounds bounds = collider.bounds;
-        Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents, collider.transform.rotation);
+        Vector3 fudge = new Vector3(WeldProximityThreshold, WeldProximityThreshold, WeldProximityThreshold);
+        Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents + fudge, collider.transform.rotation);
 
         List<Collider> result = new();
         foreach (var candidate in candidates)
@@ -99,6 +101,22 @@ public class Welder : MonoBehaviour
     /// Determines whether two colliders are penetrating beyond the threshold.
     /// </summary>
     public bool IsPenetrating(Collider a, Collider b)
+    {
+        if (Physics.ComputePenetration(
+            a, a.transform.position, a.transform.rotation,
+            b, b.transform.position, b.transform.rotation,
+            out _, out float distance))
+        {
+            float effectiveThreshold = MaxPenetrationThreshold - WeldProximityThreshold;
+            return distance >= effectiveThreshold;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool IsPenetratingOld(Collider a, Collider b)
     {
         return Physics.ComputePenetration(
             a, a.transform.position, a.transform.rotation,
