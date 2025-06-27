@@ -248,13 +248,10 @@ public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldable
             }
         }
 
-        print("test1");
         foreach (PositionalEvent positionalEvent in onWheelPosition)
         {
-            print(positionalEvent.position + ", " + wheelPosition);
             if (ArePositionsEquivalent(positionalEvent.position, wheelPosition))
             {
-        print("test3");
                 positionalEvent.onWheelPosition?.Invoke();
             }
         }
