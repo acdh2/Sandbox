@@ -21,10 +21,44 @@ public class VehicleSeat : Seat, IWeldable
     public void OnWeld()
     {
         SendData(0f, 0f);
+        //AddRigidbody(transform.root);
     }
     public void OnUnweld()
     {
         SendData(0f, 0f);
+        //RemoveRigidbody(transform.root);
+    }
+
+    void AddRigidbody(Transform transform)
+    {
+        transform.gameObject.AddComponent<Rigidbody>();
+    }
+
+    void RemoveRigidbody(Transform transform)
+    {
+        Rigidbody rb = transform.gameObject.GetComponent<Rigidbody>();
+        if (rb)
+        {
+            Destroy(rb);
+        }
+    }
+
+    protected override void NotifyOnUnseatListeners()
+    {
+        base.NotifyOnSeatListeners();
+        foreach (IVehicleListener vehicleListener in transform.root.GetComponentsInChildren<IVehicleListener>(true))
+        {
+            vehicleListener.OnUnseat();
+        }
+    }
+
+    protected override void NotifyOnSeatListeners()
+    {
+        base.NotifyOnSeatListeners();
+        foreach (IVehicleListener vehicleListener in transform.root.GetComponentsInChildren<IVehicleListener>(true))
+        {
+            vehicleListener.OnSeat();
+        }
     }
 
     void Start()
@@ -40,7 +74,7 @@ public class VehicleSeat : Seat, IWeldable
         {
             float xAxis = Input.GetAxis("Horizontal");
             float yAxis = Input.GetAxis("Vertical");
-            
+
             SendData(xAxis, yAxis);
         }
     }

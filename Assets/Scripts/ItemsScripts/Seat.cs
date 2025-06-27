@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
@@ -13,14 +14,16 @@ public class Seat : MonoBehaviour
     public KeyCode exitKey = KeyCode.Space;
     public float debounceDuration = 1f;
 
-    public UnityEvent OnSeatedPlayer;
-    public UnityEvent OnUnseatedPlayer;
+    public UnityEvent onSeat;
+    public UnityEvent onUnseat;
 
     private Transform seatedPlayer;
     private Transform originalParent;
     private int originalLayer;
     private StarterAssets.FirstPersonController playerController;
     private float debounceTimer = 0f;
+
+    public List<KeyCode> keysToCheck = new List<KeyCode>();
 
     public GameObject GetSeatedPlayer()
     {
@@ -34,8 +37,37 @@ public class Seat : MonoBehaviour
         SeatPlayer(other.transform);
     }
 
+    private void HandleKeyboardInput()
+    {
+        List<KeyCode> keysPressed = new List<KeyCode>();
+        foreach (KeyCode key in keysToCheck)
+        {
+            if (Input.GetKeyDown(key))
+            {
+                keysPressed.Add(key);
+            }
+        }
+        if (keysPressed.Count > 0) //this order is for performance, as iterating keyspressed is easier then iterating the entire hierarchy
+        {
+            foreach (IKeypressListener keyPressListener in transform.root.GetComponentsInChildren<IKeypressListener>(true))
+            {
+                foreach (KeyCode pressedKey in keysPressed)
+                {
+                    {
+                        keyPressListener.OnKeyPress(pressedKey);
+                    }
+                }
+            }
+        }
+    }
+
     protected virtual void Update()
     {
+        if (seatedPlayer != null)
+        {
+            HandleKeyboardInput();
+        }
+
         UpdateDebounceTimer();
 
         if (IsExitRequested())
@@ -72,7 +104,7 @@ public class Seat : MonoBehaviour
         player.SetPositionAndRotation(seatPoint.position, seatPoint.rotation);
         player.parent.SetParent(seatPoint);
 
-        OnSeatedPlayer?.Invoke();
+        onSeat?.Invoke();
         OnSeat(player.gameObject);
         NotifyOnSeatListeners();
     }
@@ -84,7 +116,7 @@ public class Seat : MonoBehaviour
     {
     }
 
-    void NotifyOnUnseatListeners()
+    protected virtual void NotifyOnUnseatListeners()
     {
         foreach (ISeatListener seatListener in transform.root.GetComponentsInChildren<ISeatListener>(true))
         {
@@ -92,7 +124,7 @@ public class Seat : MonoBehaviour
         }
     }
 
-    void NotifyOnSeatListeners()
+    protected virtual void NotifyOnSeatListeners()
     {
         foreach (ISeatListener seatListener in transform.root.GetComponentsInChildren<ISeatListener>(true))
         {
@@ -125,7 +157,7 @@ public class Seat : MonoBehaviour
         if (seatedPlayer == null) return;
         GameObject player = seatedPlayer.gameObject;
 
-        OnUnseatedPlayer?.Invoke();
+        onUnseat?.Invoke();
         OnUnseat(player);
         NotifyOnUnseatListeners();
 
