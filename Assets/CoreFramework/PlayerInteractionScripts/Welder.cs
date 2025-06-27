@@ -8,6 +8,7 @@ public class Welder : MonoBehaviour
     private const float WeldProximityThreshold = 0.01f;
 
     public string weldableTag;
+    public string weldBaseTag;
 
     private SelectionHandler selectionHandler;
 
@@ -48,6 +49,8 @@ public class Welder : MonoBehaviour
     /// Checks if the object is weldable by tag.
     /// </summary>
     public bool IsWeldable(GameObject obj) => obj.CompareTag(weldableTag);
+
+    public bool IsWeldBase(GameObject obj) => obj.CompareTag(weldBaseTag);
 
     /// <summary>
     /// Finds the nearest weldable ancestor in the hierarchy.
@@ -150,7 +153,7 @@ public class Welder : MonoBehaviour
     /// <summary>
     /// Unwelds direct children and parent if applicable.
     /// </summary>
-    private void UnweldImmediateConnections(GameObject target)
+    private void UnweldImmediateConnections2(GameObject target)
     {
         target = GetWeldableAncestor(target);
         if (target == null) return;
@@ -181,7 +184,7 @@ public class Welder : MonoBehaviour
     /// <summary>
     /// Fully unwelds all weldable objects in the hierarchy.
     /// </summary>
-    private void UnweldHierarchy(GameObject target)
+    private void UnweldHierarchy2(GameObject target)
     {
         Transform root = target.transform.root;
         if (!root) return;
@@ -196,7 +199,7 @@ public class Welder : MonoBehaviour
     /// <summary>
     /// Recursively welds overlapping weldable objects.
     /// </summary>
-    private void WeldOverlappingObjects(GameObject origin)
+    private void WeldOverlappingObjects2(GameObject origin)
     {
         Queue<GameObject> queue = new();
         HashSet<GameObject> visited = new();
@@ -288,10 +291,7 @@ public class Welder : MonoBehaviour
 
     private void Weld(GameObject selected)
     {
-        foreach (var dbg in Object.FindObjectsByType<HierarchyDebugger>(FindObjectsSortMode.None))
-        {
-            Object.DestroyImmediate(dbg);
-        }
+        if (!CanBeWelded(selected)) return;
 
         GameObject newParent = FindNewOverlappingWeldable(selected);
         if (newParent == null) return;
@@ -299,8 +299,6 @@ public class Welder : MonoBehaviour
         ReparentWeldableAncestors(selected);
 
         selected.transform.SetParent(newParent.transform, true);
-
-        selected.transform.root.gameObject.AddComponent<HierarchyDebugger>();
 
         foreach (IWeldable weldable in selected.transform.root.GetComponentsInChildren<IWeldable>())
         {
