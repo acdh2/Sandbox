@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 2713027125202468792}
   - component: {fileID: 8786325228266844228}
   - component: {fileID: 3989971621985628427}
-  - component: {fileID: 3849731400524029440}
+  - component: {fileID: 2274857785925318646}
   - component: {fileID: 7771698396681548908}
   - component: {fileID: 1704165964437141703}
   m_Layer: 7
@@ -443,7 +443,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &3849731400524029440
+--- !u!114 &2274857785925318646
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -452,15 +452,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8766631983524711834}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98fced3f32438472caf18f8d3c7005fa, type: 3}
+  m_Script: {fileID: 11500000, guid: 9212d6992e64743acac1c1dd9fcdde79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onWeld:
-    m_PersistentCalls:
-      m_Calls: []
-  onUnweld:
-    m_PersistentCalls:
-      m_Calls: []
   onGrab:
     m_PersistentCalls:
       m_Calls:
@@ -476,9 +470,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-  onRelease:
-    m_PersistentCalls:
-      m_Calls:
       - m_Target: {fileID: 3989971621985628427}
         m_TargetAssemblyTypeName: UnityEngine.Rigidbody, UnityEngine
         m_MethodName: set_isKinematic
@@ -491,7 +482,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  ObjectDescription: 
+  onRelease:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &7771698396681548908
 MonoBehaviour:
   m_ObjectHideFlags: 0

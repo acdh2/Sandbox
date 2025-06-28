@@ -159,9 +159,9 @@ public class DragHandler : MonoBehaviour
         targetPosition = ApplyPlacementConstraints(SnapToGrid(worldTargetPosition));
         //targetRotation = enableRotation ? GetSnappedRotation() : selectedTransform.rotation;
         if (allowRotation.X || allowRotation.Y || allowRotation.Z)
-            targetRotation = GetSnappedRotation();
+            targetRotation = GetDragRotation();
         else
-            targetRotation = selectedTransform.rotation;
+            targetRotation = Quaternion.Euler(GetSnappedRotation(selectedTransform.rotation.eulerAngles));
     }
 
     /// <summary>
@@ -196,31 +196,35 @@ public class DragHandler : MonoBehaviour
             }
     }
 
-    private Quaternion GetSnappedRotation()
-{
-    Quaternion rawRotation = cam.transform.rotation * rotationOffset;
-    Vector3 cameraEuler = rawRotation.eulerAngles;
-    Vector3 currentEuler = selectedTransform.rotation.eulerAngles;
+    private Quaternion GetDragRotation()
+    {
+        Quaternion rawRotation = cam.transform.rotation * rotationOffset;
+        Vector3 cameraEuler = rawRotation.eulerAngles;
+        Vector3 currentEuler = selectedTransform.rotation.eulerAngles;
 
-    Vector3 resultEuler = currentEuler;
+        Vector3 resultEuler = currentEuler;
 
-    if (allowRotation.X)
-        resultEuler.x = cameraEuler.x;
-    if (allowRotation.Y)
-        resultEuler.y = cameraEuler.y;
-    if (allowRotation.Z)
-        resultEuler.z = cameraEuler.z;
+        if (allowRotation.X)
+            resultEuler.x = cameraEuler.x;
+        if (allowRotation.Y)
+            resultEuler.y = cameraEuler.y;
+        if (allowRotation.Z)
+            resultEuler.z = cameraEuler.z;
 
-    // Apply snapping if enabled
-    if (rotationSnapDegrees.x > 0f)
-        resultEuler.x = Mathf.Round(resultEuler.x / rotationSnapDegrees.x) * rotationSnapDegrees.x;
-    if (rotationSnapDegrees.y > 0f)
-        resultEuler.y = Mathf.Round(resultEuler.y / rotationSnapDegrees.y) * rotationSnapDegrees.y;
-    if (rotationSnapDegrees.z > 0f)
-        resultEuler.z = Mathf.Round(resultEuler.z / rotationSnapDegrees.z) * rotationSnapDegrees.z;
+        return Quaternion.Euler(GetSnappedRotation(resultEuler));
+    }
 
-    return Quaternion.Euler(resultEuler);
-}
+    Vector3 GetSnappedRotation(Vector3 rotation) {
+        // Apply snapping if enabled
+        if (rotationSnapDegrees.x > 0f)
+            rotation.x = Mathf.Round(rotation.x / rotationSnapDegrees.x) * rotationSnapDegrees.x;
+        if (rotationSnapDegrees.y > 0f)
+            rotation.y = Mathf.Round(rotation.y / rotationSnapDegrees.y) * rotationSnapDegrees.y;
+        if (rotationSnapDegrees.z > 0f)
+            rotation.z = Mathf.Round(rotation.z / rotationSnapDegrees.z) * rotationSnapDegrees.z;
+
+        return rotation;
+    }
 
 
     /// <summary>

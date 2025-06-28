@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 8933044558672218055}
   - component: {fileID: 3005025116321078782}
   - component: {fileID: 4058689664537456268}
-  - component: {fileID: 7512766341956569682}
+  - component: {fileID: -6097471210406375552}
+  - component: {fileID: -4392418883044302641}
   m_Layer: 7
   m_Name: Block
   m_TagString: Weldable
@@ -109,7 +110,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7512766341956569682
+--- !u!114 &-6097471210406375552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -118,19 +119,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 2726265229994072523}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98fced3f32438472caf18f8d3c7005fa, type: 3}
+  m_Script: {fileID: 11500000, guid: c14a531c091ed47028b32c51846c2dd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onWeld:
-    m_PersistentCalls:
-      m_Calls: []
-  onUnweld:
-    m_PersistentCalls:
-      m_Calls: []
-  onGrab:
-    m_PersistentCalls:
-      m_Calls: []
-  onRelease:
-    m_PersistentCalls:
-      m_Calls: []
-  ObjectDescription: Generic building block
+  objectDescription: 
+  isDraggable: 1
+--- !u!114 &-4392418883044302641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2726265229994072523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 3

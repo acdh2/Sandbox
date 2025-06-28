@@ -1,23 +1,16 @@
 using UnityEngine;
 
-public class KeepUpright : MonoBehaviour, ISeatListener
+public class KeepUpright : MonoBehaviour
 {
+    public Transform playerCapsule;
 
     void LateUpdate()
     {
-        if (enabled)
+        if (transform.parent == null)
         {
-            transform.up = Vector3.up;
+            transform.rotation = Quaternion.identity;
+            float rotationY = playerCapsule.transform.rotation.eulerAngles.y;
+            playerCapsule.transform.rotation = Quaternion.Euler(0, rotationY, 0);
         }
-    }
-
-    public void OnSeat()
-    {
-        enabled = false;
-    }
-
-    public void OnUnseat()
-    {
-        enabled = true;
     }
 }
