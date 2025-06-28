@@ -40,41 +40,49 @@ public class ConditionalTrigger : MonoBehaviour
 
     public LogicalOperator conditionLogic = LogicalOperator.And;
     public List<TriggerEvent> triggerEvents = new List<TriggerEvent>();
- 
+
+    private HashSet<Collider> collidersInTrigger = new HashSet<Collider>();
+
     private void OnTriggerEnter(Collider other)
     {
-        if (enabled)
-        {
-            EvaluateTriggerEvents(other, true);
-        }
+        if (!enabled || other.gameObject == null)
+            return;
+
+        collidersInTrigger.Add(other);
+        EvaluateAllConditions(true);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (enabled)
-        {
-            EvaluateTriggerEvents(other, false);
-        }
+        if (!enabled || other.gameObject == null)
+            return;
+
+        collidersInTrigger.Remove(other);
+        EvaluateAllConditions(false);
     }
 
-    private void EvaluateTriggerEvents(Collider other, bool isEnter)
+    private void EvaluateAllConditions(bool isEnter)
     {
-        if (other.gameObject == null) return;
-
-        List<TriggerEvent> validEvents = new List<TriggerEvent>();
-
-        // Eerst: verzamel alle triggerEvents die voldoen aan de voorwaarden
         foreach (var triggerEvent in triggerEvents)
         {
-            bool result = (conditionLogic == LogicalOperator.And);
+            bool result = (conditionLogic == LogicalOperator.And) ? true : false;
 
             foreach (var condition in triggerEvent.conditions)
             {
-                bool conditionMet = EvaluateCondition(other, condition);
+                bool anyMatch = false;
+
+                foreach (var col in collidersInTrigger)
+                {
+                    if (EvaluateCondition(col, condition))
+                    {
+                        anyMatch = true;
+                        break;
+                    }
+                }
 
                 if (conditionLogic == LogicalOperator.And)
                 {
-                    if (!conditionMet)
+                    if (!anyMatch)
                     {
                         result = false;
                         break;
@@ -82,7 +90,7 @@ public class ConditionalTrigger : MonoBehaviour
                 }
                 else // LogicalOperator.Or
                 {
-                    if (conditionMet)
+                    if (anyMatch)
                     {
                         result = true;
                         break;
@@ -92,30 +100,12 @@ public class ConditionalTrigger : MonoBehaviour
 
             if (result)
             {
-                validEvents.Add(triggerEvent);
+                if (isEnter)
+                    triggerEvent.onTriggerEnter?.Invoke();
+                else
+                    triggerEvent.onTriggerExit?.Invoke();
             }
         }
-
-        // Daarna: activeer alle events pas ná de evaluatie
-        foreach (var evt in validEvents)
-        {
-            if (isEnter)
-                evt.onTriggerEnter?.Invoke();
-            else
-                evt.onTriggerExit?.Invoke();
-
-            //StartCoroutine(ActivateNextFrame(evt, isEnter));
-        }
-    }
-
-    private IEnumerator ActivateNextFrame(TriggerEvent triggerEvent, bool isEnter)
-    {
-        yield return null;
-
-        if (isEnter)
-            triggerEvent.onTriggerEnter?.Invoke();
-        else
-            triggerEvent.onTriggerExit?.Invoke();
     }
 
     private bool EvaluateCondition(Collider other, FilterCondition condition)
@@ -157,8 +147,15 @@ public class ConditionalTrigger : MonoBehaviour
                 Animator animator = other.GetComponent<Animator>();
                 if (animator != null)
                 {
-                    AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                    match = stateInfo.IsName(condition.value);
+                    for (int i = 0; i < animator.layerCount; i++)
+                    {
+                        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(i);
+                        if (stateInfo.IsName(condition.value))
+                        {
+                            match = true;
+                            break;
+                        }
+                    }
                 }
                 break;
         }
@@ -168,7 +165,6 @@ public class ConditionalTrigger : MonoBehaviour
 
     private void Reset()
     {
-        // Ensure collider is marked as trigger
         Collider col = GetComponent<Collider>();
         if (col != null)
             col.isTrigger = true;

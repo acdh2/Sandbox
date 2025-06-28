@@ -32,7 +32,7 @@ public class DisplayItemInfo : MonoBehaviour
             if (item != null)
             {
                 string name = item.name;
-                string description = item.GetComponent<SandboxBase>()?.ObjectDescription ?? "";
+                string description = item.GetComponent<Selectable>()?.ObjectDescription ?? "";
 
                 itemName.enabled = true;
                 itemDescription.enabled = true;

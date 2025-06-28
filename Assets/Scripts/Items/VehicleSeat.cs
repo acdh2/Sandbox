@@ -18,14 +18,16 @@ public class VehicleSeat : Seat, IWeldable
         isActive = false;
     }
 
-    public void OnWeld()
+    public override void OnWeld()
     {
+        base.OnWeld();
         SendData(0f, 0f);
         //AddRigidbody(transform.root);
     }
-    public void OnUnweld()
+    public override void OnUnweld()
     {
         SendData(0f, 0f);
+        base.OnUnweld();
         //RemoveRigidbody(transform.root);
     }
 

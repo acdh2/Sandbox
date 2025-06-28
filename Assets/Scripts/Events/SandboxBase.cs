@@ -13,8 +13,6 @@ public class SandboxBase : MonoBehaviour, IWeldable, IGrabbable
     public UnityEvent onGrab;
     public UnityEvent onRelease;
 
-    public string ObjectDescription = "";
-
     // --- IWeldable interface implementation ---
 
     /// <summary>

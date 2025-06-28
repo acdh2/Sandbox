@@ -98,6 +98,9 @@ public class DragHandler : MonoBehaviour
         GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
 
+        var selectable = selectedObject.GetComponent<Selectable>();
+        if (selectable == null || !selectable.IsDraggable) return;
+
         selectedTransform = selectedObject.transform.root;
         localOffset = cam.transform.InverseTransformPoint(selectedTransform.position);
         selectionHandler.LockSelection();

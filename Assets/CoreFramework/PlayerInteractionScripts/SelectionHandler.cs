@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// Handles object selection using raycasting against objects on specified layers (draggableLayers).
+/// Handles object selection using raycasting against objects that have a Selectable component.
 /// Applies a temporary selection layer for highlighting and restores original layers on deselection.
 /// </summary>
 public class SelectionHandler : MonoBehaviour
 {
     [Header("Selection Settings")]
-    [Tooltip("Which layers are considered draggable/selectable.")]
-    public LayerMask draggableLayers;
+    [Tooltip("Layer used for visual feedback on selected objects.")]
+    public string selectionLayerName = "Selection";
 
     public GameObject CurrentSelection { get; private set; }
 
@@ -23,7 +23,7 @@ public class SelectionHandler : MonoBehaviour
     private void Start()
     {
         cam = Camera.main;
-        selectionLayer = LayerMask.NameToLayer("Selection");
+        selectionLayer = LayerMask.NameToLayer(selectionLayerName);
     }
 
     private void Update()
@@ -31,7 +31,7 @@ public class SelectionHandler : MonoBehaviour
         if (selectionLocked)
             return;
 
-        GameObject hoveredObject = GetClosestInteractableUnderCursor();
+        GameObject hoveredObject = GetSelectableUnderCursor();
 
         if (hoveredObject != null)
             SetSelection(hoveredObject);
@@ -45,80 +45,43 @@ public class SelectionHandler : MonoBehaviour
 
     private void SetSelection(GameObject newSelection)
     {
-        
-        //if (CurrentSelection == newSelection)
-          //  return;
+        // if (CurrentSelection == newSelection) 
+        //     return;
 
         RestoreOriginalLayers();
-
         CurrentSelection = newSelection;
 
         if (CurrentSelection != null)
             ApplySelectionLayer(CurrentSelection);
-
-        //OnSelectionChanged?.Invoke(CurrentSelection);
     }
 
-    private GameObject GetDraggableAncestor(GameObject item)
+    private GameObject GetSelectableUnderCursor()
     {
-        Transform currentTransform = item.transform;
-
-        while (currentTransform != null)
-        {
-            GameObject candidate = currentTransform.gameObject;
-
-            bool isDraggable = ((draggableLayers.value & (1 << candidate.layer)) != 0) ||
-                (candidate.layer == selectionLayer);
-            //bool isCurrentSelection = (candidate == CurrentSelection && candidate.layer == selectionLayer);
-
-            if (isDraggable)
-            {
-                return candidate;
-            }
-
-            currentTransform = currentTransform.parent;
-        }
-
-        return null;
-    }
-
-    private GameObject GetClosestInteractableUnderCursor()
-    {
-        int combinedLayerMask = draggableLayers | (1 << selectionLayer);
-
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit[] hits = Physics.RaycastAll(ray, 100f, combinedLayerMask);
+        RaycastHit[] hits = Physics.RaycastAll(ray, 100f, ~0); // All layers
 
         GameObject closest = null;
         float closestDistance = float.MaxValue;
 
         foreach (var hit in hits)
         {
-            GameObject candidate = GetDraggableAncestor(hit.collider.gameObject);
-            if (candidate == null) continue;
+            Selectable selectable = hit.collider.GetComponentInParent<Selectable>();
+            if (selectable == null)
+                continue;
 
             float distance = hit.distance;
             if (distance < closestDistance)
             {
                 closestDistance = distance;
-                closest = candidate;
+                closest = selectable.gameObject;
             }
         }
 
         return closest;
     }
 
-
     private void ApplySelectionLayer(GameObject root)
     {
-        // root = GetDraggableRoot(root.transform.root.gameObject);
-        // if (root)
-        // {
-        //     if (!originalLayer.ContainsKey(root))
-        //         originalLayer[root] = root.layer;
-        //     root.layer = selectionLayer;
-        // }
-
         Stack<GameObject> stack = new();
         stack.Push(root.transform.root.gameObject);
 
@@ -140,11 +103,8 @@ public class SelectionHandler : MonoBehaviour
     {
         foreach (var kvp in originalLayer)
         {
-            GameObject obj = kvp.Key;
-            int original = kvp.Value;
-
-            if (obj != null)
-                obj.layer = original;
+            if (kvp.Key != null)
+                kvp.Key.layer = kvp.Value;
         }
         originalLayer.Clear();
     }

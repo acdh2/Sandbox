@@ -12,10 +12,12 @@ GameObject:
   - component: {fileID: 9560784387265569}
   - component: {fileID: 7473830395751424913}
   - component: {fileID: 1572395693587400522}
+  - component: {fileID: 39429379057153637}
+  - component: {fileID: 1621465480065102907}
   - component: {fileID: 5671283666518170462}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: VehicleSeat
-  m_TagString: Weldable
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -110,6 +112,33 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.8, y: 0.4, z: 0.3}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &39429379057153637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5305943669542099556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c14a531c091ed47028b32c51846c2dd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectDescription: A vehicle seat
+  isDraggable: 1
+--- !u!114 &1621465480065102907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5305943669542099556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 1
 --- !u!114 &5671283666518170462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,7 +161,7 @@ MonoBehaviour:
   onUnseat:
     m_PersistentCalls:
       m_Calls: []
-  keysToCheck: 
+  keysToCheck: 7700000073000000
 --- !u!1 &7832751060686914716
 GameObject:
   m_ObjectHideFlags: 0

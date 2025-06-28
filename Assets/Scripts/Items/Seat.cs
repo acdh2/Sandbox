@@ -6,7 +6,7 @@ using System.Collections.Generic;
 /// Allows a player to sit on a seat when entering a trigger zone.
 /// Pressing a key exits the seat and restores player control.
 /// </summary>
-public class Seat : MonoBehaviour
+public class Seat : MonoBehaviour, IWeldable
 {
     [Header("Seat Settings")]
     public Transform seatPoint;
@@ -23,11 +23,22 @@ public class Seat : MonoBehaviour
     private StarterAssets.FirstPersonController playerController;
     private float debounceTimer = 0f;
 
+    private bool isWelded;
+
     public List<KeyCode> keysToCheck = new List<KeyCode>();
 
     public GameObject GetSeatedPlayer()
     {
         return seatedPlayer.gameObject;
+    }
+
+    public virtual void OnWeld()
+    {
+        isWelded = true;
+    }
+    public virtual void OnUnweld()
+    {
+        isWelded = false;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -79,9 +90,10 @@ public class Seat : MonoBehaviour
     /// </summary>
     private bool CanSeatPlayer(Collider other)
     {
-        return seatedPlayer == null &&
-               debounceTimer <= 0f &&
-               other.CompareTag(playerTag);
+        return isWelded &&
+                seatedPlayer == null &&
+                debounceTimer <= 0f &&
+                other.CompareTag(playerTag);
     }
 
     /// <summary>
