@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 
-public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldable
+public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldListener
 {
     [System.Serializable]
     public enum WheelPosition

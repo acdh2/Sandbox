@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
-public class VehicleSeat : Seat, IWeldable
+public class VehicleSeat : Seat, IWeldListener
 {
     private bool isActive = false;
 

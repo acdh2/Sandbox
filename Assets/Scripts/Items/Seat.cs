@@ -6,7 +6,7 @@ using System.Collections.Generic;
 /// Allows a player to sit on a seat when entering a trigger zone.
 /// Pressing a key exits the seat and restores player control.
 /// </summary>
-public class Seat : MonoBehaviour, IWeldable
+public class Seat : MonoBehaviour, IWeldListener
 {
     [Header("Seat Settings")]
     public Transform seatPoint;

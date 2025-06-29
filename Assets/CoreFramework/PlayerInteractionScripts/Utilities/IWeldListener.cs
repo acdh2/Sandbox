@@ -1,6 +1,6 @@
 //using UnityEngine;
 
-public interface IWeldable
+public interface IWeldListener
 {
     void OnWeld();
     void OnUnweld();

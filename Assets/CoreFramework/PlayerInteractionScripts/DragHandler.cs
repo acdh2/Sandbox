@@ -1,5 +1,6 @@
 //EDITED
 
+using NUnit.Framework;
 using UnityEngine;
 
 public enum DragState
@@ -52,6 +53,7 @@ public class DragHandler : MonoBehaviour
     //private bool originalKinematicState;
 
     private DragState currentState = DragState.Idle;
+    public DragState CurrentState => currentState;
 
     void Start()
     {
@@ -62,9 +64,21 @@ public class DragHandler : MonoBehaviour
     void Update()
     {
         HandleInput();
+        HandleRotation();
     }
 
-    public DragState CurrentState => currentState;
+    private void HandleRotation()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            if (selectedTransform != null)
+            {
+                Vector3 rotation = selectedTransform.rotation.eulerAngles;
+                rotation.y += 90;
+                selectedTransform.rotation = Quaternion.Euler(GetSnappedRotation(rotation));
+            }
+        }
+    }
 
     /// <summary>
     /// Handles mouse input depending on the current drag state.

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class WeldListener : MonoBehaviour, IWeldable
+public class WeldListener : MonoBehaviour, IWeldListener
 {
     [Header("Weld & Grab Events")]
     public UnityEvent onWeld;
