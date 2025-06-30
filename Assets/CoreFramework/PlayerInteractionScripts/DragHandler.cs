@@ -2,6 +2,7 @@
 
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum DragState
 {
@@ -27,6 +28,9 @@ public class DragHandler : MonoBehaviour
     [Header("Grid Settings")]
     public Vector3 gridSize = Vector3.one;
     public Vector3 gridCenter = Vector3.zero;
+
+    [Header("Placement Constraints")]
+    public float minY = 0f;    
 
     //[Header("Rotation Settings")]
     //public bool enableRotation = true;
@@ -69,7 +73,7 @@ public class DragHandler : MonoBehaviour
 
     private void HandleRotation()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (InputSystem.GetButtonDown(InputButton.Rotate))
         {
             if (selectedTransform != null)
             {
@@ -88,14 +92,14 @@ public class DragHandler : MonoBehaviour
         switch (currentState)
         {
             case DragState.Idle:
-                if (Input.GetMouseButtonDown(0))
+                if (InputSystem.GetPointerDown())
                     TryStartDragging();
                 break;
 
             case DragState.Dragging:
-                if (selectedTransform == null || Input.GetMouseButtonUp(0))
+                if (selectedTransform == null || InputSystem.GetPointerUp())
                     StopDragging();
-                else if (selectedTransform != null || Input.GetMouseButton(0))
+                else if (selectedTransform != null || InputSystem.GetPointerHeld())
                 {
                     UpdateTargetTransform();
                     ApplyTransformToSelection();
@@ -162,6 +166,27 @@ public class DragHandler : MonoBehaviour
     {
         targetObject.GetComponent<IGrabbable>()?.OnRelease();
     }
+
+    private Vector3 ApplyPlacementConstraints(Vector3 position)
+    {
+        if (selectedTransform != null)
+        {
+            // Haal de bounding box op van het object in wereldruimte
+            Renderer renderer = selectedTransform.GetComponentInChildren<Renderer>();
+            if (renderer != null)
+            {
+                Bounds bounds = renderer.bounds;
+                float bottomY = position.y + (bounds.min.y - selectedTransform.position.y);
+                float offsetY = minY - bottomY;
+                if (offsetY > 0f)
+                {
+                    position.y += offsetY;
+                }
+            }
+        }
+
+        return position;
+    }    
 
     /// <summary>
     /// Updates the target position and rotation for the dragged object.
@@ -299,11 +324,11 @@ public class DragHandler : MonoBehaviour
     /// <summary>
     /// Applies any boundary constraints to the placement position.
     /// </summary>
-    private Vector3 ApplyPlacementConstraints(Vector3 position)
-    {
-        //position.y = Mathf.Max(0.5f, position.y); // Prevent sinking below floor
-        return position;
-    }
+    // private Vector3 ApplyPlacementConstraints(Vector3 position)
+    // {
+    //     //position.y = Mathf.Max(0.5f, position.y); // Prevent sinking below floor
+    //     return position;
+    // }
 
     /// <summary>
     /// Returns true if the given quaternion is approximately normalized.
