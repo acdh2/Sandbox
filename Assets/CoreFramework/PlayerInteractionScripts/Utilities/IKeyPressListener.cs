@@ -1,5 +1,5 @@
 public interface IKeypressListener
 {
-    void OnKeyPress(UnityEngine.KeyCode keyCode);    
+    void OnKeyPress(UnityEngine.InputSystem.Key keyCode);    
 }
 

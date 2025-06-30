@@ -57,7 +57,7 @@ public class SelectionHandler : MonoBehaviour
 
     private GameObject GetSelectableUnderCursor()
     {
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        Ray ray = cam.ScreenPointToRay(InputSystem.GetPointerPosition());
         RaycastHit[] hits = Physics.RaycastAll(ray, 100f, ~0); // All layers
 
         GameObject closest = null;

@@ -25,7 +25,7 @@ public class CrossHairPositioning : MonoBehaviour
             Vector2 mousePos;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvas.transform as RectTransform,
-                Input.mousePosition,
+                InputSystem.GetPointerPosition(),
                 canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
                 out mousePos))
             {

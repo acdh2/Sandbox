@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
@@ -11,7 +12,6 @@ public class Seat : MonoBehaviour, IWeldListener
     [Header("Seat Settings")]
     public Transform seatPoint;
     public string playerTag = "Player";
-    public KeyCode exitKey = KeyCode.Space;
     public float debounceDuration = 1f;
 
     public UnityEvent onSeat;
@@ -25,7 +25,7 @@ public class Seat : MonoBehaviour, IWeldListener
 
     private bool isWelded;
 
-    public List<KeyCode> keysToCheck = new List<KeyCode>();
+    public List<Key> keysToCheck = new List<Key>();
 
     public GameObject GetSeatedPlayer()
     {
@@ -50,10 +50,12 @@ public class Seat : MonoBehaviour, IWeldListener
 
     private void HandleKeyboardInput()
     {
-        List<KeyCode> keysPressed = new List<KeyCode>();
-        foreach (KeyCode key in keysToCheck)
+        //TODO: REPLACE WITH NEW INPUT SYSTEM
+
+        List<Key> keysPressed = new List<Key>();
+        foreach (Key key in keysToCheck)
         {
-            if (Input.GetKeyDown(key))
+            if (Keyboard.current[key].wasPressedThisFrame)
             {
                 keysPressed.Add(key);
             }
@@ -62,7 +64,7 @@ public class Seat : MonoBehaviour, IWeldListener
         {
             foreach (IKeypressListener keyPressListener in transform.root.GetComponentsInChildren<IKeypressListener>(true))
             {
-                foreach (KeyCode pressedKey in keysPressed)
+                foreach (Key pressedKey in keysPressed)
                 {
                     {
                         keyPressListener.OnKeyPress(pressedKey);
@@ -158,7 +160,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     private bool IsExitRequested()
     {
-        return seatedPlayer != null && Input.GetKeyDown(exitKey);
+        return seatedPlayer != null && InputSystem.GetButtonDown(InputButton.Jump);
     }
 
     /// <summary>

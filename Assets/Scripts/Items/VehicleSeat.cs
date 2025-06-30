@@ -74,8 +74,8 @@ public class VehicleSeat : Seat, IWeldListener
 
         if (isActive)
         {
-            float xAxis = Input.GetAxis("Horizontal");
-            float yAxis = Input.GetAxis("Vertical");
+            float xAxis = InputSystem.GetAxis(InputAxis.Horizontal);
+            float yAxis = InputSystem.GetAxis(InputAxis.Vertical);
 
             SendData(xAxis, yAxis);
         }

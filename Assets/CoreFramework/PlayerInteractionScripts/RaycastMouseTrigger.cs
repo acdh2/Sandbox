@@ -25,13 +25,13 @@ public class RaycastMouseTrigger : MonoBehaviour
     private void Update()
     {
         // Check for left mouse button press
-        if (Input.GetMouseButtonDown(0))
+        if (InputSystem.GetPointerDown())
         {
             GetMouseEventTarget()?.OnMouseDown();
         }
 
         // Check for left mouse button release
-        if (Input.GetMouseButtonUp(0))
+        if (InputSystem.GetPointerUp())
         {
             GetMouseEventTarget()?.OnMouseUp();
         }

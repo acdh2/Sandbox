@@ -18,10 +18,10 @@ public class Welder : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        if (InputSystem.GetButtonDown(InputButton.Weld))
             Weld(selectionHandler.CurrentSelection);
 
-        if (Input.GetKeyDown(KeyCode.U))
+        if (InputSystem.GetButtonDown(InputButton.Unweld))
             Unweld(selectionHandler.CurrentSelection);
     }
 
