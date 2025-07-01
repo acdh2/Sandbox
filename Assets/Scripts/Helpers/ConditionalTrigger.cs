@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ConditionalTrigger : MonoBehaviour
+public class ConditionalEvent : MonoBehaviour
 {
+    [System.Serializable]
     public enum ConditionType
     {
         ObjectName,
@@ -24,14 +25,9 @@ public class ConditionalTrigger : MonoBehaviour
         public bool negate;
     }
 
-    [Serializable]
-    public class TriggerEvent
-    {
-        public List<FilterCondition> conditions = new List<FilterCondition>();
-        public UnityEvent onTriggerEnter;
-        public UnityEvent onTriggerExit;
-    }
+    public List<FilterCondition> conditions = new List<FilterCondition>();
 
+    [System.Serializable]
     public enum LogicalOperator
     {
         And,
@@ -39,7 +35,10 @@ public class ConditionalTrigger : MonoBehaviour
     }
 
     public LogicalOperator conditionLogic = LogicalOperator.And;
-    public List<TriggerEvent> triggerEvents = new List<TriggerEvent>();
+
+    public bool autoTrigger = true;
+
+    public UnityEvent onConditionsMet;
 
     private HashSet<Collider> collidersInTrigger = new HashSet<Collider>();
 
@@ -49,7 +48,11 @@ public class ConditionalTrigger : MonoBehaviour
             return;
 
         collidersInTrigger.Add(other);
-        EvaluateAllConditions(true);
+
+        if (autoTrigger)
+        {
+            Evaluate();
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -58,53 +61,51 @@ public class ConditionalTrigger : MonoBehaviour
             return;
 
         collidersInTrigger.Remove(other);
-        EvaluateAllConditions(false);
+
+        if (autoTrigger)
+        {
+            Evaluate();
+        }
     }
 
-    private void EvaluateAllConditions(bool isEnter)
+    private void Evaluate()
     {
-        foreach (var triggerEvent in triggerEvents)
+        bool result = (conditionLogic == LogicalOperator.And) ? true : false;
+
+        foreach (var condition in conditions)
         {
-            bool result = (conditionLogic == LogicalOperator.And) ? true : false;
+            bool anyMatch = false;
 
-            foreach (var condition in triggerEvent.conditions)
+            foreach (var col in collidersInTrigger)
             {
-                bool anyMatch = false;
-
-                foreach (var col in collidersInTrigger)
+                if (EvaluateCondition(col, condition))
                 {
-                    if (EvaluateCondition(col, condition))
-                    {
-                        anyMatch = true;
-                        break;
-                    }
-                }
-
-                if (conditionLogic == LogicalOperator.And)
-                {
-                    if (!anyMatch)
-                    {
-                        result = false;
-                        break;
-                    }
-                }
-                else // LogicalOperator.Or
-                {
-                    if (anyMatch)
-                    {
-                        result = true;
-                        break;
-                    }
+                    anyMatch = true;
+                    break;
                 }
             }
 
-            if (result)
+            if (conditionLogic == LogicalOperator.And)
             {
-                if (isEnter)
-                    triggerEvent.onTriggerEnter?.Invoke();
-                else
-                    triggerEvent.onTriggerExit?.Invoke();
+                if (!anyMatch)
+                {
+                    result = false;
+                    break;
+                }
             }
+            else // LogicalOperator.Or
+            {
+                if (anyMatch)
+                {
+                    result = true;
+                    break;
+                }
+            }
+        }
+
+        if (result)
+        {
+            onConditionsMet?.Invoke();
         }
     }
 
