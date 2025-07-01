@@ -128,7 +128,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Rotate"",
+                    ""name"": ""Rotate1"",
                     ""type"": ""Button"",
                     ""id"": ""3ca59cfe-3665-4026-894c-54bca518723a"",
                     ""expectedControlType"": """",
@@ -162,6 +162,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Rotate2"",
+                    ""type"": ""Button"",
+                    ""id"": ""9d12c8e9-bf4e-460a-b71b-a631a245df00"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -216,7 +225,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Rotate"",
+                    ""action"": ""Rotate1"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -296,6 +305,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""VehicleAxisHorizontal"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c7b20dbf-06b8-4441-8c28-946799c4dc8b"",
+                    ""path"": ""<Keyboard>/t"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -308,10 +328,11 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Default_Unweld = m_Default.FindAction("Unweld", throwIfNotFound: true);
         m_Default_PointerPosition = m_Default.FindAction("PointerPosition", throwIfNotFound: true);
         m_Default_PointerPress = m_Default.FindAction("PointerPress", throwIfNotFound: true);
-        m_Default_Rotate = m_Default.FindAction("Rotate", throwIfNotFound: true);
+        m_Default_Rotate1 = m_Default.FindAction("Rotate1", throwIfNotFound: true);
         m_Default_Jump = m_Default.FindAction("Jump", throwIfNotFound: true);
         m_Default_VehicleAxisVertical = m_Default.FindAction("VehicleAxisVertical", throwIfNotFound: true);
         m_Default_VehicleAxisHorizontal = m_Default.FindAction("VehicleAxisHorizontal", throwIfNotFound: true);
+        m_Default_Rotate2 = m_Default.FindAction("Rotate2", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -396,10 +417,11 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Default_Unweld;
     private readonly InputAction m_Default_PointerPosition;
     private readonly InputAction m_Default_PointerPress;
-    private readonly InputAction m_Default_Rotate;
+    private readonly InputAction m_Default_Rotate1;
     private readonly InputAction m_Default_Jump;
     private readonly InputAction m_Default_VehicleAxisVertical;
     private readonly InputAction m_Default_VehicleAxisHorizontal;
+    private readonly InputAction m_Default_Rotate2;
     /// <summary>
     /// Provides access to input actions defined in input action map "Default".
     /// </summary>
@@ -428,9 +450,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @PointerPress => m_Wrapper.m_Default_PointerPress;
         /// <summary>
-        /// Provides access to the underlying input action "Default/Rotate".
+        /// Provides access to the underlying input action "Default/Rotate1".
         /// </summary>
-        public InputAction @Rotate => m_Wrapper.m_Default_Rotate;
+        public InputAction @Rotate1 => m_Wrapper.m_Default_Rotate1;
         /// <summary>
         /// Provides access to the underlying input action "Default/Jump".
         /// </summary>
@@ -443,6 +465,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Default/VehicleAxisHorizontal".
         /// </summary>
         public InputAction @VehicleAxisHorizontal => m_Wrapper.m_Default_VehicleAxisHorizontal;
+        /// <summary>
+        /// Provides access to the underlying input action "Default/Rotate2".
+        /// </summary>
+        public InputAction @Rotate2 => m_Wrapper.m_Default_Rotate2;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -481,9 +507,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @PointerPress.started += instance.OnPointerPress;
             @PointerPress.performed += instance.OnPointerPress;
             @PointerPress.canceled += instance.OnPointerPress;
-            @Rotate.started += instance.OnRotate;
-            @Rotate.performed += instance.OnRotate;
-            @Rotate.canceled += instance.OnRotate;
+            @Rotate1.started += instance.OnRotate1;
+            @Rotate1.performed += instance.OnRotate1;
+            @Rotate1.canceled += instance.OnRotate1;
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
@@ -493,6 +519,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @VehicleAxisHorizontal.started += instance.OnVehicleAxisHorizontal;
             @VehicleAxisHorizontal.performed += instance.OnVehicleAxisHorizontal;
             @VehicleAxisHorizontal.canceled += instance.OnVehicleAxisHorizontal;
+            @Rotate2.started += instance.OnRotate2;
+            @Rotate2.performed += instance.OnRotate2;
+            @Rotate2.canceled += instance.OnRotate2;
         }
 
         /// <summary>
@@ -516,9 +545,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @PointerPress.started -= instance.OnPointerPress;
             @PointerPress.performed -= instance.OnPointerPress;
             @PointerPress.canceled -= instance.OnPointerPress;
-            @Rotate.started -= instance.OnRotate;
-            @Rotate.performed -= instance.OnRotate;
-            @Rotate.canceled -= instance.OnRotate;
+            @Rotate1.started -= instance.OnRotate1;
+            @Rotate1.performed -= instance.OnRotate1;
+            @Rotate1.canceled -= instance.OnRotate1;
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
@@ -528,6 +557,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @VehicleAxisHorizontal.started -= instance.OnVehicleAxisHorizontal;
             @VehicleAxisHorizontal.performed -= instance.OnVehicleAxisHorizontal;
             @VehicleAxisHorizontal.canceled -= instance.OnVehicleAxisHorizontal;
+            @Rotate2.started -= instance.OnRotate2;
+            @Rotate2.performed -= instance.OnRotate2;
+            @Rotate2.canceled -= instance.OnRotate2;
         }
 
         /// <summary>
@@ -597,12 +629,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPointerPress(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Rotate" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "Rotate1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnRotate(InputAction.CallbackContext context);
+        void OnRotate1(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Jump" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
@@ -624,5 +656,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnVehicleAxisHorizontal(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Rotate2" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRotate2(InputAction.CallbackContext context);
     }
 }

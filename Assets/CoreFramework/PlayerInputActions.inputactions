@@ -42,7 +42,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Rotate",
+                    "name": "Rotate1",
                     "type": "Button",
                     "id": "3ca59cfe-3665-4026-894c-54bca518723a",
                     "expectedControlType": "",
@@ -76,6 +76,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Rotate2",
+                    "type": "Button",
+                    "id": "9d12c8e9-bf4e-460a-b71b-a631a245df00",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -130,7 +139,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Rotate",
+                    "action": "Rotate1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -210,6 +219,17 @@
                     "action": "VehicleAxisHorizontal",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "c7b20dbf-06b8-4441-8c28-946799c4dc8b",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Rotate2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

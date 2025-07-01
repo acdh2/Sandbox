@@ -71,16 +71,25 @@ public class DragHandler : MonoBehaviour
         HandleRotation();
     }
 
+    private void ApplyRotation(float x, float y, float z)
+    {
+        if (selectedTransform != null)
+        {
+            Vector3 rotation = selectedTransform.rotation.eulerAngles;
+            rotation += new Vector3(x, y, z);
+            selectedTransform.rotation = Quaternion.Euler(GetSnappedRotation(rotation));
+        }
+    }
+
     private void HandleRotation()
     {
-        if (InputSystem.GetButtonDown(InputButton.Rotate))
+        if (InputSystem.GetButtonDown(InputButton.Rotate1))
         {
-            if (selectedTransform != null)
-            {
-                Vector3 rotation = selectedTransform.rotation.eulerAngles;
-                rotation.y += 90;
-                selectedTransform.rotation = Quaternion.Euler(GetSnappedRotation(rotation));
-            }
+            ApplyRotation(0, 90, 0);
+        }
+        if (InputSystem.GetButtonDown(InputButton.Rotate2))
+        {
+            ApplyRotation(90, 0, 0);
         }
     }
 

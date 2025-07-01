@@ -14,7 +14,8 @@ public enum InputButton
 {
     Weld,
     Unweld,
-    Rotate,
+    Rotate1,
+    Rotate2,
     Jump
 }
 
@@ -30,7 +31,8 @@ public class InputSystem : MonoBehaviour
         inputMap = new(){
             { InputButton.Weld, input.Default.Weld },
             { InputButton.Unweld, input.Default.Unweld },
-            { InputButton.Rotate, input.Default.Rotate },
+            { InputButton.Rotate1, input.Default.Rotate1 },
+            { InputButton.Rotate2, input.Default.Rotate2 },
             { InputButton.Jump, input.Default.Jump },
         };
     }
