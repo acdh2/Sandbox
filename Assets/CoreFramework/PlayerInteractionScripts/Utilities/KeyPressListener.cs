@@ -1,21 +1,35 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;  // For Key type
 
+/// <summary>
+/// Listens for key press events and triggers corresponding UnityEvents.
+/// Implements IKeypressListener interface.
+/// </summary>
 public class KeyPressListener : MonoBehaviour, IKeypressListener
 {
     [System.Serializable]
     public class KeyEventPair
     {
-        public UnityEngine.InputSystem.Key key;
+        [Tooltip("Key to listen for")]
+        public Key key;
+
+        [Tooltip("Event triggered when the key is pressed")]
         public UnityEvent onKeyEvent;
     }
 
-    public List<KeyEventPair> keyEvents = new List<KeyEventPair>();
+    [Tooltip("List of key-event mappings")]
+    public List<KeyEventPair> keyEvents = new();
 
-    public void OnKeyPress(UnityEngine.InputSystem.Key keyCode)
+    /// <summary>
+    /// Called when a key is pressed.
+    /// Invokes all UnityEvents mapped to this key.
+    /// </summary>
+    /// <param name="keyCode">The key that was pressed</param>
+    public void OnKeyPress(Key keyCode)
     {
-        // Loop door alle koppelingen en invoke de events van alle matching keys
+        // Iterate over all key-event pairs and invoke matching events
         foreach (var keyEvent in keyEvents)
         {
             if (keyEvent.key == keyCode)
@@ -24,5 +38,4 @@ public class KeyPressListener : MonoBehaviour, IKeypressListener
             }
         }
     }
-    
 }

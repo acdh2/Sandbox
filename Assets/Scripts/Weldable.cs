@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
-using NUnit.Framework.Interfaces;
 using UnityEngine;
 
+/// <summary>
+/// Defines the welding modes an object can have.
+/// </summary>
 public enum WeldMode
 {
     None,
@@ -12,17 +12,32 @@ public enum WeldMode
     Both
 }
 
+/// <summary>
+/// Component that allows objects to "weld" to each other,
+/// managing parent-child relations and notifying listeners.
+/// </summary>
 public class Weldable : MonoBehaviour
 {
-    public bool CanAttach => mode == WeldMode.AttachableOnly || mode == WeldMode.Both;
-    public bool CanReceive => mode == WeldMode.ReceivableOnly || mode == WeldMode.Both;
+    // Public weld mode setting
     public WeldMode mode = WeldMode.Both;
 
-    private HashSet<Weldable> connectedObjects = new();
+    // Connections to other Weldables
+    private readonly HashSet<Weldable> connectedObjects = new();
+
+    /// <summary>
+    /// Whether this object can attach to others.
+    /// </summary>
+    public bool CanAttach => mode == WeldMode.AttachableOnly || mode == WeldMode.Both;
+
+    /// <summary>
+    /// Whether this object can receive attachments.
+    /// </summary>
+    public bool CanReceive => mode == WeldMode.ReceivableOnly || mode == WeldMode.Both;
 
     void Start()
     {
-        // Kijk of deze al als child onder een andere Weldable zit
+        // On start, check if this object is a child of another Weldable.
+        // If yes, add this object as connection to that Weldable.
         Transform parent = transform.parent;
         while (parent != null)
         {
@@ -36,51 +51,76 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Add a connection to another Weldable.
+    /// </summary>
+    /// <param name="newConnection">The other Weldable to connect to.</param>
+    /// <param name="reciprocal">Whether to add this connection reciprocally.</param>
     public void AddConnection(Weldable newConnection, bool reciprocal = true)
     {
-        if (!connectedObjects.Contains(newConnection))
+        if (newConnection == null || newConnection == this) return;
+
+        if (connectedObjects.Add(newConnection)) // Add returns false if already present
         {
-            if (connectedObjects.Count == 0)
+            if (connectedObjects.Count == 1) // First connection
             {
                 OnWeld();
             }
-            connectedObjects.Add(newConnection);
-            newConnection.AddConnection(this, false);
+
+            if (reciprocal)
+            {
+                newConnection.AddConnection(this, false);
+            }
         }
     }
 
+    /// <summary>
+    /// Remove a connection to another Weldable.
+    /// </summary>
+    /// <param name="connection">The Weldable to disconnect from.</param>
+    /// <param name="reciprocal">Whether to remove this connection reciprocally.</param>
     public void RemoveConnection(Weldable connection, bool reciprocal = true)
     {
-        if (connectedObjects.Contains(connection))
+        if (connection == null) return;
+
+        if (connectedObjects.Remove(connection))
         {
-            connectedObjects.Remove(connection);
-            connection.RemoveConnection(this, false);            
-            if (connectedObjects.Count == 0)
+            if (reciprocal)
+            {
+                connection.RemoveConnection(this, false);
+            }
+
+            if (connectedObjects.Count == 0) // No more connections
             {
                 OnUnweld();
             }
         }
     }
 
-    List<IWeldListener> CollectConnectedIWeldListeners()
+    /// <summary>
+    /// Collect all IWeldListener components from this object, its parent, and children.
+    /// Skips child subtrees that contain another Weldable.
+    /// </summary>
+    /// <returns>List of IWeldListener components connected to this weldable.</returns>
+    private List<IWeldListener> CollectConnectedIWeldListeners()
     {
-        List<IWeldListener> listeners = new List<IWeldListener>();
+        var listeners = new List<IWeldListener>();
 
-        // Voeg IWeldListeners van dit object toe
+        // Add listeners from this object
         listeners.AddRange(GetComponents<IWeldListener>());
 
-        // Voeg IWeldListener van de parent toe (als die er is)
-        if (transform.parent)
+        // Add listener from parent if exists
+        if (transform.parent != null)
         {
-            IWeldListener parentListener = transform.parent.GetComponent<IWeldListener>();
+            var parentListener = transform.parent.GetComponent<IWeldListener>();
             if (parentListener != null)
+            {
                 listeners.Add(parentListener);
+            }
         }
 
-        // Iteratieve boomdoorzoeking voor children, skip subtree bij Weldable
-        Stack<Transform> stack = new Stack<Transform>();
-
-        // Start met directe children
+        // Traverse children, skip subtrees that have a Weldable component
+        var stack = new Stack<Transform>();
         foreach (Transform child in transform)
         {
             stack.Push(child);
@@ -90,14 +130,11 @@ public class Weldable : MonoBehaviour
         {
             Transform current = stack.Pop();
 
-            // Als Weldable aanwezig is, skip subtree
             if (current.GetComponent<Weldable>() != null)
-                continue;
+                continue; // Skip subtree
 
-            // Voeg IWeldListeners toe op dit object
             listeners.AddRange(current.GetComponents<IWeldListener>());
 
-            // Voeg kinderen toe aan stack
             foreach (Transform child in current)
             {
                 stack.Push(child);
@@ -107,10 +144,13 @@ public class Weldable : MonoBehaviour
         return listeners;
     }
 
+    /// <summary>
+    /// Detaches any child Weldables by removing their parent and cleaning up connections.
+    /// </summary>
     private void DetachChildren()
     {
-        List<Weldable> found = new();
-        Stack<Transform> stack = new();
+        var foundWeldables = new List<Weldable>();
+        var stack = new Stack<Transform>();
 
         foreach (Transform child in transform)
         {
@@ -122,22 +162,20 @@ public class Weldable : MonoBehaviour
             Transform current = stack.Pop();
             Weldable weldable = current.GetComponent<Weldable>();
 
-            // Check for Weldable
             if (weldable != null)
             {
-                found.Add(weldable);
-                // Skip its children
+                foundWeldables.Add(weldable);
+                // Skip children of this weldable
                 continue;
             }
 
-            // No Weldable? Keep exploring
             foreach (Transform child in current)
             {
                 stack.Push(child);
             }
         }
 
-        foreach (Weldable weldable in found)
+        foreach (Weldable weldable in foundWeldables)
         {
             weldable.transform.SetParent(null, true);
             weldable.RemoveConnection(this);
@@ -145,45 +183,58 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Weld this object to another Weldable.
+    /// Sets the other as parent and adds connection.
+    /// </summary>
+    /// <param name="weldTo">Weldable to weld to.</param>
     public void Weld(Weldable weldTo)
     {
-        if (weldTo != null)
-        {
-            transform.SetParent(weldTo.transform);
-            AddConnection(weldTo);
-        }
+        if (weldTo == null) return;
+
+        transform.SetParent(weldTo.transform);
+        AddConnection(weldTo);
     }
 
+    /// <summary>
+    /// Unweld this object from its parent and detach children weldables.
+    /// </summary>
     public void Unweld()
     {
-        if (transform.parent)
+        if (transform.parent != null)
         {
-            Weldable weldableParent = transform.parent.gameObject.GetComponentInParent<Weldable>(true);
-            if (weldableParent)
+            Weldable weldableParent = transform.parent.GetComponentInParent<Weldable>(true);
+            if (weldableParent != null)
             {
                 transform.SetParent(null, true);
                 RemoveConnection(weldableParent);
             }
         }
+
         DetachChildren();
     }
 
+    /// <summary>
+    /// Called when the first connection is made.
+    /// Notifies all connected IWeldListeners of weld event.
+    /// </summary>
     private void OnWeld()
     {
-        foreach (IWeldListener weldable in CollectConnectedIWeldListeners())
+        foreach (IWeldListener listener in CollectConnectedIWeldListeners())
         {
-            weldable.OnWeld();
+            listener.OnWeld();
         }
     }
 
+    /// <summary>
+    /// Called when last connection is removed.
+    /// Notifies all connected IWeldListeners of unweld event.
+    /// </summary>
     private void OnUnweld()
     {
-        foreach (IWeldListener weldable in CollectConnectedIWeldListeners())
+        foreach (IWeldListener listener in CollectConnectedIWeldListeners())
         {
-            {
-                weldable.OnUnweld();
-            }
+            listener.OnUnweld();
         }
     }
-
 }

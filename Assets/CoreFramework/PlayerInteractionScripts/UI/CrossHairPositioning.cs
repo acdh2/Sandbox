@@ -1,36 +1,34 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Controls the crosshair UI position by following the mouse position.
+/// </summary>
 public class CrossHairPositioning : MonoBehaviour
 {
-    RectTransform rectTransform;
-    Canvas canvas;
+    private RectTransform rectTransform;
+    private Canvas canvas;
 
-    void Awake()
+    private void Awake()
     {
+        // Cache RectTransform and parent Canvas components for efficiency
         rectTransform = GetComponent<RectTransform>();
         canvas = GetComponentInParent<Canvas>();
     }
 
-    void Update()
+    private void Update()
     {
-        // if (Cursor.lockState == CursorLockMode.Locked)
-        // {
-        //     // Muis is gelocked: zet crosshair in het midden
-        //     rectTransform.anchoredPosition = Vector2.zero;
-        // }
-        // else
-        // {
-            // Muis is vrij: volg de muispositie
-            Vector2 mousePos;
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform,
-                InputSystem.GetPointerPosition(),
-                canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
-                out mousePos))
-            {
-                rectTransform.anchoredPosition = mousePos;
-            }
-        // }
+        // Crosshair follows the mouse position regardless of cursor lock state
+        Vector2 localMousePos;
+        bool validPosition = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.transform as RectTransform,
+            InputSystem.GetPointerPosition(),
+            canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+            out localMousePos);
+
+        if (validPosition)
+        {
+            rectTransform.anchoredPosition = localMousePos;
+        }
     }
 }

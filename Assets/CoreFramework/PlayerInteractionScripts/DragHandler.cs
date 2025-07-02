@@ -1,12 +1,10 @@
-//EDITED
-
 using System;
-using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 
+/// <summary>
+/// Represents the current state of the drag operation.
+/// </summary>
+[System.Serializable]
 public enum DragState
 {
     Idle,
@@ -14,13 +12,16 @@ public enum DragState
 }
 
 /// <summary>
-/// Allows dragging and placing of a selected object on a grid using mouse input.
-/// Requires a SelectionHandler component to function.
+/// Handles dragging and placing a selected object on a grid using mouse input.
+/// Requires a SelectionHandler component to function properly.
 /// </summary>
 [RequireComponent(typeof(SelectionHandler))]
 public class DragHandler : MonoBehaviour
 {
-    [System.Serializable]
+    /// <summary>
+    /// Flags to control which axes allow rotation.
+    /// </summary>
+    [Serializable]
     public struct RotationAxisFlags
     {
         public bool X;
@@ -34,10 +35,6 @@ public class DragHandler : MonoBehaviour
 
     [Header("Placement Constraints")]
     public float minY = 0f;
-
-    //[Header("Rotation Settings")]
-    //public bool enableRotation = true;
-    //public Vector3 rotationSnapDegrees = Vector3.zero;
 
     [Header("Rotation Settings")]
     public RotationAxisFlags allowRotation = new RotationAxisFlags { X = true, Y = true, Z = true };
@@ -55,102 +52,24 @@ public class DragHandler : MonoBehaviour
     private Quaternion targetRotation;
 
     private SelectionHandler selectionHandler;
-    //private 
-    //  originalRigidbody;
-    //private bool originalKinematicState;
 
     private DragState currentState = DragState.Idle;
     public DragState CurrentState => currentState;
 
-    void Start()
+    private void Start()
     {
         cam = Camera.main;
         selectionHandler = GetComponent<SelectionHandler>();
     }
 
-    void Update()
+    private void Update()
     {
         HandleInput();
         HandleRotation();
     }
 
-    // private void ApplyRotation(float x, float y, float z)
-    // {
-    //     if (selectedTransform != null)
-    //     {
-    //         Vector3 rotation = selectedTransform.rotation.eulerAngles;
-    //         rotation += new Vector3(x, y, z);
-    //         selectedTransform.rotation = Quaternion.Euler(GetSnappedRotation(rotation));
-    //     }
-    // }
-
-    private void RotateSelected(float x, float y, float z)
-    {
-        GameObject selectedObject = selectionHandler.CurrentSelection;
-        if (selectedObject == null) return;
-
-        Transform selectedTransform = selectedObject.transform.root;
-        if (selectedTransform == null) return;
-
-        Vector3 pivot = selectedObject.transform.position;
-        Quaternion deltaRotation = Quaternion.Euler(x, y, z);
-
-        Vector3 direction = selectedTransform.position - pivot;
-        Vector3 rotatedDirection = deltaRotation * direction;
-        selectedTransform.position = pivot + rotatedDirection;
-
-        selectedTransform.rotation = deltaRotation * selectedTransform.rotation;
-
-        InitializeSelection(selectedObject);
-    }
-
-    private void RotateSelectedTowardCamera()
-    {
-        GameObject selectedObject = selectionHandler.CurrentSelection;
-        if (selectedObject == null) return;
-
-        Transform selectedTransform = selectedObject.transform.root;
-        if (selectedTransform == null) return;
-
-        Vector3 toCamera = Camera.main.transform.position - selectedTransform.position;
-        toCamera.y = 0; // Alleen horizontaal kijken
-        toCamera.Normalize();
-
-        float dotForward = Vector3.Dot(toCamera, Vector3.forward);
-        float dotRight = Vector3.Dot(toCamera, Vector3.right);
-
-        // Bepaal richting met hoogste absolute waarde
-        Vector3 euler = Vector3.zero;
-
-        if (Mathf.Abs(dotForward) > Mathf.Abs(dotRight))
-        {
-            // Meer naar voren/achter
-            euler = (dotForward > 0) ? new Vector3(90, 0, 0) : new Vector3(-90, 0, 0);
-        }
-        else
-        {
-            // Meer naar rechts/links
-            euler = (dotRight < 0) ? new Vector3(0, 0, 90) : new Vector3(0, 0, -90);
-        }
-
-        // Roteer met jouw bestaande functie
-        RotateSelected(euler.x, euler.y, euler.z);
-    }
-
-    private void HandleRotation()
-    {
-        if (InputSystem.GetButtonDown(InputButton.Rotate1))
-        {
-            RotateSelected(0, 90, 0);
-        }
-        if (InputSystem.GetButtonDown(InputButton.Rotate2))
-        {
-            RotateSelectedTowardCamera();
-        }
-    }
-
     /// <summary>
-    /// Handles mouse input depending on the current drag state.
+    /// Handles user input based on current drag state.
     /// </summary>
     private void HandleInput()
     {
@@ -173,6 +92,28 @@ public class DragHandler : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Attempts to begin dragging the currently selected object.
+    /// </summary>
+    private void TryStartDragging()
+    {
+        GameObject selectedObject = selectionHandler.CurrentSelection;
+        if (selectedObject == null) return;
+
+        var selectable = selectedObject.GetComponent<Selectable>();
+        if (selectable == null || !selectable.IsDraggable) return;
+
+        selectionHandler.LockSelection();
+        InitializeSelection(selectedObject);
+        OnGrabEvent(selectedObject);
+
+        currentState = DragState.Dragging;
+    }
+
+    /// <summary>
+    /// Initializes offsets and rotation data for dragging the object.
+    /// </summary>
+    /// <param name="selectedObject">The object to initialize.</param>
     private void InitializeSelection(GameObject selectedObject)
     {
         selectedTransform = selectedObject.transform.root;
@@ -183,92 +124,111 @@ public class DragHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Attempts to start dragging the currently selected object.
-    /// </summary>
-    private void TryStartDragging()
-    {
-        GameObject selectedObject = selectionHandler.CurrentSelection;
-        if (selectedObject == null) return;
-
-        var selectable = selectedObject.GetComponent<Selectable>();
-        if (selectable == null || !selectable.IsDraggable) return;
-        selectionHandler.LockSelection();
-
-        InitializeSelection(selectedObject);
-        OnGrabEvent(selectedObject);
-
-        currentState = DragState.Dragging;
-    }
-
-    /// <summary>
-    /// Invokes the grab event on the object if it has a IGrabbable component.
-    /// </summary>
-    /// <param name="targetObject">The object being grabbed.</param>
-    private void OnGrabEvent(GameObject targetObject)
-    {
-        targetObject.GetComponent<IGrabbable>()?.OnGrab();
-    }
-
-    /// <summary>
-    /// Stops dragging and restores the Rigidbody state.
+    /// Stops dragging and unlocks the selection.
     /// </summary>
     private void StopDragging()
     {
         if (selectedTransform != null)
-                OnReleaseEvent(selectedTransform.gameObject);
+            OnReleaseEvent(selectedTransform.gameObject);
 
-        //RestoreRigidbodyIfPresent();
         selectedTransform = null;
         selectionHandler.UnlockSelection();
         currentState = DragState.Idle;
     }
 
     /// <summary>
-    /// Invokes the release event on the object if it has a IGrabbable.
+    /// Raises grab event if the object implements IGrabbable.
     /// </summary>
-    /// <param name="targetObject">The object being released.</param>
-    void OnReleaseEvent(GameObject targetObject)
+    /// <param name="targetObject">Object being grabbed.</param>
+    private void OnGrabEvent(GameObject targetObject)
+    {
+        targetObject.GetComponent<IGrabbable>()?.OnGrab();
+    }
+
+    /// <summary>
+    /// Raises release event if the object implements IGrabbable.
+    /// </summary>
+    /// <param name="targetObject">Object being released.</param>
+    private void OnReleaseEvent(GameObject targetObject)
     {
         targetObject.GetComponent<IGrabbable>()?.OnRelease();
     }
 
-    private void ApplyPlacementConstraints()
+    /// <summary>
+    /// Handles rotation input commands.
+    /// </summary>
+    private void HandleRotation()
     {
-        if (selectedTransform != null)
+        if (InputSystem.GetButtonDown(InputButton.Rotate1))
         {
-            // Haal alle colliders op van het object en zijn kinderen
-            Collider[] colliders = selectedTransform.GetComponentsInChildren<Collider>();
-            if (colliders.Length > 0)
-            {
-                // Combineer alle collider-bounds tot één bounding box in wereldruimte
-                Renderer[] renderers = selectedTransform.GetComponentsInChildren<Renderer>();
-                Bounds combinedBounds = renderers[0].bounds;
-                for (int i = 1; i < renderers.Length; i++)
-                {
-                    combinedBounds.Encapsulate(renderers[i].bounds);
-                }
-                // Bepaal hoe ver de onderkant van het object onder minY zou zakken
-                float offsetY = minY - combinedBounds.min.y;
-
-                if (offsetY > 0f)
-                {
-                    Vector3 newPosition = selectedTransform.position + new Vector3(0f, offsetY, 0f);
-                    selectedTransform.position = newPosition;
-                    targetPosition = newPosition;
-
-                    // <<< FIX: update localOffset zodat volgende frame niet weer te laag zit
-                    //localOffset = localOffset + cam.transform.InverseTransformVector(Vector3.up * offsetY);
-                }
-            }
+            RotateSelected(0, 90, 0);
+        }
+        if (InputSystem.GetButtonDown(InputButton.Rotate2))
+        {
+            RotateSelectedTowardCamera();
         }
     }
 
     /// <summary>
-    /// Updates the target position and rotation for the dragged object.
+    /// Rotates the selected object by specified Euler angles around its pivot point.
+    /// </summary>
+    private void RotateSelected(float x, float y, float z)
+    {
+        GameObject selectedObject = selectionHandler.CurrentSelection;
+        if (selectedObject == null) return;
+
+        Transform selectedRoot = selectedObject.transform.root;
+        if (selectedRoot == null) return;
+
+        Vector3 pivot = selectedObject.transform.position;
+        Quaternion deltaRotation = Quaternion.Euler(x, y, z);
+
+        // Rotate position around pivot
+        Vector3 direction = selectedRoot.position - pivot;
+        selectedRoot.position = pivot + deltaRotation * direction;
+
+        // Apply rotation
+        selectedRoot.rotation = deltaRotation * selectedRoot.rotation;
+
+        // Re-initialize offsets after rotation
+        InitializeSelection(selectedObject);
+    }
+
+    /// <summary>
+    /// Rotates the selected object to face the camera on the horizontal plane.
+    /// </summary>
+    private void RotateSelectedTowardCamera()
+    {
+        GameObject selectedObject = selectionHandler.CurrentSelection;
+        if (selectedObject == null) return;
+
+        Transform selectedRoot = selectedObject.transform.root;
+        if (selectedRoot == null) return;
+
+        Vector3 toCamera = Camera.main.transform.position - selectedRoot.position;
+        toCamera.y = 0; // Only horizontal rotation
+        toCamera.Normalize();
+
+        float dotForward = Vector3.Dot(toCamera, Vector3.forward);
+        float dotRight = Vector3.Dot(toCamera, Vector3.right);
+
+        Vector3 euler = Vector3.zero;
+
+        if (Mathf.Abs(dotForward) > Mathf.Abs(dotRight))
+            euler = dotForward > 0 ? new Vector3(90, 0, 0) : new Vector3(-90, 0, 0);
+        else
+            euler = dotRight < 0 ? new Vector3(0, 0, 90) : new Vector3(0, 0, -90);
+
+        RotateSelected(euler.x, euler.y, euler.z);
+    }
+
+    /// <summary>
+    /// Updates target position and rotation of the selected object based on input and constraints.
     /// </summary>
     private void UpdateTargetTransform()
     {
         if (selectedTransform == null) return;
+
         Vector3 worldTargetPosition = cam.transform.TransformPoint(localOffset);
         targetPosition = SnapToGrid(worldTargetPosition);
 
@@ -279,7 +239,7 @@ public class DragHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Moves the selected object to the target position and rotation.
+    /// Applies calculated position and rotation to the selected object, optionally with smoothing.
     /// </summary>
     private void ApplyTransformToSelection()
     {
@@ -287,20 +247,11 @@ public class DragHandler : MonoBehaviour
 
         if (smoothMovement)
         {
-            selectedTransform.position = Vector3.Lerp(
-                selectedTransform.position,
-                targetPosition,
-                moveResponsiveness * Time.deltaTime
-            );
+            selectedTransform.position = Vector3.Lerp(selectedTransform.position, targetPosition, moveResponsiveness * Time.deltaTime);
+            Quaternion interpolatedRotation = Quaternion.Slerp(selectedTransform.rotation, targetRotation, moveResponsiveness * Time.deltaTime);
 
-            Quaternion interpolated = Quaternion.Slerp(
-                selectedTransform.rotation,
-                targetRotation,
-                moveResponsiveness * Time.deltaTime
-            );
-
-            if (IsNormalized(interpolated))
-                selectedTransform.rotation = interpolated;
+            if (IsNormalized(interpolatedRotation))
+                selectedTransform.rotation = interpolatedRotation;
         }
         else
         {
@@ -312,6 +263,35 @@ public class DragHandler : MonoBehaviour
         ApplyPlacementConstraints();
     }
 
+    /// <summary>
+    /// Ensures the selected object's bottom stays above the minimum Y position.
+    /// </summary>
+    private void ApplyPlacementConstraints()
+    {
+        if (selectedTransform == null) return;
+
+        Renderer[] renderers = selectedTransform.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return;
+
+        Bounds combinedBounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            combinedBounds.Encapsulate(renderers[i].bounds);
+
+        float offsetY = minY - combinedBounds.min.y;
+        if (offsetY > 0f)
+        {
+            Vector3 newPosition = selectedTransform.position + new Vector3(0f, offsetY, 0f);
+            selectedTransform.position = newPosition;
+            targetPosition = newPosition;
+
+            // Optional: adjust localOffset if needed to prevent snapping issues next frame
+            // localOffset += cam.transform.InverseTransformVector(Vector3.up * offsetY);
+        }
+    }
+
+    /// <summary>
+    /// Computes the rotation of the dragged object relative to the camera, applying allowed axes and snapping.
+    /// </summary>
     private Quaternion GetDragRotation()
     {
         Quaternion rawRotation = cam.transform.rotation * rotationOffset;
@@ -330,8 +310,11 @@ public class DragHandler : MonoBehaviour
         return Quaternion.Euler(GetSnappedRotation(resultEuler));
     }
 
-    Vector3 GetSnappedRotation(Vector3 rotation) {
-        // Apply snapping if enabled
+    /// <summary>
+    /// Snaps each component of a rotation vector to configured increments.
+    /// </summary>
+    private Vector3 GetSnappedRotation(Vector3 rotation)
+    {
         if (rotationSnapDegrees.x > 0f)
             rotation.x = Mathf.Round(rotation.x / rotationSnapDegrees.x) * rotationSnapDegrees.x;
         if (rotationSnapDegrees.y > 0f)
@@ -342,68 +325,32 @@ public class DragHandler : MonoBehaviour
         return rotation;
     }
 
-
     /// <summary>
-    /// Snaps the rotation to specified angular increments.
-    /// </summary>
-    // private Quaternion GetSnappedRotation()
-    // {
-    //     Quaternion rawRotation = cam.transform.rotation * rotationOffset;
-    //     Vector3 euler = rawRotation.eulerAngles;
-
-    //     if (rotationSnapDegrees.x > 0f) euler.x = Mathf.Round(euler.x / rotationSnapDegrees.x) * rotationSnapDegrees.x;
-    //     if (rotationSnapDegrees.y > 0f) euler.y = Mathf.Round(euler.y / rotationSnapDegrees.y) * rotationSnapDegrees.y;
-    //     if (rotationSnapDegrees.z > 0f) euler.z = Mathf.Round(euler.z / rotationSnapDegrees.z) * rotationSnapDegrees.z;
-
-    //     return Quaternion.Euler(euler);
-    // }
-
-    // /// <summary>
-    // /// Disables the Rigidbody on the object if it exists, and stores its original state.
-    // /// </summary>
-    // private void DisableRigidbodyIfPresent(GameObject obj)
-    // {
-    //     Rigidbody rb = obj.GetComponent<Rigidbody>();
-    //     if (rb != null)
-    //     {
-    //         originalRigidbody = rb;
-    //         originalKinematicState = rb.isKinematic;
-    //         rb.isKinematic = true;
-    //     }
-    // }
-
-    // /// <summary>
-    // /// Restores the original Rigidbody state if one was modified.
-    // /// </summary>
-    // private void RestoreRigidbodyIfPresent()
-    // {
-    //     if (originalRigidbody != null)
-    //     {
-    //         originalRigidbody.isKinematic = originalKinematicState;
-    //         originalRigidbody = null;
-    //     }
-    // }
-
-    /// <summary>
-    /// Snaps a position to the configured grid size and center.
+    /// Snaps a given position to the defined grid, and clamps Y to minimum allowed.
     /// </summary>
     private Vector3 SnapToGrid(Vector3 position)
     {
-        Vector3 localPos = position - gridCenter;
+        Vector3 offset = position - gridCenter;
 
-        if (gridSize.x > 0f) localPos.x = Mathf.Round(localPos.x / gridSize.x) * gridSize.x;
-        if (gridSize.y > 0f) localPos.y = Mathf.Round(localPos.y / gridSize.y) * gridSize.y;
-        if (gridSize.z > 0f) localPos.z = Mathf.Round(localPos.z / gridSize.z) * gridSize.z;
+        if (gridSize.x > 0)
+            offset.x = Mathf.Round(offset.x / gridSize.x) * gridSize.x;
+        if (gridSize.y > 0)
+            offset.y = Mathf.Round(offset.y / gridSize.y) * gridSize.y;
+        if (gridSize.z > 0)
+            offset.z = Mathf.Round(offset.z / gridSize.z) * gridSize.z;
 
-        return localPos + gridCenter;
+        Vector3 snappedPosition = gridCenter + offset;
+        snappedPosition.y = Mathf.Max(minY, snappedPosition.y);
+
+        return snappedPosition;
     }
 
     /// <summary>
-    /// Returns true if the given quaternion is approximately normalized.
+    /// Checks if a quaternion is normalized.
     /// </summary>
-    private bool IsNormalized(Quaternion q, float tolerance = 0.0001f)
+    private bool IsNormalized(Quaternion q)
     {
-        float magnitude = Mathf.Sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
-        return Mathf.Abs(1f - magnitude) < tolerance;
+        // Unity quaternions are expected to be normalized; this is a simple check.
+        return Mathf.Abs(1.0f - (q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w)) < 0.01f;
     }
 }

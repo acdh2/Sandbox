@@ -1,10 +1,10 @@
 using UnityEngine;
-using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// Handles object selection using raycasting against objects that have a Selectable component.
-/// Applies a temporary selection layer for highlighting and restores original layers on deselection.
+/// Manages object selection via raycasting on objects with a Selectable component.
+/// Temporarily changes selected objects' layers for highlighting,
+/// and restores original layers upon deselection.
 /// </summary>
 public class SelectionHandler : MonoBehaviour
 {
@@ -17,8 +17,7 @@ public class SelectionHandler : MonoBehaviour
     private Camera cam;
     private bool selectionLocked = false;
     private int selectionLayer;
-
-    private readonly Dictionary<GameObject, int> originalLayer = new();
+    private readonly Dictionary<GameObject, int> originalLayers = new();
 
     private void Start()
     {
@@ -39,40 +38,56 @@ public class SelectionHandler : MonoBehaviour
             ClearSelection();
     }
 
+    /// <summary>
+    /// Locks selection changes.
+    /// </summary>
     public void LockSelection() => selectionLocked = true;
+
+    /// <summary>
+    /// Unlocks selection changes.
+    /// </summary>
     public void UnlockSelection() => selectionLocked = false;
+
+    /// <summary>
+    /// Clears the current selection.
+    /// </summary>
     public void ClearSelection() => SetSelection(null);
 
+    /// <summary>
+    /// Sets the current selection, restores layers of previously selected objects,
+    /// and applies selection layer to the new selection.
+    /// </summary>
     private void SetSelection(GameObject newSelection)
     {
-        // if (CurrentSelection == newSelection) 
-        //     return;
-
+        // Restore layers of previously selected objects
         RestoreOriginalLayers();
+
         CurrentSelection = newSelection;
 
         if (CurrentSelection != null)
             ApplySelectionLayer(CurrentSelection);
     }
 
+    /// <summary>
+    /// Returns the closest selectable object under the cursor using raycasting.
+    /// </summary>
     private GameObject GetSelectableUnderCursor()
     {
         Ray ray = cam.ScreenPointToRay(InputSystem.GetPointerPosition());
-        RaycastHit[] hits = Physics.RaycastAll(ray, 100f, ~0); // All layers
+        RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
 
         GameObject closest = null;
         float closestDistance = float.MaxValue;
 
         foreach (var hit in hits)
         {
-            Selectable selectable = hit.collider.GetComponentInParent<Selectable>();
+            var selectable = hit.collider.GetComponentInParent<Selectable>();
             if (selectable == null)
                 continue;
 
-            float distance = hit.distance;
-            if (distance < closestDistance)
+            if (hit.distance < closestDistance)
             {
-                closestDistance = distance;
+                closestDistance = hit.distance;
                 closest = selectable.gameObject;
             }
         }
@@ -80,17 +95,21 @@ public class SelectionHandler : MonoBehaviour
         return closest;
     }
 
+    /// <summary>
+    /// Applies the selection layer to the root object and all its descendants,
+    /// storing their original layers for restoration.
+    /// </summary>
     private void ApplySelectionLayer(GameObject root)
     {
-        Stack<GameObject> stack = new();
+        var stack = new Stack<GameObject>();
         stack.Push(root.transform.root.gameObject);
 
         while (stack.Count > 0)
         {
-            GameObject obj = stack.Pop();
+            var obj = stack.Pop();
 
-            if (!originalLayer.ContainsKey(obj))
-                originalLayer[obj] = obj.layer;
+            if (!originalLayers.ContainsKey(obj))
+                originalLayers[obj] = obj.layer;
 
             obj.layer = selectionLayer;
 
@@ -99,13 +118,16 @@ public class SelectionHandler : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Restores the original layers of all previously selected objects.
+    /// </summary>
     private void RestoreOriginalLayers()
     {
-        foreach (var kvp in originalLayer)
+        foreach (var kvp in originalLayers)
         {
             if (kvp.Key != null)
                 kvp.Key.layer = kvp.Value;
         }
-        originalLayer.Clear();
+        originalLayers.Clear();
     }
 }

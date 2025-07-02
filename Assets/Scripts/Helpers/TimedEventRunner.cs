@@ -5,110 +5,112 @@ using UnityEngine.Events;
 
 public class TimedEventRunner : MonoBehaviour
 {
+    /// <summary>
+    /// Represents a time interval with start and end boundaries.
+    /// Automatically sorts start and end so start <= end.
+    /// </summary>
     struct TimeFrame
     {
         public float start;
         public float end;
 
-        public TimeFrame(float start, float end)
+        public TimeFrame(float a, float b)
         {
-            if (end > start)
+            // Ensure start <= end
+            if (b > a)
             {
-                this.start = start;
-                this.end = end;
+                start = a;
+                end = b;
             }
             else
             {
-                this.start = end;
-                this.end = start;
+                start = b;
+                end = a;
             }
         }
 
-        public void AddTime(float time)
-        {
-            if (time < start) start = time;
-            if (time > end) end = time;
-        }
-
+        /// <summary>
+        /// Checks if a given time 't' is inside the time frame (inclusive).
+        /// </summary>
         public bool Contains(float t)
         {
             return t >= start && t <= end;
         }
     }
 
-    public bool autoPlay = true;
-
     [Serializable]
     public class TimedEvent
     {
-        public float delay;
-        public UnityEvent unityEvent;
+        public float delay;       // Time in seconds when event fires
+        public UnityEvent unityEvent;  // The event to invoke
     }
 
     public enum PlaybackMode
     {
-        Once,
-        Loop,
-        PingPong
+        Once,       // Play from start to end once
+        Loop,       // Loop from end back to start or vice versa
+        PingPong    // Play forward and backward repeatedly
     }
 
-    [SerializeField] public List<TimedEvent> events = new List<TimedEvent>();
-    [SerializeField] public PlaybackMode mode = PlaybackMode.Once;
-    [SerializeField] public float playbackSpeed = 1.0f;
+    [SerializeField] private List<TimedEvent> events = new List<TimedEvent>();
+    [SerializeField] private PlaybackMode mode = PlaybackMode.Once;
+    [SerializeField] private float playbackSpeed = 1.0f;
+    [SerializeField] private bool autoPlay = true;
 
     private bool isPlaying = false;
     private float currentTime = 0f;
     private float previousTime = 0f;
     private float duration = 0f;
 
+    // Cached, sorted list of event times and their UnityEvents
     private List<(float time, UnityEvent unityEvent)> processedEvents = new();
 
-    void OnValidate()
+    private void OnValidate()
+    {
+        // Recalculate processed events and duration when values are changed in inspector
+        ProcessEvents();
+    }
+
+    private void Awake()
     {
         ProcessEvents();
     }
 
-    void Awake()
-    {
-        ProcessEvents();
-    }
-
-    void Start()
+    private void Start()
     {
         if (autoPlay)
-        {
             Play();
-        }
     }
 
-    void Update()
+    private void Update()
     {
-        if (!isPlaying || processedEvents.Count == 0) return;
+        if (!isPlaying || processedEvents.Count == 0)
+            return;
 
         HandlePlayback();
     }
 
-    void HandlePlayback()
+    /// <summary>
+    /// Core playback handler advancing time, handling playback modes, and firing events accordingly.
+    /// </summary>
+    private void HandlePlayback()
     {
         previousTime = currentTime;
         currentTime += Time.deltaTime * playbackSpeed;
-        TimeFrame timeFrameCovered = new TimeFrame(previousTime, currentTime);
-
-        bool firedInsideSwitch = false;
+        TimeFrame timeWindow = new TimeFrame(previousTime, currentTime);
+        bool handledInSwitch = false;
 
         switch (mode)
         {
             case PlaybackMode.Once:
+                // Clamp time and stop at boundaries when playback reaches the start or end
                 if ((playbackSpeed >= 0 && currentTime > duration) || (playbackSpeed < 0 && currentTime < 0))
                 {
-                    // Clamp currentTime naar boundary
                     currentTime = Mathf.Clamp(currentTime, 0f, duration);
-                    // TimeFrame uitbreiden tot einde
-                    timeFrameCovered = new TimeFrame(timeFrameCovered.start, currentTime);
-                    FireEventsInWindow(timeFrameCovered);
+                    timeWindow = new TimeFrame(timeWindow.start, currentTime);
+                    FireEventsInWindow(timeWindow);
                     Stop();
-                    firedInsideSwitch = true;
-                    return; // voorkom dubbele fire buiten switch
+                    handledInSwitch = true;
                 }
                 break;
 
@@ -116,38 +118,24 @@ public class TimedEventRunner : MonoBehaviour
                 if (playbackSpeed >= 0 && currentTime > duration)
                 {
                     float overshoot = currentTime - duration;
-
-                    // Eerst events van previousTime tot einde (duration)
-                    var firstFrame = new TimeFrame(timeFrameCovered.start, duration);
-                    FireEventsInWindow(firstFrame);
-
-                    // spring terug naar begin + overshoot
+                    // Fire events from previousTime to end
+                    FireEventsInWindow(new TimeFrame(timeWindow.start, duration));
+                    // Loop back to beginning plus overshoot
                     currentTime = overshoot;
-
-                    // Dan events van 0 tot overshoot
-                    var secondFrame = new TimeFrame(0f, currentTime);
-                    FireEventsInWindow(secondFrame);
-
-                    timeFrameCovered = new TimeFrame(0f, currentTime);
-                    firedInsideSwitch = true;
+                    // Fire events from start to overshoot
+                    FireEventsInWindow(new TimeFrame(0f, currentTime));
+                    handledInSwitch = true;
                 }
                 else if (playbackSpeed < 0 && currentTime < 0)
                 {
                     float overshoot = -currentTime;
-
-                    // Eerst events van previousTime tot 0
-                    var firstFrame = new TimeFrame(timeFrameCovered.start, 0f);
-                    FireEventsInWindow(firstFrame);
-
-                    // spring naar einde - overshoot
+                    // Fire events from previousTime to start
+                    FireEventsInWindow(new TimeFrame(timeWindow.start, 0f));
+                    // Loop back to end minus overshoot
                     currentTime = duration - overshoot;
-
-                    // Dan events van currentTime tot einde
-                    var secondFrame = new TimeFrame(currentTime, duration);
-                    FireEventsInWindow(secondFrame);
-
-                    timeFrameCovered = new TimeFrame(currentTime, duration);
-                    firedInsideSwitch = true;
+                    // Fire events from currentTime to end
+                    FireEventsInWindow(new TimeFrame(currentTime, duration));
+                    handledInSwitch = true;
                 }
                 break;
 
@@ -155,80 +143,93 @@ public class TimedEventRunner : MonoBehaviour
                 if (currentTime > duration)
                 {
                     float overshoot = currentTime - duration;
-                    currentTime = duration - overshoot; // reflecteer terug
-                    playbackSpeed *= -1;
-
-                    // Fire events van previousTime tot einde
-                    timeFrameCovered = new TimeFrame(timeFrameCovered.start, duration);
-                    FireEventsInWindow(timeFrameCovered);
-
-                    // Fire events van einde terug naar currentTime
-                    timeFrameCovered = new TimeFrame(duration, currentTime);
-                    FireEventsInWindow(timeFrameCovered);
-
-                    firedInsideSwitch = true;
+                    currentTime = duration - overshoot; // Reflect backward
+                    playbackSpeed *= -1; // Reverse direction
+                    // Fire events forward to end
+                    FireEventsInWindow(new TimeFrame(timeWindow.start, duration));
+                    // Fire events backward from end to reflected time
+                    FireEventsInWindow(new TimeFrame(duration, currentTime));
+                    handledInSwitch = true;
                 }
                 else if (currentTime < 0)
                 {
                     float overshoot = -currentTime;
-                    currentTime = overshoot; // reflecteer terug
-                    playbackSpeed *= -1;
-
-                    // Fire events van previousTime tot 0
-                    timeFrameCovered = new TimeFrame(timeFrameCovered.start, 0f);
-                    FireEventsInWindow(timeFrameCovered);
-
-                    // Fire events van 0 tot currentTime
-                    timeFrameCovered = new TimeFrame(0f, currentTime);
-                    FireEventsInWindow(timeFrameCovered);
-
-                    firedInsideSwitch = true;
+                    currentTime = overshoot; // Reflect forward
+                    playbackSpeed *= -1; // Reverse direction
+                    // Fire events backward to start
+                    FireEventsInWindow(new TimeFrame(timeWindow.start, 0f));
+                    // Fire events forward from start to reflected time
+                    FireEventsInWindow(new TimeFrame(0f, currentTime));
+                    handledInSwitch = true;
                 }
                 break;
         }
 
-        if (!firedInsideSwitch)
+        // If no special case handled, just fire events in the current frame window
+        if (!handledInSwitch)
         {
-            FireEventsInWindow(timeFrameCovered);
+            FireEventsInWindow(timeWindow);
         }
     }
 
-    void FireEventsInWindow(TimeFrame time)
+    /// <summary>
+    /// Invokes all events whose times fall within the given time frame.
+    /// </summary>
+    private void FireEventsInWindow(TimeFrame time)
     {
         foreach (var (eventTime, unityEvent) in processedEvents)
         {
             if (time.Contains(eventTime))
+            {
                 unityEvent?.Invoke();
+            }
         }
     }
 
+    /// <summary>
+    /// Immediately jumps playback to a specific time and fires events scheduled exactly at that time.
+    /// </summary>
+    /// <param name="time">Time in seconds to jump to</param>
     public void JumpTo(float time)
     {
         currentTime = Mathf.Clamp(time, 0f, duration);
         previousTime = currentTime;
-        FireEventsInWindow(new TimeFrame(currentTime, currentTime)); // Alleen huidige tijd
+        // Fire events exactly at currentTime only
+        FireEventsInWindow(new TimeFrame(currentTime, currentTime));
     }
 
     public void Play() => isPlaying = true;
     public void Pause() => isPlaying = false;
 
+    /// <summary>
+    /// Stops playback and resets time to zero.
+    /// </summary>
     public void Stop()
     {
         isPlaying = false;
         JumpTo(0f);
     }
 
+    /// <summary>
+    /// Processes the list of events by caching them with their times and determining total duration.
+    /// </summary>
     private void ProcessEvents()
     {
         processedEvents.Clear();
-        duration = 0f; // reset duration!
+        duration = 0f;
+
         foreach (var e in events)
         {
-            if (e != null && e.unityEvent != null)
-                processedEvents.Add((e.delay, e.unityEvent));
+            if (e == null || e.unityEvent == null)
+                continue;
+
+            processedEvents.Add((e.delay, e.unityEvent));
+
             if (e.delay > duration)
                 duration = e.delay;
         }
+
+        // Sort events by scheduled time ascending
         processedEvents.Sort((a, b) => a.time.CompareTo(b.time));
     }
 }

@@ -1,18 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Represents a switch that can activate, deactivate or toggle IActivatable components
+/// within the welded structure based on an activation group color.
+/// </summary>
 public class Switch : MonoBehaviour
 {
     [Tooltip("Only targets with a matching activationGroup color will respond.")]
     public Color activationGroup = Color.white;
 
     /// <summary>
-    /// Activates all matching and inactive IActivatable components under the welded structure.
+    /// Activates all matching and currently inactive IActivatable components within the welded structure.
     /// </summary>
     public void TurnOn()
     {
         foreach (var target in FindAllActivatables())
         {
+            // Activate only if inactive and matching the activation group
             if (!target.IsActive() && target.MatchActivationGroup(activationGroup))
             {
                 target.OnActivate();
@@ -21,7 +26,7 @@ public class Switch : MonoBehaviour
     }
 
     /// <summary>
-    /// Deactivates all active IActivatable components under the welded structure.
+    /// Deactivates all currently active IActivatable components within the welded structure.
     /// </summary>
     public void TurnOff()
     {
@@ -35,7 +40,8 @@ public class Switch : MonoBehaviour
     }
 
     /// <summary>
-    /// Toggles activation state of all IActivatable components under the welded structure.
+    /// Toggles the activation state of all IActivatable components within the welded structure.
+    /// Only activates those matching the activation group when toggling on.
     /// </summary>
     public void Toggle()
     {
@@ -52,6 +58,10 @@ public class Switch : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Forces a reactivation cycle: first turns off all active components,
+    /// then turns on all matching inactive components.
+    /// </summary>
     public void Reactivate()
     {
         TurnOff();
@@ -59,12 +69,13 @@ public class Switch : MonoBehaviour
     }
 
     /// <summary>
-    /// Finds all IActivatable components starting from the topmost parent of this object.
+    /// Retrieves all IActivatable components in this object's root welded hierarchy,
+    /// including inactive ones.
     /// </summary>
+    /// <returns>List of all IActivatable components found</returns>
     private List<IActivatable> FindAllActivatables()
     {
         Transform root = transform.root;
         return new List<IActivatable>(root.GetComponentsInChildren<IActivatable>(true));
     }
-
 }

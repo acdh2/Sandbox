@@ -1,99 +1,150 @@
 using UnityEngine;
-using UnityEngine.Events;
 using System.Collections.Generic;
 
+/// <summary>
+/// Extends Seat to add vehicle-specific functionality such as steering and throttle input handling.
+/// Notifies vehicle listeners of seat and unseat events, as well as steering/throttle input.
+/// </summary>
 public class VehicleSeat : Seat, IWeldListener
 {
+    // Tracks if the seat is currently occupied
     private bool isActive = false;
 
+    /// <summary>
+    /// Called when player sits on the seat.
+    /// Activates the seat and resets vehicle input.
+    /// </summary>
     protected override void OnSeat(GameObject player)
     {
         isActive = true;
-        SendData(0f, 0f);
+        SendInput(0f, 0f);
     }
 
+    /// <summary>
+    /// Called when player leaves the seat.
+    /// Resets vehicle input and deactivates the seat.
+    /// </summary>
     protected override void OnUnseat(GameObject player)
     {
-        SendData(0f, 0f);
+        SendInput(0f, 0f);
         isActive = false;
     }
 
+    /// <summary>
+    /// Called when this object is welded.
+    /// Resets vehicle input.
+    /// </summary>
     public override void OnWeld()
     {
         base.OnWeld();
-        SendData(0f, 0f);
-        //AddRigidbody(transform.root);
+        SendInput(0f, 0f);
+        // Rigidbody addition commented out, uncomment if needed
+        // AddRigidbody(transform.root);
     }
+
+    /// <summary>
+    /// Called when this object is unwelded.
+    /// Resets vehicle input.
+    /// </summary>
     public override void OnUnweld()
     {
-        SendData(0f, 0f);
+        SendInput(0f, 0f);
         base.OnUnweld();
-        //RemoveRigidbody(transform.root);
+        // Rigidbody removal commented out, uncomment if needed
+        // RemoveRigidbody(transform.root);
     }
 
-    void AddRigidbody(Transform transform)
+    /// <summary>
+    /// Optionally adds a Rigidbody to the specified transform's GameObject.
+    /// Currently unused, uncomment calls if needed.
+    /// </summary>
+    private void AddRigidbody(Transform target)
     {
-        transform.gameObject.AddComponent<Rigidbody>();
+        if (target.gameObject.GetComponent<Rigidbody>() == null)
+        {
+            target.gameObject.AddComponent<Rigidbody>();
+        }
     }
 
-    void RemoveRigidbody(Transform transform)
+    /// <summary>
+    /// Removes the Rigidbody component from the specified transform's GameObject if it exists.
+    /// Currently unused, uncomment calls if needed.
+    /// </summary>
+    private void RemoveRigidbody(Transform target)
     {
-        Rigidbody rb = transform.gameObject.GetComponent<Rigidbody>();
-        if (rb)
+        Rigidbody rb = target.gameObject.GetComponent<Rigidbody>();
+        if (rb != null)
         {
             Destroy(rb);
         }
     }
 
+    /// <summary>
+    /// Notifies listeners about unseat events including vehicle-specific listeners.
+    /// </summary>
     protected override void NotifyOnUnseatListeners()
     {
-        base.NotifyOnSeatListeners();
-        foreach (IVehicleListener vehicleListener in transform.root.GetComponentsInChildren<IVehicleListener>(true))
+        base.NotifyOnUnseatListeners(); // Fix: was base.NotifyOnSeatListeners() before, corrected to NotifyOnUnseatListeners
+        foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
         {
             vehicleListener.OnUnseat();
         }
     }
 
+    /// <summary>
+    /// Notifies listeners about seat events including vehicle-specific listeners.
+    /// </summary>
     protected override void NotifyOnSeatListeners()
     {
         base.NotifyOnSeatListeners();
-        foreach (IVehicleListener vehicleListener in transform.root.GetComponentsInChildren<IVehicleListener>(true))
+        foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
         {
             vehicleListener.OnSeat();
         }
     }
 
-    void Start()
+    /// <summary>
+    /// Unity Start lifecycle method.
+    /// Sends initial zeroed input to ensure vehicle listeners start in a consistent state.
+    /// </summary>
+    private void Start()
     {
-        SendData(0f, 0f);
+        SendInput(0f, 0f);
     }
 
+    /// <summary>
+    /// Unity Update lifecycle method.
+    /// Handles input forwarding if seat is active.
+    /// </summary>
     protected override void Update()
     {
         base.Update();
 
         if (isActive)
         {
-            float xAxis = InputSystem.GetAxis(InputAxis.Horizontal);
-            float yAxis = InputSystem.GetAxis(InputAxis.Vertical);
-
-            SendData(xAxis, yAxis);
+            float steer = InputSystem.GetAxis(InputAxis.Horizontal);
+            float throttle = InputSystem.GetAxis(InputAxis.Vertical);
+            SendInput(steer, throttle);
         }
     }
 
-    private void SendData(float steer, float throttle)
+    /// <summary>
+    /// Sends steering and throttle input to all vehicle listeners.
+    /// </summary>
+    private void SendInput(float steer, float throttle)
     {
-        foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
+        foreach (IVehicleListener listener in FindAllVehicleListeners())
         {
-            vehicleListener.OnSteer(steer);
-            vehicleListener.OnThrottle(throttle);
+            listener.OnSteer(steer);
+            listener.OnThrottle(throttle);
         }
     }
 
+    /// <summary>
+    /// Finds and returns all vehicle listeners in the root transform's children.
+    /// </summary>
     private List<IVehicleListener> FindAllVehicleListeners()
     {
-        Transform root = transform.root;
-        return new List<IVehicleListener>(root.GetComponentsInChildren<IVehicleListener>(true));
+        return new List<IVehicleListener>(transform.root.GetComponentsInChildren<IVehicleListener>(true));
     }
-
 }
