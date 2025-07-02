@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class GrabListener : MonoBehaviour, IGrabbable
+public class DragListener : MonoBehaviour, IGrabbable
 {
     public UnityEvent onGrab;
     public UnityEvent onRelease;

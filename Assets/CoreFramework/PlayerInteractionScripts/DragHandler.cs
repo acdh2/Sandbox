@@ -142,7 +142,13 @@ public class DragHandler : MonoBehaviour
     /// <param name="targetObject">Object being grabbed.</param>
     private void OnGrabEvent(GameObject targetObject)
     {
-        targetObject.GetComponent<IGrabbable>()?.OnGrab();
+        if (targetObject != null)
+        {
+            foreach (IGrabbable grabbable in targetObject.transform.root.GetComponentsInChildren<IGrabbable>())
+            {
+                grabbable.OnGrab();
+            }
+        }
     }
 
     /// <summary>
@@ -151,7 +157,13 @@ public class DragHandler : MonoBehaviour
     /// <param name="targetObject">Object being released.</param>
     private void OnReleaseEvent(GameObject targetObject)
     {
-        targetObject.GetComponent<IGrabbable>()?.OnRelease();
+        if (targetObject != null)
+        {
+            foreach (IGrabbable grabbable in targetObject.transform.root.GetComponentsInChildren<IGrabbable>())
+            {
+                grabbable.OnRelease();
+            }
+        }
     }
 
     /// <summary>

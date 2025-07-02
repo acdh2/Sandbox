@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Represents an object that can be selected, with description and drag state.
 /// </summary>
-public class Selectable : MonoBehaviour
+public class Selectable : MonoBehaviour, IGrabbable
 {
     [Tooltip("Description of the object, displayed in UI or tooltips")]
     [SerializeField]
@@ -22,4 +22,32 @@ public class Selectable : MonoBehaviour
     /// Indicates if the object is draggable by the player.
     /// </summary>
     public bool IsDraggable => isDraggable;
+
+    public bool MakeRigidbodyKinematicWhenDragged = false;
+
+    private bool previousKinematicSetting = false;
+
+    public void OnGrab()
+    {
+        if (MakeRigidbodyKinematicWhenDragged)
+        {
+            Rigidbody rigidbody = GetComponent<Rigidbody>();
+            if (rigidbody) {
+                previousKinematicSetting = rigidbody.isKinematic;
+                rigidbody.isKinematic = true;
+            }
+        }
+    }
+
+    public void OnRelease()
+    {
+        if (MakeRigidbodyKinematicWhenDragged)
+        {
+            Rigidbody rigidbody = GetComponent<Rigidbody>();
+            if (rigidbody)
+            {
+                rigidbody.isKinematic = previousKinematicSetting;
+            }
+        }
+    }
 }
