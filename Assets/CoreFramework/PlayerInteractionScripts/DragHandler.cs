@@ -128,6 +128,8 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void StopDragging()
     {
+        if (currentState != DragState.Dragging) return;
+
         if (selectedTransform != null)
             OnReleaseEvent(selectedTransform.gameObject);
 

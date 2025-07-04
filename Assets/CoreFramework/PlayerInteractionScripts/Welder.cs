@@ -74,7 +74,7 @@ public class Welder : MonoBehaviour
             }
         }
 
-        yield return null;
+        yield return new WaitForEndOfFrame();
 
         if (addRigidbodyToRootAfterWeld)
         {
@@ -223,7 +223,7 @@ public class Welder : MonoBehaviour
     /// Attempts to weld the selected object to overlapping weldable objects.
     /// Performs up to MaxWeldsAtTheSameTime weld operations per call.
     /// </summary>
-    private void Weld(GameObject selected)
+    public void Weld(GameObject selected)
     {
         if (selected == null) return;
 
@@ -237,11 +237,11 @@ public class Welder : MonoBehaviour
 
             if (selectedWeldable.transform.parent == null)
             {
-                selectedWeldable.Weld(newParent);
+                selectedWeldable.WeldTo(newParent);
             }
             else
             {
-                newParent.Weld(selectedWeldable);
+                newParent.WeldTo(selectedWeldable);
             }
         }
 

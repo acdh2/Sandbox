@@ -11,7 +11,7 @@ public class Selectable : MonoBehaviour, IGrabbable
 
     [Tooltip("Indicates whether this object can be dragged")]
     [SerializeField]
-    private bool isDraggable = false;
+    private bool isDraggable = true;
 
     /// <summary>
     /// Gets the description text of this object.

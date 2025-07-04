@@ -754,6 +754,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectDescription: Spawn Wheel
   isDraggable: 0
+  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!114 &459724335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1118,6 +1119,10 @@ PrefabInstance:
     - target: {fileID: 5099684616350230806, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: unweldableLayers.m_Bits
       value: 192
+      objectReference: {fileID: 0}
+    - target: {fileID: 5099684616350230806, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: removeRigidbodiesAfterWeld
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5126527961139664765, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_Layer
@@ -1950,6 +1955,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectDescription: Spawn CarBody
   isDraggable: 0
+  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!4 &1133418481 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3676226185466253098, guid: 3b0fb5e054d64489ba144624ab15e98d, type: 3}
@@ -2508,6 +2514,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectDescription: Spawn VehicleSeat
   isDraggable: 0
+  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!114 &1743502212
 MonoBehaviour:
   m_ObjectHideFlags: 0
