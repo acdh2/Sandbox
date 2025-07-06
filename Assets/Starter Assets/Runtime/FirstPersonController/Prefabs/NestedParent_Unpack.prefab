@@ -142,7 +142,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blendMaterial: {fileID: 2100000, guid: d79bceb3e63c54c208ebee0bf06efda6, type: 2}
-  defaultEmptyTexture: {fileID: 2800000, guid: eed6e824a42b14a66a2e70fa9ec4f56d, type: 3}
 --- !u!1 &7094977340588366727
 GameObject:
   m_ObjectHideFlags: 0
@@ -214,6 +213,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectionLayerName: Selection
+  raycastDistance: 8
 --- !u!114 &7707080727159613314
 MonoBehaviour:
   m_ObjectHideFlags: 0

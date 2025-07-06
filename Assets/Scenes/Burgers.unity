@@ -927,6 +927,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2862278905927073192, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: m_Name
+      value: PlayerFollowCamera
+      objectReference: {fileID: 0}
     - target: {fileID: 3258136200952170892, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: blendMaterial
       value: 
@@ -1007,11 +1011,42 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Priority.Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Priority.m_Value
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: m_LegacyPriority
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: m_StreamingVersion
+      value: 20241001
+      objectReference: {fileID: 0}
+    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Target.TrackingTarget
+      value: 
+      objectReference: {fileID: 710325477}
+    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Target.CustomLookAtTarget
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 2862278905927072854, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+    - {fileID: 4067164588334880179, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+--- !u!4 &710325477 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5242107653240477475, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+  m_PrefabInstance: {fileID: 710325476}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &766428494
 GameObject:
   m_ObjectHideFlags: 0
