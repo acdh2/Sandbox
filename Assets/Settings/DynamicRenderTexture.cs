@@ -4,7 +4,6 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Camera))]
 public class DynamicRenderTexture : MonoBehaviour
 {
-    //public RawImage targetRawImage;  // Assign this in the Inspector
     private Camera cam;
     private RenderTexture renderTex;
 
@@ -15,7 +14,6 @@ public class DynamicRenderTexture : MonoBehaviour
 
     void Start()
     {
-        //targetRawImage.enabled = true;
         cam = GetComponent<Camera>();
         cam.enabled = true;
         UpdateRenderTexture();
@@ -50,6 +48,7 @@ public class DynamicRenderTexture : MonoBehaviour
 
     void OnDestroy()
     {
+        blendMaterial.SetTexture("_RenderTexture", null);
         if (renderTex != null)
         {
             renderTex.Release();
