@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public interface IGrabbable
+public interface IDragListener
 {
     public void OnGrab();
     public void OnRelease();

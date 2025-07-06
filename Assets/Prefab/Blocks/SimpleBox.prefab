@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 8782271014217665781}
   - component: {fileID: 7767153266115694027}
   - component: {fileID: 3525975054492890541}
-  - component: {fileID: 5321140015325370691}
   - component: {fileID: 8899344446002037471}
+  - component: {fileID: 1239268585587502228}
   m_Layer: 0
   m_Name: SimpleBox
   m_TagString: Untagged
@@ -125,19 +125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectDescription: 
   isDraggable: 1
---- !u!114 &5321140015325370691
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7522775681573611154}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mode: 3
+  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!114 &8899344446002037471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -156,3 +144,16 @@ MonoBehaviour:
   onUnweld:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1239268585587502228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7522775681573611154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 295a04f22f6f34bb98d116689a419df7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 3

@@ -12,6 +12,8 @@ public class SelectionHandler : MonoBehaviour
     [Tooltip("Layer used for visual feedback on selected objects.")]
     public string selectionLayerName = "Selection";
 
+    public float raycastDistance = 8f;
+
     public GameObject CurrentSelection { get; private set; }
 
     private Camera cam;
@@ -74,7 +76,7 @@ public class SelectionHandler : MonoBehaviour
     private GameObject GetSelectableUnderCursor()
     {
         Ray ray = cam.ScreenPointToRay(InputSystem.GetPointerPosition());
-        RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
+        RaycastHit[] hits = Physics.RaycastAll(ray, raycastDistance);
 
         GameObject closest = null;
         float closestDistance = float.MaxValue;

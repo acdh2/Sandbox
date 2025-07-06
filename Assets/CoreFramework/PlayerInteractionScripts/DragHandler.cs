@@ -68,6 +68,18 @@ public class DragHandler : MonoBehaviour
         HandleRotation();
     }
 
+    void FixedUpdate()
+    {
+        if (currentState == DragState.Dragging)
+        {
+            if (selectedTransform != null)
+            {
+                UpdateTargetTransform();
+                ApplyTransformToSelection();
+            }
+        }  
+    } 
+
     /// <summary>
     /// Handles user input based on current drag state.
     /// </summary>
@@ -83,11 +95,11 @@ public class DragHandler : MonoBehaviour
             case DragState.Dragging:
                 if (selectedTransform == null || InputSystem.GetPointerUp())
                     StopDragging();
-                else if (InputSystem.GetPointerHeld())
-                {
-                    UpdateTargetTransform();
-                    ApplyTransformToSelection();
-                }
+                // else if (InputSystem.GetPointerHeld())
+                // {
+                //     UpdateTargetTransform();
+                //     ApplyTransformToSelection();
+                // }
                 break;
         }
     }
@@ -131,7 +143,9 @@ public class DragHandler : MonoBehaviour
         if (currentState != DragState.Dragging) return;
 
         if (selectedTransform != null)
+        {
             OnReleaseEvent(selectedTransform.gameObject);
+        }
 
         selectedTransform = null;
         selectionHandler.UnlockSelection();
@@ -139,31 +153,31 @@ public class DragHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Raises grab event if the object implements IGrabbable.
+    /// Raises grab event if the object implements IDragListener.
     /// </summary>
     /// <param name="targetObject">Object being grabbed.</param>
     private void OnGrabEvent(GameObject targetObject)
     {
         if (targetObject != null)
         {
-            foreach (IGrabbable grabbable in targetObject.transform.root.GetComponentsInChildren<IGrabbable>())
+            foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
             {
-                grabbable.OnGrab();
+                dragListener.OnGrab();
             }
         }
     }
 
     /// <summary>
-    /// Raises release event if the object implements IGrabbable.
+    /// Raises release event if the object implements IDragListener.
     /// </summary>
     /// <param name="targetObject">Object being released.</param>
     private void OnReleaseEvent(GameObject targetObject)
     {
         if (targetObject != null)
         {
-            foreach (IGrabbable grabbable in targetObject.transform.root.GetComponentsInChildren<IGrabbable>())
+            foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
             {
-                grabbable.OnRelease();
+                dragListener.OnRelease();
             }
         }
     }

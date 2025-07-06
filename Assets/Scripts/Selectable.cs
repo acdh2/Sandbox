@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Represents an object that can be selected, with description and drag state.
 /// </summary>
-public class Selectable : MonoBehaviour, IGrabbable
+public class Selectable : MonoBehaviour, IDragListener
 {
     [Tooltip("Description of the object, displayed in UI or tooltips")]
     [SerializeField]
