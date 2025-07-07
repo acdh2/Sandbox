@@ -1,10 +1,6 @@
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using UnityEngine;
 
-/// <summary>
-/// Defines the welding modes an object can have.
-/// </summary>
 public enum WeldMode
 {
     None,
@@ -13,39 +9,43 @@ public enum WeldMode
     Both
 }
 
-/// <summary>
-/// Component that allows objects to "weld" to each other,
-/// managing parent-child relations and notifying listeners.
-/// </summary>
+// Nieuwe enum voor weld type
+public enum WeldType
+{
+    Undefined,
+    HierarchyBased,
+    PhysicsBased
+}
+
+[DisallowMultipleComponent]
 [RequireComponent(typeof(Selectable))]
 public class Weldable : MonoBehaviour
 {
-    // Public weld mode setting
     public WeldMode mode = WeldMode.Both;
 
-    // Connections to other Weldables
     private readonly HashSet<Weldable> connectedObjects = new();
 
-    /// <summary>
-    /// Whether this object can attach to others.
-    /// </summary>
-    public bool CanAttach => mode == WeldMode.AttachableOnly || mode == WeldMode.Both;
+    // Nieuwe property: huidige weld type, start op Undefined
+    private WeldType currentType = WeldType.Undefined;
 
-    /// <summary>
-    /// Whether this object can receive attachments.
-    /// </summary>
+    // Properties die je al had, blijven hetzelfde
+    public bool CanAttach => mode == WeldMode.AttachableOnly || mode == WeldMode.Both;
     public bool CanReceive => mode == WeldMode.ReceivableOnly || mode == WeldMode.Both;
 
     void Start()
     {
-        // On start, check if this object is a child of another Weldable.
-        // If yes, add this object as connection to that Weldable.
+        // Zoals eerder: check of we genest zijn onder andere Weldable
         Transform parent = transform.parent;
         while (parent != null)
         {
             Weldable parentWeld = parent.GetComponent<Weldable>();
             if (parentWeld != null)
             {
+                // Nieuwe regel: als currentType nog undefined, zetten op HierarchyBased
+                if (currentType == WeldType.Undefined)
+                {
+                    currentType = WeldType.HierarchyBased;
+                }
                 parentWeld.AddConnection(this);
                 break;
             }
@@ -53,18 +53,13 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Add a connection to another Weldable.
-    /// </summary>
-    /// <param name="newConnection">The other Weldable to connect to.</param>
-    /// <param name="reciprocal">Whether to add this connection reciprocally.</param>
     public void AddConnection(Weldable newConnection, bool reciprocal = true)
     {
         if (newConnection == null || newConnection == this) return;
 
-        if (connectedObjects.Add(newConnection)) // Add returns false if already present
+        if (connectedObjects.Add(newConnection))
         {
-            if (connectedObjects.Count == 1) // First connection
+            if (connectedObjects.Count == 1)
             {
                 OnWeld();
             }
@@ -76,11 +71,6 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Remove a connection to another Weldable.
-    /// </summary>
-    /// <param name="connection">The Weldable to disconnect from.</param>
-    /// <param name="reciprocal">Whether to remove this connection reciprocally.</param>
     public void RemoveConnection(Weldable connection, bool reciprocal = true)
     {
         if (connection == null) return;
@@ -92,26 +82,22 @@ public class Weldable : MonoBehaviour
                 connection.RemoveConnection(this, false);
             }
 
-            if (connectedObjects.Count == 0) // No more connections
+            if (connectedObjects.Count == 0)
             {
                 OnUnweld();
+
+                // Reset currentType als geen verbindingen meer
+                currentType = WeldType.Undefined;
             }
         }
     }
 
-    /// <summary>
-    /// Collect all IWeldListener components from this object, its parent, and children.
-    /// Skips child subtrees that contain another Weldable.
-    /// </summary>
-    /// <returns>List of IWeldListener components connected to this weldable.</returns>
     private List<IWeldListener> CollectConnectedIWeldListeners()
     {
         var listeners = new List<IWeldListener>();
 
-        // Add listeners from this object
         listeners.AddRange(GetComponents<IWeldListener>());
 
-        // Add listener from parent if exists
         if (transform.parent != null)
         {
             var parentListener = transform.parent.GetComponent<IWeldListener>();
@@ -121,7 +107,6 @@ public class Weldable : MonoBehaviour
             }
         }
 
-        // Traverse children, skip subtrees that have a Weldable component
         var stack = new Stack<Transform>();
         foreach (Transform child in transform)
         {
@@ -133,7 +118,7 @@ public class Weldable : MonoBehaviour
             Transform current = stack.Pop();
 
             if (current.GetComponent<Weldable>() != null)
-                continue; // Skip subtree
+                continue;
 
             listeners.AddRange(current.GetComponents<IWeldListener>());
 
@@ -146,9 +131,6 @@ public class Weldable : MonoBehaviour
         return listeners;
     }
 
-    /// <summary>
-    /// Detaches any child Weldables by removing their parent and cleaning up connections.
-    /// </summary>
     private void DetachChildren()
     {
         var foundWeldables = new List<Weldable>();
@@ -167,7 +149,6 @@ public class Weldable : MonoBehaviour
             if (weldable != null)
             {
                 foundWeldables.Add(weldable);
-                // Skip children of this weldable
                 continue;
             }
 
@@ -185,128 +166,127 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    // /// <summary>
-    // /// Finds the first Welder in the project
-    // /// And uses it to weld this object
-    // /// </summary>
-    // public void Weld()
-    // {
-    //     Welder welder = FindAnyObjectByType<Welder>();
-    //     if (welder)
-    //     {
-    //         welder.Weld(gameObject);
-    //     }
-    // }
-
-    Quaternion RotationFromAxes(Vector3 right, Vector3 up, Vector3 forward)
+    public bool TrySetWeldType(WeldType newType)
     {
-        // Zorg dat het een orthonormale matrix is
-        right = right.normalized;
-        forward = forward.normalized;
-        up = Vector3.Cross(forward, right).normalized; // Recalculate up to ensure orthogonality
-        right = Vector3.Cross(up, forward).normalized; // Recalculate right again
-        Matrix4x4 m = new Matrix4x4();
-        m.SetColumn(0, new Vector4(right.x, right.y, right.z, 0));
-        m.SetColumn(1, new Vector4(up.x, up.y, up.z, 0));
-        m.SetColumn(2, new Vector4(forward.x, forward.y, forward.z, 0));
-        m.SetColumn(3, new Vector4(0, 0, 0, 1));
-        return m.rotation;
-    }
-    // private void MatchWeldingPoints(Transform other)
-    // {
-    //     WeldingPoint[] myPoints = GetComponentsInChildren<WeldingPoint>(true);
-    //     WeldingPoint[] otherPoints = other.GetComponentsInChildren<WeldingPoint>(true);
-
-    //     float bestDistance = float.MaxValue;
-    //     WeldingPoint bestMine = null;
-    //     WeldingPoint bestOther = null;
-
-    //     foreach (var myPoint in myPoints)
-    //     {
-    //         foreach (var otherPoint in otherPoints)
-    //         {
-    //             float dist = Vector3.Distance(myPoint.transform.position, otherPoint.transform.position);
-    //             float combinedRadius = myPoint.radius + otherPoint.radius;
-
-    //             if (dist <= combinedRadius && dist < bestDistance)
-    //             {
-    //                 bestDistance = dist;
-    //                 bestMine = myPoint;
-    //                 bestOther = otherPoint;
-    //             }
-    //         }
-    //     }
-
-    //     if (bestMine != null && bestOther != null)
-    //     {
-    //         // 1. Verplaats positie
-    //         Vector3 offset = bestMine.transform.position - bestOther.transform.position;
-    //         Transform otherRoot = other.transform.root;
-    //         otherRoot.position += offset;
-
-    //         // 2. Verzamel gewenste lokale richtingen (in wereldruimte)
-    //         Vector3 targetRight = bestMine.alignX ? bestMine.transform.right : -bestOther.transform.right;
-    //         Vector3 targetUp = bestMine.alignY ? bestMine.transform.up : -bestOther.transform.up;
-    //         Vector3 targetForward = bestMine.alignZ ? bestMine.transform.forward : -bestOther.transform.forward;
-
-    //         // 3. Zet deze wereldrichtingen om naar local space van bestOther
-    //         Vector3 localRight = bestOther.transform.InverseTransformDirection(targetRight);
-    //         Vector3 localUp = bestOther.transform.InverseTransformDirection(targetUp);
-    //         Vector3 localForward = bestOther.transform.InverseTransformDirection(targetForward);
-
-    //         // 4. Bouw gewenste lokale rotatie op
-    //         Quaternion desiredLocalRotation = Quaternion.LookRotation(localForward, localUp);
-
-    //         // 5. Zet gewenste lokale rotatie om naar wereldruimte
-    //         Quaternion desiredWorldRotation = bestOther.transform.parent != null
-    //             ? bestOther.transform.parent.rotation * desiredLocalRotation
-    //             : desiredLocalRotation;
-
-    //         // 6. Bereken delta en pas toe op root
-    //         Quaternion delta = desiredWorldRotation * Quaternion.Inverse(bestOther.transform.rotation);
-    //         otherRoot.rotation = delta * otherRoot.rotation;
-    //     }
-    // }
-
+        if (currentType == WeldType.Undefined)
+        {
+            currentType = newType;
+            return true;
+        }
+        else if (currentType != newType)
+        {
+            Debug.LogWarning($"WeldType mismatch: current is {currentType}, tried to set {newType}");
+            return false;
+        }
+        return true;
+    }    
 
     /// <summary>
-    /// Weld this object to another Weldable.
-    /// Sets the other as parent and adds connection.
+    /// Weld this object to another Weldable using specified WeldType.
     /// </summary>
     /// <param name="target">Weldable to weld to.</param>
-    public void WeldTo(Weldable target)
+    /// <param name="weldType">Type of weld: HierarchyBased or PhysicsBased.</param>
+    public void WeldTo(Weldable target, WeldType weldType)
     {
         if (target == null) return;
 
-        //MatchWeldingPoints(target.transform);
-        transform.SetParent(target.transform);
-        AddConnection(target);
+        if (!TrySetWeldType(weldType) || !target.TrySetWeldType(weldType))
+        {
+            Debug.LogWarning($"Weld between '{name}' and '{target.name}' failed due to WeldType mismatch.");
+            return;
+        }
 
-        //FindAnyObjectByType<DragHandler>().StopDragging(); //FIX DEBUG!!!
+        switch (weldType)
+        {
+            case WeldType.HierarchyBased:
+                // Gebruik oude parent logica
+                transform.SetParent(target.transform);
+                AddConnection(target);
+                break;
+
+            case WeldType.PhysicsBased:
+                // Voeg Rigidbody toe als die nog niet bestaat
+                Rigidbody rb = GetComponent<Rigidbody>();
+                if (rb == null)
+                {
+                    rb = gameObject.AddComponent<Rigidbody>();
+                    rb.mass = 1f; // Standaard massa, kan aangepast worden
+                }
+
+                // Voeg FixedJoint toe als die nog niet bestaat
+                FixedJoint joint = GetComponent<FixedJoint>();
+                if (joint == null)
+                {
+                    joint = gameObject.AddComponent<FixedJoint>();
+                }
+                joint.connectedBody = target.GetComponent<Rigidbody>();
+
+                AddConnection(target);
+                break;
+
+            default:
+                Debug.LogWarning($"Unsupported WeldType {weldType}");
+                break;
+        }
     }
 
     /// <summary>
-    /// Unweld this object from its parent and detach children weldables.
+    /// Unweld this object from its parent or joint, and detach children.
     /// </summary>
     public void Unweld()
     {
-        if (transform.parent != null)
+        switch (currentType)
         {
-            Weldable weldableParent = transform.parent.GetComponentInParent<Weldable>(true);
-            if (weldableParent != null)
-            {
-                transform.SetParent(null, true);
-                RemoveConnection(weldableParent);
-            }
+            case WeldType.HierarchyBased:
+                if (transform.parent != null)
+                {
+                    Weldable weldableParent = transform.parent.GetComponentInParent<Weldable>(true);
+                    if (weldableParent != null)
+                    {
+                        transform.SetParent(null, true);
+                        RemoveConnection(weldableParent);
+                    }
+                }
+                DetachChildren();
+                break;
+
+            case WeldType.PhysicsBased:
+                // Verwijder FixedJoint als die bestaat
+                FixedJoint joint = GetComponent<FixedJoint>();
+                if (joint != null)
+                {
+                    Weldable connectedWeldable = null;
+                    if (joint.connectedBody != null)
+                    {
+                        connectedWeldable = joint.connectedBody.GetComponent<Weldable>();
+                    }
+
+                    Destroy(joint);
+
+                    if (connectedWeldable != null)
+                    {
+                        RemoveConnection(connectedWeldable);
+                        connectedWeldable.RemoveConnection(this);
+                    }
+                }
+
+                // Rigidbody mag blijven zitten, kan eventueel apart verwijderd worden als je wil
+
+                DetachChildren();
+                break;
+
+            case WeldType.Undefined:
+                // Niks te doen
+                break;
         }
 
-        DetachChildren();
+        // Reset currentType als geen connecties meer
+        if (connectedObjects.Count == 0)
+        {
+            currentType = WeldType.Undefined;
+        }
     }
 
-    /// <summary>
-    /// Called when the first connection is made.
-    /// Notifies all connected IWeldListeners of weld event.
-    /// </summary>
     private void OnWeld()
     {
         foreach (IWeldListener listener in CollectConnectedIWeldListeners())
@@ -315,10 +295,6 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Called when last connection is removed.
-    /// Notifies all connected IWeldListeners of unweld event.
-    /// </summary>
     private void OnUnweld()
     {
         foreach (IWeldListener listener in CollectConnectedIWeldListeners())

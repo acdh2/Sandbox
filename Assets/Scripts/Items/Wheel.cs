@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Synchronizes the visual wheel transform with its corresponding WheelCollider's position and rotation.
 /// </summary>
+[DisallowMultipleComponent]
 public class Wheel : MonoBehaviour
 {
     private WheelCollider wheelCollider;

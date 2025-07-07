@@ -183,6 +183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectDescription: A vehicle wheel
   isDraggable: 1
+  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!1 &5225748711847651476
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,6 +281,7 @@ GameObject:
   - component: {fileID: 498299616252946738}
   - component: {fileID: 2971449750289893247}
   - component: {fileID: 2723276090580392287}
+  - component: {fileID: 6703943943147098690}
   m_Layer: 0
   m_Name: WheelCollider
   m_TagString: Untagged
@@ -316,8 +318,8 @@ WheelCollider:
   m_SuspensionSpring:
     spring: 35000
     damper: 4500
-    targetPosition: 0.5
-  m_SuspensionDistance: 0.3
+    targetPosition: 0
+  m_SuspensionDistance: 0
   m_ForceAppPointDistance: 0
   m_Mass: 20
   m_WheelDampingRate: 0.25
@@ -401,34 +403,10 @@ MonoBehaviour:
         m_CallState: 2
   onSeat:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2971449750289893247}
-        m_TargetAssemblyTypeName: UnityEngine.Collider, UnityEngine
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
+      m_Calls: []
   onUnseat:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2971449750289893247}
-        m_TargetAssemblyTypeName: UnityEngine.Collider, UnityEngine
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   onWheelPosition:
   - position: 8
     onWheelPosition:
@@ -446,3 +424,45 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!114 &6703943943147098690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381845466425383013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7f41ba64aed54e6a946f4eba9454ba0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onWeld:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2971449750289893247}
+        m_TargetAssemblyTypeName: UnityEngine.Collider, UnityEngine
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  onUnweld:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2971449750289893247}
+        m_TargetAssemblyTypeName: UnityEngine.Collider, UnityEngine
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

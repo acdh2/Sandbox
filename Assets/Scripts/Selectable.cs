@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Represents an object that can be selected, with description and drag state.
 /// </summary>
+[DisallowMultipleComponent]
 public class Selectable : MonoBehaviour, IDragListener
 {
     [Tooltip("Description of the object, displayed in UI or tooltips")]
@@ -27,12 +28,18 @@ public class Selectable : MonoBehaviour, IDragListener
 
     private bool previousKinematicSetting = false;
 
+    private bool isBeingDragged = false;
+
     public void OnGrab()
     {
+        if (isBeingDragged) return;
+        isBeingDragged = true;
+
         if (MakeRigidbodyKinematicWhenDragged)
         {
             Rigidbody rigidbody = GetComponent<Rigidbody>();
-            if (rigidbody) {
+            if (rigidbody)
+            {
                 previousKinematicSetting = rigidbody.isKinematic;
                 rigidbody.isKinematic = true;
             }
@@ -41,6 +48,9 @@ public class Selectable : MonoBehaviour, IDragListener
 
     public void OnRelease()
     {
+        if (!isBeingDragged) return;
+        isBeingDragged = false;
+
         if (MakeRigidbodyKinematicWhenDragged)
         {
             Rigidbody rigidbody = GetComponent<Rigidbody>();

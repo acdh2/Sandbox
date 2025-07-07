@@ -927,30 +927,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2862278905927073192, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_Name
-      value: PlayerFollowCamera
-      objectReference: {fileID: 0}
-    - target: {fileID: 3258136200952170892, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: blendMaterial
-      value: 
-      objectReference: {fileID: 2100000, guid: d79bceb3e63c54c208ebee0bf06efda6, type: 2}
-    - target: {fileID: 3258136200952170892, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: targetRawImage
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3589931817437168577, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4642712936299958294, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_Depth
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4642712936299958294, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4997427470754209547, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: onSeat.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -963,10 +939,6 @@ PrefabInstance:
       propertyPath: onThrottle.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 457614613}
-    - target: {fileID: 5126527961139664765, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6556307555316582679, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.29
@@ -1011,42 +983,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: Priority.Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: Priority.m_Value
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_LegacyPriority
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: m_StreamingVersion
-      value: 20241001
-      objectReference: {fileID: 0}
-    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: Target.TrackingTarget
-      value: 
-      objectReference: {fileID: 710325477}
-    - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: Target.CustomLookAtTarget
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 2862278905927072854, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-    - {fileID: 4067164588334880179, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
---- !u!4 &710325477 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5242107653240477475, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-  m_PrefabInstance: {fileID: 710325476}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &766428494
 GameObject:
   m_ObjectHideFlags: 0
@@ -2122,6 +2063,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bun2
       objectReference: {fileID: 0}
+    - target: {fileID: 4394163451404498369, guid: 8f2904c689ba14f6da364a6ee6f9ec46, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6705691818150644415, guid: 8f2904c689ba14f6da364a6ee6f9ec46, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.37
@@ -2406,6 +2351,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bun1
       objectReference: {fileID: 0}
+    - target: {fileID: 4394163451404498369, guid: 8f2904c689ba14f6da364a6ee6f9ec46, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6705691818150644415, guid: 8f2904c689ba14f6da364a6ee6f9ec46, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.24
@@ -2503,6 +2452,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Patty
       objectReference: {fileID: 0}
+    - target: {fileID: 8957978617364653052, guid: 85dc151af57c849c49a483b0701e50b2, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2516,6 +2469,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3457722708406739334, guid: 9b7f293e1946e440a80afb7ee74c9bc0, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4441070312171517498, guid: 9b7f293e1946e440a80afb7ee74c9bc0, type: 3}
       propertyPath: m_Name
       value: Cheese
@@ -2576,6 +2533,10 @@ PrefabInstance:
     - target: {fileID: 3715603126351334261, guid: c577a079fb6974b96ba3b13bcbbaeca5, type: 3}
       propertyPath: m_Name
       value: Lettuce
+      objectReference: {fileID: 0}
+    - target: {fileID: 5266970634301342798, guid: c577a079fb6974b96ba3b13bcbbaeca5, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6324085370279383453, guid: c577a079fb6974b96ba3b13bcbbaeca5, type: 3}
       propertyPath: m_LocalPosition.x

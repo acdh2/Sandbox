@@ -2,6 +2,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+enum WeldingType
+{
+    HierarchyBased,
+    PhysicsBased
+}
+
 [RequireComponent(typeof(SelectionHandler))]
 public class Welder : MonoBehaviour
 {
@@ -9,12 +15,10 @@ public class Welder : MonoBehaviour
     private const float MaxPenetrationThreshold = 0.01f;
     private const float WeldProximityThreshold = 0.01f;
 
+
+    public WeldType weldingType = WeldType.HierarchyBased;
+
     private SelectionHandler selectionHandler;
-
-    public bool removeRigidbodiesAfterWeld = false;
-    public bool addRigidbodyToRootAfterWeld = false;
-
-    public GameObject rigidbodyPrefab = null;
 
     private void Start()
     {
@@ -25,67 +29,18 @@ public class Welder : MonoBehaviour
     {
         // Trigger weld on current selection when weld button is pressed
         if (InputSystem.GetButtonDown(InputButton.Weld))
-            Weld(selectionHandler.CurrentSelection);
+        {
+            GameObject selected = selectionHandler.CurrentSelection;
+            selectionHandler.ClearSelection();
+            Weld(selected);
+        }
 
         // Trigger unweld on current selection when unweld button is pressed
         if (InputSystem.GetButtonDown(InputButton.Unweld))
-            Unweld(selectionHandler.CurrentSelection);
-    }
-
-    /// <summary>
-    /// Copies all relevant Rigidbody settings from a source object to a target GameObject.
-    /// Adds a Rigidbody to the target if it doesn't already have one.
-    /// This does not copy runtime properties like velocity or position.
-    /// </summary>
-    private void CopyRigidbody(Rigidbody source, GameObject target)
-    {
-        if (source == null)
         {
-            target.AddComponent<Rigidbody>();
-            return;
-        }
-
-        Rigidbody copy = target.GetComponent<Rigidbody>();
-        if (copy == null)
-            copy = target.AddComponent<Rigidbody>();
-
-        copy.mass = source.mass;
-        copy.linearDamping = source.linearDamping;
-        copy.angularDamping = source.angularDamping;
-        copy.useGravity = source.useGravity;
-        copy.isKinematic = source.isKinematic;
-        copy.interpolation = source.interpolation;
-        copy.collisionDetectionMode = source.collisionDetectionMode;
-        copy.constraints = source.constraints;
-    }
-
-    /// <summary>
-    /// Based on the public settings above, this method removes
-    /// all Rigidbodies from the hierarchy and adds a new one
-    /// on the root object. The new Rigidbody will be added new frame
-    /// </summary>
-    private IEnumerator HandleRigidbodies(GameObject target)
-    {
-        if (removeRigidbodiesAfterWeld)
-        {
-            foreach (Rigidbody rigidbody in target.GetComponentsInChildren<Rigidbody>())
-            {
-                Destroy(rigidbody);
-            }
-        }
-
-        yield return new WaitForEndOfFrame();
-
-        if (addRigidbodyToRootAfterWeld)
-        {
-            if (rigidbodyPrefab != null)
-            {
-                CopyRigidbody(rigidbodyPrefab.GetComponent<Rigidbody>(), target);
-            }
-            else
-            {
-                CopyRigidbody(null, target);
-            }
+            GameObject selected = selectionHandler.CurrentSelection;
+            selectionHandler.ClearSelection();
+            Unweld(selected);
         }
     }
 
@@ -237,17 +192,12 @@ public class Welder : MonoBehaviour
 
             if (selectedWeldable.transform.parent == null)
             {
-                selectedWeldable.WeldTo(newParent);
+                selectedWeldable.WeldTo(newParent, weldingType);
             }
             else
             {
-                newParent.WeldTo(selectedWeldable);
+                newParent.WeldTo(selectedWeldable, weldingType);
             }
-        }
-
-        if (selected != null)
-        {
-            StartCoroutine(HandleRigidbodies(selected.transform.root.gameObject));
         }
     }
 

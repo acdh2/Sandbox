@@ -5,6 +5,7 @@ using System.Collections.Generic;
 /// Extends Seat to add vehicle-specific functionality such as steering and throttle input handling.
 /// Notifies vehicle listeners of seat and unseat events, as well as steering/throttle input.
 /// </summary>
+[DisallowMultipleComponent]
 public class VehicleSeat : Seat, IWeldListener
 {
     // Tracks if the seat is currently occupied
