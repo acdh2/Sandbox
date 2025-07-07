@@ -22,22 +22,22 @@ public class DragHandler : MonoBehaviour
     /// Flags to control which axes allow rotation.
     /// </summary>
     [Serializable]
-    public struct RotationAxisFlags
+    public enum RotationAxisFlags
     {
-        public bool X;
-        public bool Y;
-        public bool Z;
+        None,
+        YawOnly,
+        All
     }
 
     [Header("Grid Settings")]
     public Vector3 gridSize = Vector3.one;
     public Vector3 gridCenter = Vector3.zero;
 
-    [Header("Placement Constraints")]
-    public float minY = 0f;
+    //[Header("Placement Constraints")]
+    //public float minY = 0f;
 
     [Header("Rotation Settings")]
-    public RotationAxisFlags allowRotation = new RotationAxisFlags { X = true, Y = true, Z = true };
+    public RotationAxisFlags allowRotation = RotationAxisFlags.All;
     public Vector3 rotationSnapDegrees = Vector3.zero;
 
     [Header("Movement Settings")]
@@ -70,14 +70,19 @@ public class DragHandler : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (currentState == DragState.Dragging)
+        if (selectionHandler.CurrentSelection == null)
         {
-            if (selectedTransform != null)
+            StopDragging();
+            return;
+        }
+        if (currentState == DragState.Dragging)
             {
-                UpdateTargetTransform();
-                ApplyTransformToSelection();
-            }
-        }  
+                if (selectedTransform != null)
+                {
+                    UpdateTargetTransform();
+                    ApplyTransformToSelection();
+                }
+            }  
     } 
 
     /// <summary>
@@ -95,11 +100,6 @@ public class DragHandler : MonoBehaviour
             case DragState.Dragging:
                 if (selectedTransform == null || InputSystem.GetPointerUp())
                     StopDragging();
-                // else if (InputSystem.GetPointerHeld())
-                // {
-                //     UpdateTargetTransform();
-                //     ApplyTransformToSelection();
-                // }
                 break;
         }
     }
@@ -131,8 +131,7 @@ public class DragHandler : MonoBehaviour
         selectedTransform = selectedObject.transform.root;
         localOffset = cam.transform.InverseTransformPoint(selectedTransform.position);
 
-        if (allowRotation.X || allowRotation.Y || allowRotation.Z)
-            rotationOffset = Quaternion.Inverse(cam.transform.rotation) * selectedTransform.rotation;
+        rotationOffset = Quaternion.Inverse(cam.transform.rotation) * selectedTransform.rotation;
     }
 
     /// <summary>
@@ -260,10 +259,15 @@ public class DragHandler : MonoBehaviour
         Vector3 worldTargetPosition = cam.transform.TransformPoint(localOffset);
         targetPosition = SnapToGrid(worldTargetPosition);
 
-        if (allowRotation.X || allowRotation.Y || allowRotation.Z)
-            targetRotation = GetDragRotation();
-        else
-            targetRotation = Quaternion.Euler(GetSnappedRotation(selectedTransform.rotation.eulerAngles));
+        Vector3 currentRotation = selectedTransform.rotation.eulerAngles;
+        if (allowRotation != RotationAxisFlags.None)
+        {
+            Vector3 dragRotation = GetDragRotation();
+            if (allowRotation == RotationAxisFlags.All) currentRotation = dragRotation;
+            if (allowRotation == RotationAxisFlags.YawOnly) currentRotation.y = dragRotation.y;
+        }
+
+        targetRotation = Quaternion.Euler(GetSnappedRotation(currentRotation)); 
     }
 
     /// <summary>
@@ -288,54 +292,35 @@ public class DragHandler : MonoBehaviour
                 selectedTransform.rotation = targetRotation;
         }
 
-        ApplyPlacementConstraints();
+        //ApplyPlacementConstraints();
     }
 
-    /// <summary>
-    /// Ensures the selected object's bottom stays above the minimum Y position.
-    /// </summary>
-    private void ApplyPlacementConstraints()
+    // /// <summary>
+    // /// Ensures the selected object's bottom stays above the minimum Y position.
+    // /// </summary>
+    // private void ApplyPlacementConstraints()
+    // {
+    //     if (selectedTransform == null) return;
+
+    //     Renderer[] renderers = selectedTransform.GetComponentsInChildren<Renderer>();
+    //     if (renderers.Length == 0) return;
+
+    //     Bounds combinedBounds = renderers[0].bounds;
+    //     for (int i = 1; i < renderers.Length; i++)
+    //         combinedBounds.Encapsulate(renderers[i].bounds);
+
+    //     float offsetY = minY - combinedBounds.min.y;
+    //     if (offsetY > 0f)
+    //     {
+    //         Vector3 newPosition = selectedTransform.position + new Vector3(0f, offsetY, 0f);
+    //         selectedTransform.position = newPosition;
+    //         targetPosition = newPosition;
+    //     }
+    // }
+
+    private Vector3 GetDragRotation()
     {
-        if (selectedTransform == null) return;
-
-        Renderer[] renderers = selectedTransform.GetComponentsInChildren<Renderer>();
-        if (renderers.Length == 0) return;
-
-        Bounds combinedBounds = renderers[0].bounds;
-        for (int i = 1; i < renderers.Length; i++)
-            combinedBounds.Encapsulate(renderers[i].bounds);
-
-        float offsetY = minY - combinedBounds.min.y;
-        if (offsetY > 0f)
-        {
-            Vector3 newPosition = selectedTransform.position + new Vector3(0f, offsetY, 0f);
-            selectedTransform.position = newPosition;
-            targetPosition = newPosition;
-
-            // Optional: adjust localOffset if needed to prevent snapping issues next frame
-            // localOffset += cam.transform.InverseTransformVector(Vector3.up * offsetY);
-        }
-    }
-
-    /// <summary>
-    /// Computes the rotation of the dragged object relative to the camera, applying allowed axes and snapping.
-    /// </summary>
-    private Quaternion GetDragRotation()
-    {
-        Quaternion rawRotation = cam.transform.rotation * rotationOffset;
-        Vector3 cameraEuler = rawRotation.eulerAngles;
-        Vector3 currentEuler = selectedTransform.rotation.eulerAngles;
-
-        Vector3 resultEuler = currentEuler;
-
-        if (allowRotation.X)
-            resultEuler.x = cameraEuler.x;
-        if (allowRotation.Y)
-            resultEuler.y = cameraEuler.y;
-        if (allowRotation.Z)
-            resultEuler.z = cameraEuler.z;
-
-        return Quaternion.Euler(GetSnappedRotation(resultEuler));
+        return (cam.transform.rotation * rotationOffset).eulerAngles;
     }
 
     /// <summary>
@@ -368,7 +353,7 @@ public class DragHandler : MonoBehaviour
             offset.z = Mathf.Round(offset.z / gridSize.z) * gridSize.z;
 
         Vector3 snappedPosition = gridCenter + offset;
-        snappedPosition.y = Mathf.Max(minY, snappedPosition.y);
+        //snappedPosition.y = Mathf.Max(minY, snappedPosition.y);
 
         return snappedPosition;
     }
