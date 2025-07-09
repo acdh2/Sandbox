@@ -32,6 +32,8 @@ public class Weldable : MonoBehaviour
     public bool CanAttach => mode == WeldMode.AttachableOnly || mode == WeldMode.Both;
     public bool CanReceive => mode == WeldMode.ReceivableOnly || mode == WeldMode.Both;
 
+    private readonly Dictionary<Weldable, FixedJoint> physicsJoints = new();
+
     void Start()
     {
         // Zoals eerder: check of we genest zijn onder andere Weldable
@@ -53,8 +55,18 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    private bool HasConnection(Weldable target) {
+        return connectedObjects.Contains(target);
+    }
+
     public void AddConnection(Weldable newConnection, bool reciprocal = true)
     {
+        if (HasConnection(newConnection))
+        {
+            if (reciprocal) newConnection.AddConnection(this, false);
+            return;
+        }
+
         if (newConnection == null || newConnection == this) return;
 
         if (connectedObjects.Add(newConnection))
@@ -179,7 +191,27 @@ public class Weldable : MonoBehaviour
             return false;
         }
         return true;
-    }    
+    }
+
+    private Rigidbody AddRigidbody(GameObject target)
+    {
+        Rigidbody rb = target.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = target.AddComponent<Rigidbody>();
+        }
+        return rb;
+    }
+
+    private FixedJoint GetFixedJoint(GameObject target)
+    {
+        FixedJoint joint = target.GetComponent<FixedJoint>();
+        if (joint == null)
+        {
+            joint = target.AddComponent<FixedJoint>();
+        }
+        return joint;
+    }
 
     /// <summary>
     /// Weld this object to another Weldable using specified WeldType.
@@ -189,6 +221,8 @@ public class Weldable : MonoBehaviour
     public void WeldTo(Weldable target, WeldType weldType)
     {
         if (target == null) return;
+
+        if (HasConnection(target)) return;
 
         if (!TrySetWeldType(weldType) || !target.TrySetWeldType(weldType))
         {
@@ -205,21 +239,18 @@ public class Weldable : MonoBehaviour
                 break;
 
             case WeldType.PhysicsBased:
-                // Voeg Rigidbody toe als die nog niet bestaat
-                Rigidbody rb = GetComponent<Rigidbody>();
-                if (rb == null)
-                {
-                    rb = gameObject.AddComponent<Rigidbody>();
-                    rb.mass = 1f; // Standaard massa, kan aangepast worden
-                }
+                // Zorg dat beide rigidbodies bestaan
+                Rigidbody rbThis = AddRigidbody(gameObject);
+                Rigidbody rbTarget = AddRigidbody(target.gameObject);
 
-                // Voeg FixedJoint toe als die nog niet bestaat
-                FixedJoint joint = GetComponent<FixedJoint>();
-                if (joint == null)
-                {
-                    joint = gameObject.AddComponent<FixedJoint>();
-                }
-                joint.connectedBody = target.GetComponent<Rigidbody>();
+                // Maak op elk object een FixedJoint naar de ander
+                FixedJoint jointToTarget = gameObject.AddComponent<FixedJoint>();
+                jointToTarget.connectedBody = rbTarget;
+                physicsJoints[target] = jointToTarget;
+
+                // FixedJoint jointToThis = target.gameObject.AddComponent<FixedJoint>();
+                // jointToThis.connectedBody = rbThis;
+                // target.physicsJoints[this] = jointToThis;
 
                 AddConnection(target);
                 break;
@@ -251,28 +282,32 @@ public class Weldable : MonoBehaviour
                 break;
 
             case WeldType.PhysicsBased:
-                // Verwijder FixedJoint als die bestaat
-                FixedJoint joint = GetComponent<FixedJoint>();
-                if (joint != null)
+                // Verwijder alle joints op dit object
+                foreach (var joint in physicsJoints.Values)
                 {
-                    Weldable connectedWeldable = null;
-                    if (joint.connectedBody != null)
+                    if (joint != null)
                     {
-                        connectedWeldable = joint.connectedBody.GetComponent<Weldable>();
-                    }
-
-                    Destroy(joint);
-
-                    if (connectedWeldable != null)
-                    {
-                        RemoveConnection(connectedWeldable);
-                        connectedWeldable.RemoveConnection(this);
+                        Destroy(joint);
                     }
                 }
 
-                // Rigidbody mag blijven zitten, kan eventueel apart verwijderd worden als je wil
+                // Verwijder alle joints op andere objecten die met dit object verbonden zijn
+                foreach (var connected in connectedObjects)
+                {
+                    if (connected.physicsJoints.TryGetValue(this, out var jointToThis))
+                    {
+                        if (jointToThis != null)
+                        {
+                            Destroy(jointToThis);
+                        }
+                        connected.physicsJoints.Remove(this);
+                    }
+                    connected.RemoveConnection(this, reciprocal: false);
+                }
 
-                DetachChildren();
+                physicsJoints.Clear();
+                connectedObjects.Clear();
+
                 break;
 
             case WeldType.Undefined:

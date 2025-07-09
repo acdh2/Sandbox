@@ -104,7 +104,7 @@ public class SelectionHandler : MonoBehaviour
     private void ApplySelectionLayer(GameObject root)
     {
         var stack = new Stack<GameObject>();
-        stack.Push(root.transform.root.gameObject);
+        stack.Push(root.gameObject);
 
         while (stack.Count > 0)
         {

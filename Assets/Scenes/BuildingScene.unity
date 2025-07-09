@@ -1031,8 +1031,32 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 528112863}
     - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: allowRotation
+      propertyPath: gridSize.x
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: gridSize.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: gridSize.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: gridCenter.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: gridCenter.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: gridCenter.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: allowRotation
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: Priority.Enabled
