@@ -65,7 +65,6 @@ public class DragHandler : MonoBehaviour
     private void Update()
     {
         HandleInput();
-        HandleRotation();
     }
 
     void FixedUpdate()
@@ -99,7 +98,13 @@ public class DragHandler : MonoBehaviour
 
             case DragState.Dragging:
                 if (selectedTransform == null || InputSystem.GetPointerUp())
+                {
                     StopDragging();
+                }
+                else
+                {
+                    HandleRotation();
+                }
                 break;
         }
     }
@@ -188,11 +193,11 @@ public class DragHandler : MonoBehaviour
     {
         if (InputSystem.GetButtonDown(InputButton.Rotate1))
         {
-            RotateSelected(0, 90, 0);
+            RotateSelected(0f, 90f, 0f);
         }
         if (InputSystem.GetButtonDown(InputButton.Rotate2))
         {
-            RotateSelectedTowardCamera();
+            RotateSelectedTowardsCamera(-90f);
         }
     }
 
@@ -221,32 +226,32 @@ public class DragHandler : MonoBehaviour
         InitializeSelection(selectedObject);
     }
 
-    /// <summary>
-    /// Rotates the selected object to face the camera on the horizontal plane.
-    /// </summary>
-    private void RotateSelectedTowardCamera()
+    private void RotateSelectedTowardsCamera(float angle)
     {
         GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
 
-        Transform selectedRoot = selectedObject.transform.root;
-        if (selectedRoot == null) return;
+        Transform selectedTransform = selectedObject.transform;
 
-        Vector3 toCamera = Camera.main.transform.position - selectedRoot.position;
-        toCamera.y = 0; // Only horizontal rotation
-        toCamera.Normalize();
+        Vector3 cameraOffset = Vector3.zero;
 
-        float dotForward = Vector3.Dot(toCamera, Vector3.forward);
-        float dotRight = Vector3.Dot(toCamera, Vector3.right);
-
-        Vector3 euler = Vector3.zero;
-
-        if (Mathf.Abs(dotForward) > Mathf.Abs(dotRight))
-            euler = dotForward > 0 ? new Vector3(90, 0, 0) : new Vector3(-90, 0, 0);
+        Vector3 toCamera = Camera.main.transform.position - selectedTransform.position;
+        if (Mathf.Abs(toCamera.x) > Mathf.Abs(toCamera.z))
+        {
+            if (toCamera.x > 0f) cameraOffset = cameraOffset = Vector3.right;
+            else cameraOffset = -Vector3.right;
+        }
         else
-            euler = dotRight < 0 ? new Vector3(0, 0, 90) : new Vector3(0, 0, -90);
+        {
+            if (toCamera.z > 0f) cameraOffset = -Vector3.forward;
+            else cameraOffset = Vector3.forward;
+        }
+        Vector3 rightVector = Vector3.Cross(toCamera, Vector3.up);
 
-        RotateSelected(euler.x, euler.y, euler.z);
+        Quaternion rotation = Quaternion.AngleAxis(angle, rightVector);
+        selectedTransform.rotation = rotation * selectedTransform.rotation;
+
+        InitializeSelection(selectedObject);
     }
 
     /// <summary>
@@ -294,29 +299,6 @@ public class DragHandler : MonoBehaviour
 
         //ApplyPlacementConstraints();
     }
-
-    // /// <summary>
-    // /// Ensures the selected object's bottom stays above the minimum Y position.
-    // /// </summary>
-    // private void ApplyPlacementConstraints()
-    // {
-    //     if (selectedTransform == null) return;
-
-    //     Renderer[] renderers = selectedTransform.GetComponentsInChildren<Renderer>();
-    //     if (renderers.Length == 0) return;
-
-    //     Bounds combinedBounds = renderers[0].bounds;
-    //     for (int i = 1; i < renderers.Length; i++)
-    //         combinedBounds.Encapsulate(renderers[i].bounds);
-
-    //     float offsetY = minY - combinedBounds.min.y;
-    //     if (offsetY > 0f)
-    //     {
-    //         Vector3 newPosition = selectedTransform.position + new Vector3(0f, offsetY, 0f);
-    //         selectedTransform.position = newPosition;
-    //         targetPosition = newPosition;
-    //     }
-    // }
 
     private Vector3 GetDragRotation()
     {
