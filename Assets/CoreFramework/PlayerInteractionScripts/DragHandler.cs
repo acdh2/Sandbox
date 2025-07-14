@@ -75,14 +75,15 @@ public class DragHandler : MonoBehaviour
             return;
         }
         if (currentState == DragState.Dragging)
+        {
+            if (selectedTransform != null)
             {
-                if (selectedTransform != null)
-                {
-                    UpdateTargetTransform();
-                    ApplyTransformToSelection();
-                }
-            }  
-    } 
+                UpdateTargetTransform();
+                ApplyTransformToSelection();
+                Physics.SyncTransforms();
+            }
+        }
+    }
 
     /// <summary>
     /// Handles user input based on current drag state.

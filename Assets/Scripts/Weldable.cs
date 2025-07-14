@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Defines how this object can participate in welding.
+/// </summary>
 public enum WeldMode
 {
     None,
@@ -9,6 +12,9 @@ public enum WeldMode
     Both
 }
 
+/// <summary>
+/// Defines the mechanism of the welding (hierarchical or physical).
+/// </summary>
 public enum WeldType
 {
     Undefined,
@@ -21,20 +27,23 @@ public enum WeldType
 public class Weldable : MonoBehaviour
 {
     [SerializeField]
-    private WeldMode mode = WeldMode.Both;
+    private WeldMode weldMode = WeldMode.Both;
 
-    private WeldType currentType = WeldType.Undefined;
+    private WeldType currentWeldType = WeldType.Undefined;
     private readonly HashSet<Weldable> connections = new();
 
-    public bool CanAttach => mode == WeldMode.AttachableOnly || mode == WeldMode.Both;
-    public bool CanReceive => mode == WeldMode.ReceivableOnly || mode == WeldMode.Both;
+    public bool CanAttach => weldMode == WeldMode.AttachableOnly || weldMode == WeldMode.Both;
+    public bool CanReceive => weldMode == WeldMode.ReceivableOnly || weldMode == WeldMode.Both;
 
-    public WeldType CurrentType => currentType;
+    public WeldType CurrentWeldType => currentWeldType;
 
-
+    /// <summary>
+    /// Welds this object to a target using the specified weld type.
+    /// </summary>
     public void WeldTo(Weldable target, WeldType weldType)
     {
-        if (target == null || target == this) return;
+        if (target == null || target == this)
+            return;
 
         if (!CanAttach || !target.CanReceive)
         {
@@ -51,12 +60,13 @@ public class Weldable : MonoBehaviour
             return;
         }
 
-        if (IsConnected(target)) return;
+        if (IsConnected(target))
+            return;
 
         AddConnection(target);
         target.AddConnection(this);
 
-        // Voer de daadwerkelijke weld uit ná de verbinding
+        // Perform weld action after establishing the connection
         if (weldType == WeldType.HierarchyBased)
         {
             ApplyHierarchyWeld(target);
@@ -66,38 +76,38 @@ public class Weldable : MonoBehaviour
             ApplyPhysicsWeld(target);
         }
 
-        // Events NA succesvol maken van groep
+        // Notify only when groups are formed
         if (wasIsolated)
             NotifyOnWeld();
 
         if (targetWasIsolated)
             target.NotifyOnWeld();
     }
+
+    /// <summary>
+    /// Unwelds this object from all connections.
+    /// </summary>
     public void Unweld()
     {
         bool wasGrouped = connections.Count > 0;
+
         if (wasGrouped)
             NotifyOnUnweld();
 
         foreach (var connected in connections)
         {
-            if (connected.connections.Remove(this))
-            {
-                if (connected.connections.Count == 0)
-                    connected.NotifyOnUnweld();
-            }
+            if (connected.connections.Remove(this) && connected.connections.Count == 0)
+                connected.NotifyOnUnweld();
         }
 
-        // Ruim fysieke of hiërarchische weld op
-        if (currentType == WeldType.HierarchyBased)
+        if (currentWeldType == WeldType.HierarchyBased)
             RemoveHierarchyWelds(connections);
-        else if (currentType == WeldType.PhysicsBased)
+        else if (currentWeldType == WeldType.PhysicsBased)
             RemovePhysicsWelds(connections);
 
         connections.Clear();
-        currentType = WeldType.Undefined;
+        currentWeldType = WeldType.Undefined;
     }
-
 
     private static Rigidbody GetOrAddRigidbody(GameObject obj)
     {
@@ -105,7 +115,7 @@ public class Weldable : MonoBehaviour
         if (rb == null)
         {
             rb = obj.AddComponent<Rigidbody>();
-            rb.mass = 1f; // standaardmassa
+            rb.mass = 1f; // Default mass
         }
 
         return rb;
@@ -132,11 +142,11 @@ public class Weldable : MonoBehaviour
         joint.connectedBody = targetRb;
     }
 
-    private void RemoveHierarchyWelds(IEnumerable<Weldable> connectedWeldables)
+    private void RemoveHierarchyWelds(IEnumerable<Weldable> connected)
     {
         transform.SetParent(null, true);
 
-        foreach (var other in connectedWeldables)
+        foreach (var other in connected)
         {
             if (other.transform.root == transform.root)
             {
@@ -145,33 +155,30 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    private void RemovePhysicsWelds(IEnumerable<Weldable> connectedWeldables)
+    private void RemovePhysicsWelds(IEnumerable<Weldable> connected)
     {
-        foreach (var other in connectedWeldables)
+        foreach (var other in connected)
         {
             foreach (var joint in other.GetComponents<FixedJoint>())
             {
                 if (joint.connectedBody == GetComponent<Rigidbody>())
-                {
-                    Object.Destroy(joint);
-                }
+                    Destroy(joint);
             }
         }
 
-        // Verwijder alle eigen joints
         foreach (var joint in GetComponents<FixedJoint>())
         {
-            Object.Destroy(joint);
+            Destroy(joint);
         }
     }
 
     /// <summary>
-    /// Haal directe verbonden objecten op.
+    /// Gets all directly connected weldables.
     /// </summary>
     public IReadOnlyCollection<Weldable> GetDirectConnections() => connections;
 
     /// <summary>
-    /// Haal alle verbonden objecten op (ook indirect), exclusief self.
+    /// Gets all connected weldables recursively (excluding self).
     /// </summary>
     public HashSet<Weldable> GetAllConnectedRecursive()
     {
@@ -209,21 +216,23 @@ public class Weldable : MonoBehaviour
 
     private bool TrySetWeldType(WeldType newType)
     {
-        if (currentType == WeldType.Undefined)
+        if (currentWeldType == WeldType.Undefined)
         {
-            currentType = newType;
+            currentWeldType = newType;
             return true;
         }
 
-        return currentType == newType;
+        return currentWeldType == newType;
     }
 
+    /// <summary>
+    /// Retrieves all IWeldListener components in this object and its descendants,
+    /// skipping children with their own Weldable.
+    /// </summary>
     public IEnumerable<IWeldListener> GetDescendantWeldListeners()
     {
         foreach (var listener in GetComponents<IWeldListener>())
-        {
             yield return listener;
-        }
 
         var stack = new Stack<Transform>();
         stack.Push(transform);
@@ -234,17 +243,12 @@ public class Weldable : MonoBehaviour
 
             foreach (Transform child in current)
             {
-                // Als het kind een Weldable is, niet dieper zoeken
                 if (child.GetComponent<Weldable>() != null)
                     continue;
 
-                // Alle IWeldListeners op dit GameObject verzamelen
                 foreach (var listener in child.GetComponents<IWeldListener>())
-                {
                     yield return listener;
-                }
 
-                // Verder zoeken in de kinderen van dit kind
                 stack.Push(child);
             }
         }
@@ -265,5 +269,4 @@ public class Weldable : MonoBehaviour
             listener.OnUnweld();
         }
     }
-    
 }
