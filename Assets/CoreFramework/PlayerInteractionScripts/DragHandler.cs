@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// Represents the current state of the drag operation.
@@ -45,9 +46,11 @@ public class DragHandler : MonoBehaviour
     public float moveResponsiveness = 100f;
 
     private Camera cam;
-    private Transform selectedTransform;
-    private Vector3 localOffset;
-    private Quaternion rotationOffset;
+    //private Transform selectedTransform;
+    private Draggable selectedDraggable;
+    private Vector3 localPositionOffset;
+    private Quaternion localRotationOffset;
+
     private Vector3 targetPosition;
     private Quaternion targetRotation;
 
@@ -76,12 +79,8 @@ public class DragHandler : MonoBehaviour
         }
         if (currentState == DragState.Dragging)
         {
-            if (selectedTransform != null)
-            {
-                UpdateTargetTransform();
-                ApplyTransformToSelection();
-                Physics.SyncTransforms();
-            }
+            UpdateTargetTransform();
+            ApplyTransformToSelection();
         }
     }
 
@@ -98,14 +97,12 @@ public class DragHandler : MonoBehaviour
                 break;
 
             case DragState.Dragging:
-                if (selectedTransform == null || InputSystem.GetPointerUp())
+                if (selectedDraggable == null || InputSystem.GetPointerUp())
                 {
                     StopDragging();
+                    return;
                 }
-                else
-                {
-                    HandleRotation();
-                }
+                HandleRotation();
                 break;
         }
     }
@@ -118,12 +115,16 @@ public class DragHandler : MonoBehaviour
         GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
 
-        var selectable = selectedObject.GetComponent<Selectable>();
-        if (selectable == null || !selectable.IsDraggable) return;
+        var draggable = selectedObject.GetComponent<Draggable>();
+        if (draggable == null || !draggable.enabled) return;
 
         selectionHandler.LockSelection();
-        InitializeSelection(selectedObject);
-        OnGrabEvent(selectedObject);
+        InitializeSelection(selectedObject.transform);
+        //OnGrabEvent(selectedObject);
+
+        UpdateTargetTransform();
+        selectedDraggable = draggable;
+        selectedDraggable.StartDrag(targetPosition, targetRotation);
 
         currentState = DragState.Dragging;
     }
@@ -132,12 +133,10 @@ public class DragHandler : MonoBehaviour
     /// Initializes offsets and rotation data for dragging the object.
     /// </summary>
     /// <param name="selectedObject">The object to initialize.</param>
-    private void InitializeSelection(GameObject selectedObject)
+    private void InitializeSelection(Transform selectedTransform)
     {
-        selectedTransform = selectedObject.transform.root;
-        localOffset = cam.transform.InverseTransformPoint(selectedTransform.position);
-
-        rotationOffset = Quaternion.Inverse(cam.transform.rotation) * selectedTransform.rotation;
+        localPositionOffset = cam.transform.InverseTransformPoint(selectedTransform.position);
+        localRotationOffset = Quaternion.Inverse(cam.transform.rotation) * selectedTransform.rotation;
     }
 
     /// <summary>
@@ -147,12 +146,17 @@ public class DragHandler : MonoBehaviour
     {
         if (currentState != DragState.Dragging) return;
 
-        if (selectedTransform != null)
+        // if (selectedTransform != null) //hiero
+        // {
+        //     OnReleaseEvent(selectedTransform.gameObject);
+        // }
+        if (selectedDraggable != null)
         {
-            OnReleaseEvent(selectedTransform.gameObject);
+            selectedDraggable.EndDrag();
+            selectedDraggable = null;
         }
 
-        selectedTransform = null;
+        // selectedTransform = null;
         selectionHandler.UnlockSelection();
         currentState = DragState.Idle;
     }
@@ -161,31 +165,31 @@ public class DragHandler : MonoBehaviour
     /// Raises grab event if the object implements IDragListener.
     /// </summary>
     /// <param name="targetObject">Object being grabbed.</param>
-    private void OnGrabEvent(GameObject targetObject)
-    {
-        if (targetObject != null)
-        {
-            foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
-            {
-                dragListener.OnGrab();
-            }
-        }
-    }
+    // private void OnGrabEvent(GameObject targetObject)
+    // {
+    //     if (targetObject != null)
+    //     {
+    //         foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
+    //         {
+    //             dragListener.OnGrab();
+    //         }
+    //     }
+    // }
 
     /// <summary>
     /// Raises release event if the object implements IDragListener.
     /// </summary>
     /// <param name="targetObject">Object being released.</param>
-    private void OnReleaseEvent(GameObject targetObject)
-    {
-        if (targetObject != null)
-        {
-            foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
-            {
-                dragListener.OnRelease();
-            }
-        }
-    }
+    // private void OnReleaseEvent(GameObject targetObject)
+    // {
+    //     if (targetObject != null)
+    //     {
+    //         foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
+    //         {
+    //             dragListener.OnRelease();
+    //         }
+    //     }
+    // }
 
     /// <summary>
     /// Handles rotation input commands.
@@ -209,7 +213,7 @@ public class DragHandler : MonoBehaviour
     {
         GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
-
+        
         Transform selectedRoot = selectedObject.transform.root;
         if (selectedRoot == null) return;
 
@@ -223,8 +227,8 @@ public class DragHandler : MonoBehaviour
         // Apply rotation
         selectedRoot.rotation = deltaRotation * selectedRoot.rotation;
 
-        // Re-initialize offsets after rotation
-        InitializeSelection(selectedObject);
+        // Re-initialize offsets after rotation//hiero
+        InitializeSelection(selectedObject.transform);
     }
 
     private void RotateSelectedTowardsCamera(float angle)
@@ -239,20 +243,20 @@ public class DragHandler : MonoBehaviour
         Vector3 toCamera = Camera.main.transform.position - selectedTransform.position;
         if (Mathf.Abs(toCamera.x) > Mathf.Abs(toCamera.z))
         {
-            if (toCamera.x > 0f) cameraOffset = cameraOffset = Vector3.right;
+            if (toCamera.x > 0f) cameraOffset = Vector3.right;
             else cameraOffset = -Vector3.right;
         }
         else
         {
-            if (toCamera.z > 0f) cameraOffset = -Vector3.forward;
-            else cameraOffset = Vector3.forward;
+            if (toCamera.z > 0f) cameraOffset = Vector3.forward;
+            else cameraOffset = -Vector3.forward;
         }
-        Vector3 rightVector = Vector3.Cross(toCamera, Vector3.up);
+        Vector3 rightVector = Vector3.Cross(cameraOffset, Vector3.up);
 
         Quaternion rotation = Quaternion.AngleAxis(angle, rightVector);
         selectedTransform.rotation = rotation * selectedTransform.rotation;
 
-        InitializeSelection(selectedObject);
+        InitializeSelection(selectedObject.transform);
     }
 
     /// <summary>
@@ -260,20 +264,20 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void UpdateTargetTransform()
     {
-        if (selectedTransform == null) return;
+        if (selectedDraggable == null) return;
 
-        Vector3 worldTargetPosition = cam.transform.TransformPoint(localOffset);
+        Vector3 worldTargetPosition = cam.transform.TransformPoint(localPositionOffset);
         targetPosition = SnapToGrid(worldTargetPosition);
 
-        Vector3 currentRotation = selectedTransform.rotation.eulerAngles;
+        Vector3 targetRotationAngles = selectedDraggable.transform.rotation.eulerAngles;
         if (allowRotation != RotationAxisFlags.None)
         {
-            Vector3 dragRotation = GetDragRotation();
-            if (allowRotation == RotationAxisFlags.All) currentRotation = dragRotation;
-            if (allowRotation == RotationAxisFlags.YawOnly) currentRotation.y = dragRotation.y;
+            Vector3 worldTargetRotation = (cam.transform.rotation * localRotationOffset).eulerAngles;
+            if (allowRotation == RotationAxisFlags.All) targetRotationAngles = worldTargetRotation;
+            if (allowRotation == RotationAxisFlags.YawOnly) targetRotationAngles.y = worldTargetRotation.y;
         }
 
-        targetRotation = Quaternion.Euler(GetSnappedRotation(currentRotation)); 
+        targetRotation = Quaternion.Euler(GetSnappedRotation(targetRotationAngles)); 
     }
 
     /// <summary>
@@ -281,34 +285,34 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void ApplyTransformToSelection()
     {
-        if (selectedTransform == null) return;
-
-        if (smoothMovement)
+        if (selectedDraggable)
         {
-            selectedTransform.position = Vector3.Lerp(selectedTransform.position, targetPosition, moveResponsiveness * Time.deltaTime);
-            Quaternion interpolatedRotation = Quaternion.Slerp(selectedTransform.rotation, targetRotation, moveResponsiveness * Time.deltaTime);
-
-            if (IsNormalized(interpolatedRotation))
-                selectedTransform.rotation = interpolatedRotation;
+            selectedDraggable.UpdateDrag(targetPosition, targetRotation);
         }
-        else
-        {
-            selectedTransform.position = targetPosition;
-            if (IsNormalized(targetRotation))
-                selectedTransform.rotation = targetRotation;
-        }
+        // if (selectedTransform == null) return;
 
-        //ApplyPlacementConstraints();
-    }
+        // if (smoothMovement)
+        // {
+        //     selectedTransform.position = Vector3.Lerp(selectedTransform.position, targetPosition, moveResponsiveness * Time.deltaTime);
+        //     Quaternion interpolatedRotation = Quaternion.Slerp(selectedTransform.rotation, targetRotation, moveResponsiveness * Time.deltaTime);
 
-    private Vector3 GetDragRotation()
-    {
-        return (cam.transform.rotation * rotationOffset).eulerAngles;
+        //     if (IsNormalized(interpolatedRotation))
+        //         selectedTransform.rotation = interpolatedRotation;
+        // }
+        // else
+        // {
+        //     selectedTransform.position = targetPosition;
+        //     if (IsNormalized(targetRotation))
+        //         selectedTransform.rotation = targetRotation;
+        // }
+
+        // //ApplyPlacementConstraints();
+        //}
     }
 
     /// <summary>
-    /// Snaps each component of a rotation vector to configured increments.
-    /// </summary>
+        /// Snaps each component of a rotation vector to configured increments.
+        /// </summary>
     private Vector3 GetSnappedRotation(Vector3 rotation)
     {
         if (rotationSnapDegrees.x > 0f)

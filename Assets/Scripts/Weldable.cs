@@ -63,6 +63,11 @@ public class Weldable : MonoBehaviour
         if (IsConnected(target))
             return;
 
+        if (target.IsConnected(this))
+        {
+            Debug.LogError("One-sided connection detected");
+        }
+
         AddConnection(target);
         target.AddConnection(this);
 
