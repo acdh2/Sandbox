@@ -50,8 +50,7 @@ public class Welder : MonoBehaviour
     private bool IsWeldable(GameObject obj)
     {
         var weldable = obj.GetComponent<Weldable>();
-        return weldable != null &&
-               (weldable.mode == WeldMode.AttachableOnly || weldable.mode == WeldMode.Both);
+        return weldable != null && weldable.CanAttach;
     }
 
     /// <summary>
@@ -60,8 +59,7 @@ public class Welder : MonoBehaviour
     private bool IsWeldBase(GameObject obj)
     {
         var weldable = obj.GetComponent<Weldable>();
-        return weldable != null &&
-               (weldable.mode == WeldMode.ReceivableOnly || weldable.mode == WeldMode.Both);
+        return weldable != null && weldable.CanReceive;
     }
 
     /// <summary>
@@ -160,6 +158,9 @@ public class Welder : MonoBehaviour
         Collider collider = target.GetComponent<Collider>();
         if (collider == null) return null;
 
+        Weldable targetWeldable = target.GetComponent<Weldable>();
+        if (targetWeldable == null) return null;
+
         foreach (Collider overlap in FindPenetratingColliders(collider))
         {
             GameObject other = overlap.gameObject;
@@ -167,7 +168,12 @@ public class Welder : MonoBehaviour
             {
                 Weldable weldableOther = other.GetComponent<Weldable>();
                 if (weldableOther != null && weldableOther.CanReceive)
-                    return weldableOther;
+                {
+                    if (!weldableOther.IsConnected(targetWeldable))
+                    {
+                        return weldableOther;
+                    }
+                }
             }
         }
 
@@ -189,15 +195,7 @@ public class Welder : MonoBehaviour
         {
             Weldable newParent = FindNewOverlappingWeldable(selected);
             if (newParent == null) break;
-
-            if (selectedWeldable.transform.parent == null)
-            {
-                selectedWeldable.WeldTo(newParent, weldingType);
-            }
-            else
-            {
-                newParent.WeldTo(selectedWeldable, weldingType);
-            }
+            selectedWeldable.WeldTo(newParent, weldingType);
         }
     }
 
@@ -212,4 +210,5 @@ public class Welder : MonoBehaviour
         Weldable weldable = target.GetComponent<Weldable>();
         weldable?.Unweld();
     }
+    
 }

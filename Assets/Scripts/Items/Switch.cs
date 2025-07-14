@@ -76,6 +76,24 @@ public class Switch : MonoBehaviour
     private List<IActivatable> FindAllActivatables()
     {
         Transform root = transform.root;
-        return new List<IActivatable>(root.GetComponentsInChildren<IActivatable>(true));
+        List<IActivatable> result = new List<IActivatable>(root.GetComponentsInChildren<IActivatable>(true));
+
+        Weldable weldable = GetComponent<Weldable>();
+        if (weldable)
+        {
+            foreach (Weldable other in weldable.GetAllConnectedRecursive())
+            {
+                Transform otherRoot = other.transform.root;
+                if (otherRoot != root)
+                {
+                    foreach (IActivatable activatable in otherRoot.GetComponentsInChildren<IActivatable>(true))
+                    {
+                        result.Add(activatable);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }

@@ -30,6 +30,11 @@ public class Selectable : MonoBehaviour, IDragListener
 
     private bool isBeingDragged = false;
 
+    public void SetDraggable(bool mode)
+    {
+        isDraggable = mode;
+    }
+
     public void OnGrab()
     {
         if (isBeingDragged) return;
