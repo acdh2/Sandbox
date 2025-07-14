@@ -7,13 +7,9 @@ public class Draggable : MonoBehaviour
 
     private Matrix4x4 offsetMatrix;
 
-    void Awake()
-    {
-        rigidBody = GetComponent<Rigidbody>();
-    }
-
     public void StartDrag(Vector3 position, Quaternion rotation)
     {
+        rigidBody = GetComponent<Rigidbody>();
         isBeingDragged = true;
     }
 
@@ -31,7 +27,13 @@ public class Draggable : MonoBehaviour
         {
             return;
         }
-        
+
+        ApplyTransformation(position, rotation);
+    }
+
+    private void ApplyTransformation(Vector3 position, Quaternion rotation)
+    {
+
         if (rigidBody)
         {
             MoveRigidbody(position, rotation);
@@ -68,9 +70,9 @@ public class Draggable : MonoBehaviour
 
     private void MoveRigidbody(Vector3 position, Quaternion rotation)
     {
+        rigidBody.isKinematic = true;
         rigidBody.MoveRotation(rotation);
         rigidBody.MovePosition(position);
-        rigidBody.isKinematic = true;
     }
 
     public void EndDrag()
