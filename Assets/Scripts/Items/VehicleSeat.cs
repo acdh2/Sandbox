@@ -144,8 +144,8 @@ public class VehicleSeat : Seat, IWeldListener
     /// <summary>
     /// Finds and returns all vehicle listeners in the root transform's children.
     /// </summary>
-    private List<IVehicleListener> FindAllVehicleListeners()
+    private IReadOnlyList<IVehicleListener> FindAllVehicleListeners()
     {
-        return new List<IVehicleListener>(transform.root.GetComponentsInChildren<IVehicleListener>(true));
+        return FindConnectedComponents<IVehicleListener>();
     }
 }

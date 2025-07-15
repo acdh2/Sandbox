@@ -62,7 +62,7 @@ public class Seat : MonoBehaviour, IWeldListener
             SeatPlayer(other.transform);
     }
 
-    private IReadOnlyList<T> FindConnectedComponents<T>() where T : class
+    protected IReadOnlyList<T> FindConnectedComponents<T>() where T : class
     {
         Weldable weldable = GetComponent<Weldable>();
         return Utils.FindAllInHierarchyAndConnections<T>(weldable);

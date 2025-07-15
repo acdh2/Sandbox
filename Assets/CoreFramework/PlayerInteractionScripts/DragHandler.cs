@@ -166,36 +166,6 @@ public class DragHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Raises grab event if the object implements IDragListener.
-    /// </summary>
-    /// <param name="targetObject">Object being grabbed.</param>
-    // private void OnGrabEvent(GameObject targetObject)
-    // {
-    //     if (targetObject != null)
-    //     {
-    //         foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
-    //         {
-    //             dragListener.OnGrab();
-    //         }
-    //     }
-    // }
-
-    /// <summary>
-    /// Raises release event if the object implements IDragListener.
-    /// </summary>
-    /// <param name="targetObject">Object being released.</param>
-    // private void OnReleaseEvent(GameObject targetObject)
-    // {
-    //     if (targetObject != null)
-    //     {
-    //         foreach (IDragListener dragListener in targetObject.transform.root.GetComponentsInChildren<IDragListener>())
-    //         {
-    //             dragListener.OnRelease();
-    //         }
-    //     }
-    // }
-
-    /// <summary>
     /// Handles rotation input commands.
     /// </summary>
     private void HandleRotation()
@@ -227,9 +197,9 @@ public class DragHandler : MonoBehaviour
         // Rotate position around pivot
         Vector3 direction = selectedRoot.position - pivot;
         selectedRoot.position = pivot + deltaRotation * direction;
-
+        
         // Apply rotation
-        selectedRoot.rotation = deltaRotation * selectedRoot.rotation;
+        selectedRoot.rotation = GetSnappedRotation(deltaRotation * selectedRoot.rotation);
 
         // Re-initialize offsets after rotation//hiero
         InitializeSelection(selectedObject.transform);
@@ -258,7 +228,7 @@ public class DragHandler : MonoBehaviour
         Vector3 rightVector = Vector3.Cross(cameraOffset, Vector3.up);
 
         Quaternion rotation = Quaternion.AngleAxis(angle, rightVector);
-        selectedTransform.rotation = rotation * selectedTransform.rotation;
+        selectedTransform.rotation = GetSnappedRotation(rotation * selectedTransform.rotation);
 
         InitializeSelection(selectedObject.transform);
     }
@@ -315,8 +285,8 @@ public class DragHandler : MonoBehaviour
     }
 
     /// <summary>
-        /// Snaps each component of a rotation vector to configured increments.
-        /// </summary>
+    /// Snaps each component of a rotation vector to configured increments.
+    /// </summary>
     private Vector3 GetSnappedRotation(Vector3 rotation)
     {
         if (rotationSnapDegrees.x > 0f)
@@ -327,6 +297,11 @@ public class DragHandler : MonoBehaviour
             rotation.z = Mathf.Round(rotation.z / rotationSnapDegrees.z) * rotationSnapDegrees.z;
 
         return rotation;
+    }
+
+    private Quaternion GetSnappedRotation(Quaternion quaternion)
+    {
+        return Quaternion.Euler(GetSnappedRotation(quaternion.eulerAngles));
     }
 
     /// <summary>
