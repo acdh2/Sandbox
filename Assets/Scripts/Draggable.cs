@@ -1,33 +1,44 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
+[System.Serializable]
+public enum RigidbodyStateChange
+{
+    Unchanged,
+    SetKinematic,
+    SetNonKinematic
+}
+
+[RequireComponent(typeof(Selectable))]
 public class Draggable : MonoBehaviour
 {
+    public bool shouldPropagateDragEvents = true;
+
     private bool isBeingDragged = false;
     private Rigidbody rigidBody;
 
     private Matrix4x4 offsetMatrix;
 
-    public void StartDrag(Vector3 position, Quaternion rotation)
+    public void StartDrag(RigidbodyStateChange stateChange)
     {
         rigidBody = GetComponent<Rigidbody>();
+        OnGrab();
         isBeingDragged = true;
+
+        ApplyRigidbodyStateChange(stateChange);
+    }
+
+    private void ApplyRigidbodyStateChange(RigidbodyStateChange stateChange)
+    {
+        if (rigidBody == null) return;
+        if (stateChange == RigidbodyStateChange.Unchanged) return;
+        rigidBody.isKinematic = stateChange == RigidbodyStateChange.SetKinematic;
     }
 
     public void UpdateDrag(Vector3 position, Quaternion rotation)
     {
-        if (isBeingDragged)
-        {
-            if (!enabled)
-            {
-                EndDrag();
-                return;
-            }
-        }
-        else
-        {
-            return;
-        }
-
+        if (!enabled || !isBeingDragged) return;
         ApplyTransformation(position, rotation);
     }
 
@@ -70,17 +81,67 @@ public class Draggable : MonoBehaviour
 
     private void MoveRigidbody(Vector3 position, Quaternion rotation)
     {
-        rigidBody.isKinematic = true;
         rigidBody.MoveRotation(rotation);
         rigidBody.MovePosition(position);
     }
 
-    public void EndDrag()
+    public void EndDrag(RigidbodyStateChange stateChange)
     {
-        if (rigidBody)
-        {
-            rigidBody.isKinematic = false;
-        }
+        OnRelease();
+        ApplyRigidbodyStateChange(stateChange);        
         isBeingDragged = false;
     }
+
+    private IDragListener[] GetConnectedDragListeners()
+    {
+        if (shouldPropagateDragEvents)
+        {
+            Weldable weldable = GetComponentInParent<Weldable>();
+            if (weldable)
+            {
+                return Utils.FindAllInHierarchyAndConnections<IDragListener>(weldable).ToArray();
+            }
+            return transform.root.GetComponentsInChildren<IDragListener>();
+        }
+        else
+        {
+            var result = new List<IDragListener>();
+            var stack = new Stack<Transform>();
+            stack.Push(transform);
+
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+                if (current != transform && current.GetComponent<Weldable>() != null)
+                    continue;
+                foreach (var listener in current.GetComponents<IDragListener>())
+                {
+                    if (listener != null)
+                        result.Add(listener);
+                }
+                foreach (Transform child in current)
+                {
+                    stack.Push(child);
+                }
+            }
+            return result.ToArray();
+        }
+    }
+
+    private void OnGrab()
+    {
+        foreach (DragListener dragListener in GetConnectedDragListeners())
+        {
+            dragListener.OnGrab();
+        }
+    }
+
+    private void OnRelease()
+    {
+        foreach (DragListener dragListener in GetConnectedDragListeners())
+        {
+            dragListener.OnRelease();
+        }
+    }
+
 }

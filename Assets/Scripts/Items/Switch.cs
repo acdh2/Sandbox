@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NUnit.Framework.Interfaces;
 using UnityEngine;
 
 /// <summary>
@@ -9,6 +10,9 @@ public class Switch : MonoBehaviour
 {
     [Tooltip("Only targets with a matching activationGroup color will respond.")]
     public Color activationGroup = Color.white;
+
+    [Tooltip("Will find any listener in the scene, even ones that are not connected.")]
+    public bool shouldBroadcast = false;
 
     /// <summary>
     /// Activates all matching and currently inactive IActivatable components within the welded structure.
@@ -75,22 +79,46 @@ public class Switch : MonoBehaviour
     /// <returns>List of all IActivatable components found</returns>
     private List<IActivatable> FindAllActivatables()
     {
-        Transform root = transform.root;
-        List<IActivatable> result = new List<IActivatable>(root.GetComponentsInChildren<IActivatable>(true));
+        var result = new List<IActivatable>();
 
-        Weldable weldable = GetComponent<Weldable>();
-        if (weldable)
+        if (shouldBroadcast)
         {
-            foreach (Weldable other in weldable.GetAllConnectedRecursive())
+            var allMonoBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var script in allMonoBehaviours)
             {
-                Transform otherRoot = other.transform.root;
-                if (otherRoot != root)
+                if (script is IActivatable activatable)
                 {
-                    foreach (IActivatable activatable in otherRoot.GetComponentsInChildren<IActivatable>(true))
-                    {
-                        result.Add(activatable);
-                    }
+                    result.Add(activatable);
                 }
+            }
+            return result;
+        }
+
+        var scannedRoots = new HashSet<Transform>();
+        var addedComponents = new HashSet<IActivatable>();
+
+        void ScanRoot(Transform root)
+        {
+            if (root == null || !scannedRoots.Add(root))
+                return;
+
+            foreach (var comp in root.GetComponentsInChildren<IActivatable>(true))
+            {
+                if (comp != null && addedComponents.Add(comp))
+                {
+                    result.Add(comp);
+                }
+            }
+        }
+
+        ScanRoot(transform.root);
+
+        var weldable = GetComponent<Weldable>();
+        if (weldable != null)
+        {
+            foreach (var other in weldable.GetAllConnectedRecursive())
+            {
+                ScanRoot(other.transform.root);
             }
         }
 

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 39429379057153637}
   - component: {fileID: 1621465480065102907}
   - component: {fileID: 5671283666518170462}
+  - component: {fileID: -1404815187983295986}
   m_Layer: 0
   m_Name: VehicleSeat
   m_TagString: Untagged
@@ -125,7 +126,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: A vehicle seat
-  isDraggable: 1
 --- !u!114 &1621465480065102907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,7 +138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 1
+  weldMode: 3
 --- !u!114 &5671283666518170462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,7 +153,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seatPoint: {fileID: 7423058383754573648}
   playerTag: Player
-  exitKey: 32
   debounceDuration: 1
   onSeat:
     m_PersistentCalls:
@@ -161,7 +160,20 @@ MonoBehaviour:
   onUnseat:
     m_PersistentCalls:
       m_Calls: []
-  keysToCheck: 7700000073000000
+  keysToCheck: 3100000032000000
+--- !u!114 &-1404815187983295986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5305943669542099556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shouldPropagateDragEvents: 1
 --- !u!1 &7832751060686914716
 GameObject:
   m_ObjectHideFlags: 0

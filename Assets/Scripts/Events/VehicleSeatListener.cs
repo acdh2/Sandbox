@@ -229,6 +229,14 @@ public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldList
         return null; // No seat found
     }
 
+    public void OnAdded()
+    {
+    }
+
+    public void OnRemoved()
+    {
+    }
+
     /// <summary>
     /// Called when this part is welded to the vehicle.
     /// Determines wheel position relative to the closest seat and triggers matching events.

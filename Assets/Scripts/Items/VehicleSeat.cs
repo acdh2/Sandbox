@@ -85,7 +85,7 @@ public class VehicleSeat : Seat, IWeldListener
     /// </summary>
     protected override void NotifyOnUnseatListeners()
     {
-        base.NotifyOnUnseatListeners(); // Fix: was base.NotifyOnSeatListeners() before, corrected to NotifyOnUnseatListeners
+        base.NotifyOnUnseatListeners();
         foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
         {
             vehicleListener.OnUnseat();

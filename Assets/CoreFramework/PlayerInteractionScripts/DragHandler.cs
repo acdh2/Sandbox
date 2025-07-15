@@ -45,6 +45,10 @@ public class DragHandler : MonoBehaviour
     public bool smoothMovement = false;
     public float moveResponsiveness = 100f;
 
+    [Header("Rigidbody")]
+    public RigidbodyStateChange rigidbodyStateChangeOnDrag = RigidbodyStateChange.SetKinematic;
+    public RigidbodyStateChange rigidbodyStateChangeOnRelease = RigidbodyStateChange.SetNonKinematic;
+
     private Camera cam;
     //private Transform selectedTransform;
     private Draggable selectedDraggable;
@@ -124,7 +128,7 @@ public class DragHandler : MonoBehaviour
 
         UpdateTargetTransform();
         selectedDraggable = draggable;
-        selectedDraggable.StartDrag(targetPosition, targetRotation);
+        selectedDraggable.StartDrag(rigidbodyStateChangeOnDrag);
 
         currentState = DragState.Dragging;
     }
@@ -152,7 +156,7 @@ public class DragHandler : MonoBehaviour
         // }
         if (selectedDraggable != null)
         {
-            selectedDraggable.EndDrag();
+            selectedDraggable.EndDrag(rigidbodyStateChangeOnRelease);
             selectedDraggable = null;
         }
 

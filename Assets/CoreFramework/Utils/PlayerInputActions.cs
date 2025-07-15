@@ -158,7 +158,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""VehicleAxisHorizontal"",
                     ""type"": ""Value"",
                     ""id"": ""69693f0b-7b03-48ba-8063-6e19ca4cb50f"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Axis"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true

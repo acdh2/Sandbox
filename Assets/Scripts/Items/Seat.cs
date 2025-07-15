@@ -2,11 +2,13 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using System.Linq;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
 /// Pressing a key exits the seat and restores player control.
 /// </summary>
+[RequireComponent(typeof(Weldable))]
 public class Seat : MonoBehaviour, IWeldListener
 {
     [Header("Seat Settings")]
@@ -36,6 +38,14 @@ public class Seat : MonoBehaviour, IWeldListener
         return seatedPlayer?.gameObject;
     }
 
+    public void OnAdded()
+    {
+    }
+
+    public void OnRemoved()
+    {
+    }
+
     // Weld state handlers from IWeldListener interface
     public virtual void OnWeld()
     {
@@ -51,6 +61,13 @@ public class Seat : MonoBehaviour, IWeldListener
         if (CanSeatPlayer(other))
             SeatPlayer(other.transform);
     }
+
+    private IReadOnlyList<T> FindConnectedComponents<T>() where T : class
+    {
+        Weldable weldable = GetComponent<Weldable>();
+        return Utils.FindAllInHierarchyAndConnections<T>(weldable);
+        //return transform.root.GetComponentsInChildren<T>(true);
+    }    
 
     /// <summary>
     /// Handles keyboard input to notify keypress listeners.
@@ -70,7 +87,7 @@ public class Seat : MonoBehaviour, IWeldListener
         if (keysPressed.Count == 0) return;
 
         // Notify all IKeypressListener components in root hierarchy
-        foreach (IKeypressListener keyPressListener in transform.root.GetComponentsInChildren<IKeypressListener>(true))
+        foreach (IKeypressListener keyPressListener in FindConnectedComponents<IKeypressListener>())
         {
             foreach (Key pressedKey in keysPressed)
             {
@@ -135,7 +152,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     protected virtual void NotifyOnUnseatListeners()
     {
-        foreach (ISeatListener seatListener in transform.root.GetComponentsInChildren<ISeatListener>(true))
+        foreach (ISeatListener seatListener in FindConnectedComponents<ISeatListener>())
         {
             seatListener.OnUnseat();
         }
@@ -146,7 +163,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     protected virtual void NotifyOnSeatListeners()
     {
-        foreach (ISeatListener seatListener in transform.root.GetComponentsInChildren<ISeatListener>(true))
+        foreach (ISeatListener seatListener in FindConnectedComponents<ISeatListener>())
         {
             seatListener.OnSeat();
         }

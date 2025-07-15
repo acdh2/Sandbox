@@ -13,8 +13,10 @@ public class Welder : MonoBehaviour
 {
     private const int MaxWeldsAtTheSameTime = 64;
     private const float MaxPenetrationThreshold = 0.01f;
-    private const float WeldProximityThreshold = 0.01f;
 
+    //extra border around the collider that is used for checking if they overlap
+    //this value is used to ensure two neighbouring cubes will still connect
+    private const float WeldProximityThreshold = 0.01f;
 
     public WeldType weldingType = WeldType.HierarchyBased;
 

@@ -37,6 +37,37 @@ public class Weldable : MonoBehaviour
 
     public WeldType CurrentWeldType => currentWeldType;
 
+    public void TryAutoHierarchyWeldWithAncestor()
+    {
+        Transform current = transform.parent;
+
+        while (current != null)
+        {
+            var parentWeldable = current.GetComponent<Weldable>();
+            if (parentWeldable != null)
+            {
+                // Check of deze weldable nog niet al verbonden is
+                if (!IsConnected(parentWeldable))
+                {
+                    // Alleen weld uitvoeren als modes compatibel zijn
+                    if (CanAttach && parentWeldable.CanReceive)
+                    {
+                        WeldTo(parentWeldable, WeldType.HierarchyBased);
+                    }
+                }
+
+                break; // Alleen eerste voorouder gebruiken
+            }
+
+            current = current.parent;
+        }
+    }
+
+    private void Start()
+    {
+        TryAutoHierarchyWeldWithAncestor();
+    }    
+
     /// <summary>
     /// Welds this object to a target using the specified weld type.
     /// </summary>
@@ -82,11 +113,9 @@ public class Weldable : MonoBehaviour
         }
 
         // Notify only when groups are formed
-        if (wasIsolated)
-            NotifyOnWeld();
+        NotifyOnWeld(wasIsolated);
 
-        if (targetWasIsolated)
-            target.NotifyOnWeld();
+        target.NotifyOnWeld(targetWasIsolated);
     }
 
     /// <summary>
@@ -95,14 +124,15 @@ public class Weldable : MonoBehaviour
     public void Unweld()
     {
         bool wasGrouped = connections.Count > 0;
-
-        if (wasGrouped)
-            NotifyOnUnweld();
+        NotifyOnUnweld(wasGrouped);
 
         foreach (var connected in connections)
         {
-            if (connected.connections.Remove(this) && connected.connections.Count == 0)
-                connected.NotifyOnUnweld();
+            bool connectionIsIsolatedAfterUnweld = connected.connections.Count == 1;
+            if (connected.connections.Remove(this))
+            {
+                connected.NotifyOnUnweld(connectionIsIsolatedAfterUnweld);
+            }
         }
 
         if (currentWeldType == WeldType.HierarchyBased)
@@ -259,19 +289,21 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    public void NotifyOnWeld()
+    public void NotifyOnWeld(bool joinedWeldGroup)
     {
         foreach (var listener in GetDescendantWeldListeners())
         {
-            listener.OnWeld();
+            if (joinedWeldGroup) listener.OnWeld();
+            listener.OnAdded();
         }
     }
 
-    public void NotifyOnUnweld()
+    public void NotifyOnUnweld(bool leavedWeldGroup)
     {
         foreach (var listener in GetDescendantWeldListeners())
         {
-            listener.OnUnweld();
+            listener.OnRemoved();
+            if (leavedWeldGroup) listener.OnUnweld();
         }
     }
 }

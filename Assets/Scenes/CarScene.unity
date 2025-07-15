@@ -659,8 +659,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: Spawn Wheel
-  isDraggable: 0
-  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!114 &459724335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -674,7 +672,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnLocation: {fileID: 1614734144}
-  prefab: {fileID: 4710073407613877743, guid: 3b0fb5e054d64489ba144624ab15e98d, type: 3}
+  prefabs:
+  - {fileID: 4710073407613877743, guid: 3b0fb5e054d64489ba144624ab15e98d, type: 3}
   scale: 1
 --- !u!114 &459724336
 MonoBehaviour:
@@ -913,7 +912,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -950,6 +949,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5099684616350230806, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: weldingType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6556307555316582679, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.29
@@ -1008,6 +1011,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: allowRotation
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rotationSnapDegrees.x
+      value: 360
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rotationSnapDegrees.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rotationSnapDegrees.z
+      value: 360
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rigidbodyStateChangeOnDrag
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rigidbodyStateChangeOnRelease
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -1568,7 +1591,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnLocation: {fileID: 1614734144}
-  prefab: {fileID: 1392075582938418229, guid: f3672daa12df84e3e9d60ea5c494a015, type: 3}
+  prefabs:
+  - {fileID: 1392075582938418229, guid: f3672daa12df84e3e9d60ea5c494a015, type: 3}
   scale: 1
 --- !u!114 &1080900604
 MonoBehaviour:
@@ -1687,8 +1711,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: Spawn CarBody
-  isDraggable: 0
-  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!4 &1133418481 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3676226185466253098, guid: 3b0fb5e054d64489ba144624ab15e98d, type: 3}
@@ -2250,8 +2272,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: Spawn VehicleSeat
-  isDraggable: 0
-  MakeRigidbodyKinematicWhenDragged: 0
 --- !u!114 &1743502212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2265,7 +2285,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnLocation: {fileID: 1614734144}
-  prefab: {fileID: 5305943669542099556, guid: 570b7026677354a14a445b52d010abaa, type: 3}
+  prefabs:
+  - {fileID: 5305943669542099556, guid: 570b7026677354a14a445b52d010abaa, type: 3}
   scale: 1
 --- !u!114 &1743502213
 MonoBehaviour:
@@ -2448,6 +2469,10 @@ PrefabInstance:
     - target: {fileID: 1392075582938418229, guid: f3672daa12df84e3e9d60ea5c494a015, type: 3}
       propertyPath: m_Name
       value: CarBody
+      objectReference: {fileID: 0}
+    - target: {fileID: 1692192236843636223, guid: f3672daa12df84e3e9d60ea5c494a015, type: 3}
+      propertyPath: onUnseat.m_PersistentCalls.m_Calls.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1692192236843636223, guid: f3672daa12df84e3e9d60ea5c494a015, type: 3}
       propertyPath: onSeat.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_BoolArgument

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,8 +22,15 @@ public enum InputButton
 
 public class InputSystem : MonoBehaviour
 {
+
+    const float axesCutOffValue = 0.1f;
+    const float axesSmoothingFactor = 0.1f;
+
     private static PlayerInputActions input;
     private static Dictionary<InputButton, InputAction> inputMap = new();
+
+    private static float horizontalAxis = 0f;
+    private static float verticalAxis = 0f;
 
     public void Awake()
     {
@@ -35,6 +43,16 @@ public class InputSystem : MonoBehaviour
             { InputButton.Rotate2, input.Default.Rotate2 },
             { InputButton.Jump, input.Default.Jump },
         };
+    }
+
+    void Update()
+    {
+        float rawHorizontalAxis = input.Default.VehicleAxisHorizontal.ReadValue<float>();
+        float rawVerticalAxis = input.Default.VehicleAxisVertical.ReadValue<float>();
+        horizontalAxis = Mathf.Lerp(horizontalAxis, rawHorizontalAxis, axesSmoothingFactor);
+        verticalAxis = Mathf.Lerp(verticalAxis, rawVerticalAxis, axesSmoothingFactor);
+        if (Mathf.Abs(horizontalAxis) < axesCutOffValue) horizontalAxis = 0f;
+        if (Mathf.Abs(verticalAxis) < axesCutOffValue) verticalAxis = 0f;
     }
 
     public static bool GetButtonDown(InputButton button)
@@ -66,7 +84,7 @@ public class InputSystem : MonoBehaviour
     public static bool GetPointerHeld()
     {
         if (input == null) return false;
-        return input.Default.PointerPress.IsPressed();        
+        return input.Default.PointerPress.IsPressed();
     }
 
     public static float GetAxis(InputAxis axis)
@@ -75,10 +93,10 @@ public class InputSystem : MonoBehaviour
         switch (axis)
         {
             case InputAxis.Horizontal:
-                return input.Default.VehicleAxisHorizontal.ReadValue<float>();
+                return horizontalAxis;
 
             case InputAxis.Vertical:
-                return input.Default.VehicleAxisVertical.ReadValue<float>();
+                return verticalAxis;
         }
         return 0f;
     }

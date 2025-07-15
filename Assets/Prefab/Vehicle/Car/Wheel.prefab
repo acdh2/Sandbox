@@ -59,6 +59,7 @@ GameObject:
   - component: {fileID: 5297911367800585407}
   - component: {fileID: 5221988806891180836}
   - component: {fileID: 7602599477062628986}
+  - component: {fileID: -3795288188432407289}
   m_Layer: 0
   m_Name: Wheel
   m_TagString: Untagged
@@ -168,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 3
+  weldMode: 3
 --- !u!114 &7602599477062628986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,8 +183,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: A vehicle wheel
-  isDraggable: 1
-  MakeRigidbodyKinematicWhenDragged: 0
+--- !u!114 &-3795288188432407289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4710073407613877743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shouldPropagateDragEvents: 1
 --- !u!1 &5225748711847651476
 GameObject:
   m_ObjectHideFlags: 0
