@@ -14,5 +14,10 @@ public class Selectable : MonoBehaviour
     /// <summary>
     /// Gets the description text of this object.
     /// </summary>
-    public string ObjectDescription => objectDescription;
+    public string ObjectDescription
+    {
+        get { return objectDescription; }
+        set { objectDescription = value; }
+    }
+
 }

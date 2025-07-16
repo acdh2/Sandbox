@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 
@@ -30,11 +31,18 @@ public class DebugMonitor : MonoBehaviour
     {
         if (enableOnStart)
             CreateUI();
+
+        LogInfo("Press SHIFT+C to clear the console.");
     }
 
     void Update()
     {
         if (outputText == null) return;
+
+        if (Keyboard.current.cKey.wasPressedThisFrame && Keyboard.current.leftShiftKey.isPressed)
+        {
+            Clear();
+        }
 
         string stateInfo = "";
         if (stateMachine1 != null) stateInfo += $"[1] <b>{stateMachine1.name}</b>: {stateMachine1.CurrentState}\n";
@@ -104,39 +112,42 @@ public class DebugMonitor : MonoBehaviour
         textRT.anchorMin = new Vector2(0, 0);
         textRT.anchorMax = new Vector2(1, 1);
         textRT.offsetMin = new Vector2(10, 10);
-        textRT.offsetMax = new Vector2(-10, -40); // ruimte voor knop
+        textRT.offsetMax = new Vector2(-10, -10);
         outputText.textWrappingMode = TextWrappingModes.Normal;
         outputText.richText = true;
         outputText.fontSize = 12;
         outputText.text = "Debug Output...";
 
         // Clear Button
-        GameObject buttonGO = new GameObject("ClearButton", typeof(Button), typeof(Image));
-        buttonGO.transform.SetParent(panel, false);
-        RectTransform btnRT = buttonGO.GetComponent<RectTransform>();
-        btnRT.anchorMin = new Vector2(1, 1);
-        btnRT.anchorMax = new Vector2(1, 1);
-        btnRT.pivot = new Vector2(1, 1);
-        btnRT.anchoredPosition = new Vector2(-10, -10);
-        btnRT.sizeDelta = new Vector2(60, 25);
-        buttonGO.GetComponent<Image>().color = new Color(1, 1, 1, 0.2f);
+        // GameObject buttonGO = new GameObject("ClearButton", typeof(Button), typeof(Image));
+        // buttonGO.transform.SetParent(panel, false);
+        // RectTransform btnRT = buttonGO.GetComponent<RectTransform>();
+        // btnRT.anchorMin = new Vector2(1, 1);
+        // btnRT.anchorMax = new Vector2(1, 1);
+        // btnRT.pivot = new Vector2(1, 1);
+        // btnRT.anchoredPosition = new Vector2(-10, -10);
+        // btnRT.sizeDelta = new Vector2(60, 25);
+        // buttonGO.GetComponent<Image>().color = new Color(1, 1, 1, 0.2f);
 
-        TextMeshProUGUI btnText = new GameObject("ButtonText", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
-        btnText.text = "Clear";
-        btnText.alignment = TextAlignmentOptions.Center;
-        btnText.fontSize = 14;
-        btnText.color = Color.black;
-        RectTransform txtRT = btnText.GetComponent<RectTransform>();
-        btnText.transform.SetParent(buttonGO.transform, false);
-        txtRT.anchorMin = Vector2.zero;
-        txtRT.anchorMax = Vector2.one;
-        txtRT.offsetMin = txtRT.offsetMax = Vector2.zero;
+        // TextMeshProUGUI btnText = new GameObject("ButtonText", typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();
+        // btnText.text = "Clear";
+        // btnText.alignment = TextAlignmentOptions.Center;
+        // btnText.fontSize = 14;
+        // btnText.color = Color.black;
+        // RectTransform txtRT = btnText.GetComponent<RectTransform>();
+        // btnText.transform.SetParent(buttonGO.transform, false);
+        // txtRT.anchorMin = Vector2.zero;
+        // txtRT.anchorMax = Vector2.one;
+        // txtRT.offsetMin = txtRT.offsetMax = Vector2.zero;
 
-        Button btn = buttonGO.GetComponent<Button>();
-        btn.onClick.AddListener(Clear);
+        // Button btn = buttonGO.GetComponent<Button>();
+        // btn.onClick.AddListener(Clear);
+
+        panel.GetComponent<Image>().raycastTarget = false;
+        outputText.raycastTarget = false;        
 
         float lineHeight = outputText.fontSize * 1.2f;
-        float availableHeight = panel.sizeDelta.y - 40f; // marge voor button
+        float availableHeight = panel.sizeDelta.y - 0f;
         maxLines = Mathf.FloorToInt(availableHeight / lineHeight) - 2;
     }
 

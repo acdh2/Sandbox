@@ -5,7 +5,15 @@ using UnityEngine.Events;
 
 public class ConditionalEventInvoker : MonoBehaviour
 {
-    // Defines the types of conditions that can be checked
+
+    [Serializable]
+    public enum ContinueOption
+    {
+        Success,
+        Fail,
+        Both
+    }
+
     [Serializable]
     public enum ConditionType
     {
@@ -14,10 +22,10 @@ public class ConditionalEventInvoker : MonoBehaviour
         Layer,
         State,
         MaterialName,
-        AnimatorState
+        AnimatorState,
+        Any
     }
 
-    // Represents a single filter condition with optional negation
     [Serializable]
     public class FilterCondition
     {
@@ -26,10 +34,8 @@ public class ConditionalEventInvoker : MonoBehaviour
         public bool negate;
     }
 
-    // List of all conditions to evaluate
     public List<FilterCondition> conditions = new List<FilterCondition>();
 
-    // Defines how multiple conditions are combined
     public enum LogicalOperator
     {
         And,
@@ -37,16 +43,36 @@ public class ConditionalEventInvoker : MonoBehaviour
     }
 
     public LogicalOperator conditionLogic = LogicalOperator.And;
-
-    // If true, evaluate automatically when colliders enter or exit
     public bool autoTrigger = true;
-
-    // Event invoked when conditions are met
     public UnityEvent onConditionsMet;
+    public UnityEvent onConditionsFailed;
 
-    // Tracks colliders currently inside the trigger area
+    public float TimeToEvaluate = 0f; // Delay before evaluation
+    private float evaluationTimer = -1f;
+
+    // Nieuwe property voor volgorde van evaluatie
+    [Tooltip("Lower values evaluate first. Higher values act like 'else' branches.")]
+    public int evaluationOrder = 0;
+
+    public ContinueOption ProceedOrderOnResult = ContinueOption.Both;
+
     private readonly HashSet<Collider> collidersInTrigger = new HashSet<Collider>();
 
+    // Timer en huidige order bijhouden
+    private int currentEvaluatingOrder = -1;
+
+    private void Update()
+    {
+        if (evaluationTimer >= 0f)
+        {
+            evaluationTimer -= Time.deltaTime;
+            if (evaluationTimer <= 0f)
+            {
+                evaluationTimer = -1f;
+                EvaluateAndChain(currentEvaluatingOrder);
+            }
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -56,7 +82,9 @@ public class ConditionalEventInvoker : MonoBehaviour
         collidersInTrigger.Add(other);
 
         if (autoTrigger)
-            Evaluate();
+        {
+            BeginEvaluation(0);
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -67,54 +95,101 @@ public class ConditionalEventInvoker : MonoBehaviour
         collidersInTrigger.Remove(other);
 
         if (autoTrigger)
-            Evaluate();
+        {
+            BeginEvaluation(0);
+        }
     }
 
-    /// <summary>
-    /// Evaluates all conditions against all colliders currently inside the trigger,
-    /// combining the results with the specified logical operator.
-    /// Invokes the event if conditions are met.
-    /// </summary>
-    private void Evaluate()
+    // Start evaluatie alleen als evaluationOrder == order
+    public void BeginEvaluation(int order)
     {
-        // Initialize result depending on logical operator
+        if (evaluationOrder != order)
+            return;
+
+        currentEvaluatingOrder = order;
+
+        if (TimeToEvaluate > 0f)
+        {
+            evaluationTimer = TimeToEvaluate;
+        }
+        else
+        {
+            EvaluateAndChain(order);
+        }
+    }
+
+    // Evalute en indien nodig start volgende tier
+    private void EvaluateAndChain(int order)
+    {
+        bool result = Evaluate();
+
+        if (result)
+        {
+            onConditionsMet?.Invoke();
+        }
+        else
+        {
+            onConditionsFailed?.Invoke();
+        }
+
+        if (ProceedOrderOnResult == ContinueOption.Both ||
+        (ProceedOrderOnResult == ContinueOption.Success && result) ||
+        (ProceedOrderOnResult == ContinueOption.Fail && !result))
+        {
+            // Faalt, roep volgende evaluationOrder aan op alle ConditionalEventInvokers op dit GameObject
+            int nextOrder = order + 1;
+            var invokers = GetComponents<ConditionalEventInvoker>();
+            foreach (var invoker in invokers)
+            {
+                if (invoker.evaluationOrder == nextOrder)
+                {
+                    invoker.BeginEvaluation(nextOrder);
+                }
+            }
+        }
+    }
+
+    // Return true als condities voldaan zijn
+    private bool Evaluate()
+    {
         bool result = (conditionLogic == LogicalOperator.And);
 
         foreach (var condition in conditions)
         {
-            // Check if any collider satisfies this condition
             bool anyMatch = false;
-            foreach (var col in collidersInTrigger)
+
+            if (condition.conditionType == ConditionType.Any)
             {
-                if (EvaluateCondition(col, condition))
+                bool hasAny = collidersInTrigger.Count > 0;
+                anyMatch = condition.negate ? !hasAny : hasAny;
+            }
+            else
+            {
+                foreach (var col in collidersInTrigger)
                 {
-                    anyMatch = true;
-                    break;
+                    if (EvaluateCondition(col, condition))
+                    {
+                        anyMatch = true;
+                        break;
+                    }
                 }
             }
 
             if (conditionLogic == LogicalOperator.And && !anyMatch)
             {
-                // For AND, one failure is enough to fail overall
                 result = false;
                 break;
             }
             else if (conditionLogic == LogicalOperator.Or && anyMatch)
             {
-                // For OR, one success is enough to succeed overall
                 result = true;
                 break;
             }
         }
 
-        if (result)
-            onConditionsMet?.Invoke();
+        return result;
     }
 
-    /// <summary>
-    /// Checks if a single collider satisfies a single filter condition,
-    /// taking into account negation.
-    /// </summary>
     private bool EvaluateCondition(Collider other, FilterCondition condition)
     {
         bool match = false;
@@ -132,7 +207,7 @@ public class ConditionalEventInvoker : MonoBehaviour
 
             case ConditionType.Layer:
                 match = LayerMask.LayerToName(other.gameObject.layer)
-                                    .Equals(condition.value, StringComparison.OrdinalIgnoreCase);
+                                .Equals(condition.value, StringComparison.OrdinalIgnoreCase);
                 break;
 
             case ConditionType.State:
@@ -147,7 +222,6 @@ public class ConditionalEventInvoker : MonoBehaviour
                 var renderer = other.GetComponent<Renderer>();
                 if (renderer != null && renderer.sharedMaterial != null)
                 {
-                    // Use Contains to allow partial matching of material names
                     match = renderer.sharedMaterial.name.ToLowerInvariant().Contains(targetValue);
                 }
                 break;
@@ -169,11 +243,9 @@ public class ConditionalEventInvoker : MonoBehaviour
                 break;
         }
 
-        // Apply negation if requested
         return condition.negate ? !match : match;
     }
 
-    // Ensure the collider is set to trigger by default when resetting the component
     private void Reset()
     {
         Collider col = GetComponent<Collider>();
