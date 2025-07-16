@@ -160,7 +160,7 @@ MonoBehaviour:
   onUnseat:
     m_PersistentCalls:
       m_Calls: []
-  keysToCheck: 3100000032000000
+  keysToCheck: 
 --- !u!114 &-1404815187983295986
 MonoBehaviour:
   m_ObjectHideFlags: 0

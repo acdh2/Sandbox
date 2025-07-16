@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 public class DebugMonitor : MonoBehaviour
 {
@@ -30,9 +31,15 @@ public class DebugMonitor : MonoBehaviour
     void Start()
     {
         if (enableOnStart)
-            CreateUI();
+        {
+            Initialize();
+        }
+    }
 
-        LogInfo("Press SHIFT+C to clear the console.");
+    void Initialize()
+    {
+        CreateUI();
+        LogInfo("Press SHIFT+C to clear the console.");        
     }
 
     void Update()
@@ -69,6 +76,7 @@ public class DebugMonitor : MonoBehaviour
 
     private void AddLine(string line)
     {
+        if (outputText == null) Initialize();
         if (logLines.Count >= maxLines)
             logLines.Dequeue();
         logLines.Enqueue(line);

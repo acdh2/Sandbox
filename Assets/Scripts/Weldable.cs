@@ -23,7 +23,7 @@ public enum WeldType
 }
 
 [DisallowMultipleComponent]
-[RequireComponent(typeof(Selectable))]
+//[RequireComponent(typeof(Selectable))]
 public class Weldable : MonoBehaviour
 {
     [SerializeField]

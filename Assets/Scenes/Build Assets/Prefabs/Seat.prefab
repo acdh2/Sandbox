@@ -44,6 +44,9 @@ GameObject:
   - component: {fileID: 2513955453996439499}
   - component: {fileID: 4164332534214944792}
   - component: {fileID: 7839049172580471981}
+  - component: {fileID: 8472353951600690286}
+  - component: {fileID: 5056438363531802875}
+  - component: {fileID: 6631058404806159138}
   m_Layer: 7
   m_Name: Seat
   m_TagString: Weldable
@@ -155,7 +158,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seatPoint: {fileID: 4096040899508648757}
   playerTag: Player
-  exitKey: 32
   debounceDuration: 1
   onSeat:
     m_PersistentCalls:
@@ -164,3 +166,42 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   keysToCheck: 3100000032000000
+--- !u!114 &8472353951600690286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1555414746754532141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weldMode: 3
+--- !u!114 &5056438363531802875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1555414746754532141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c14a531c091ed47028b32c51846c2dd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectDescription: 
+--- !u!114 &6631058404806159138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1555414746754532141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shouldPropagateDragEvents: 1
