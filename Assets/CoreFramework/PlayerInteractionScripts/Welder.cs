@@ -9,6 +9,7 @@ enum WeldingType
 }
 
 [RequireComponent(typeof(SelectionHandler))]
+[DisallowMultipleComponent]
 public class Welder : MonoBehaviour
 {
     private const int MaxWeldsAtTheSameTime = 64;
@@ -168,7 +169,7 @@ public class Welder : MonoBehaviour
             GameObject other = overlap.gameObject;
             if (!IsInSameHierarchy(target, other))
             {
-                Weldable weldableOther = other.GetComponent<Weldable>();
+                Weldable weldableOther = other.GetComponentInParent<Weldable>();
                 if (weldableOther != null && weldableOther.CanReceive)
                 {
                     if (!weldableOther.IsConnected(targetWeldable))

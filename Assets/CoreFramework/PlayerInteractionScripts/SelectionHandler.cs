@@ -6,6 +6,7 @@ using System.Collections.Generic;
 /// Temporarily changes selected objects' layers for highlighting,
 /// and restores original layers upon deselection.
 /// </summary>
+[DisallowMultipleComponent]
 public class SelectionHandler : MonoBehaviour
 {
     [Header("Selection Settings")]

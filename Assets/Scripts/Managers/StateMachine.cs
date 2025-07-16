@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+[DisallowMultipleComponent]
 public class StateMachine : MonoBehaviour
 {
     [Serializable]

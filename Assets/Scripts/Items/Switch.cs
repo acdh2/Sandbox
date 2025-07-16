@@ -6,6 +6,7 @@ using UnityEngine;
 /// Represents a switch that can activate, deactivate or toggle IActivatable components
 /// within the welded structure based on an activation group color.
 /// </summary>
+[DisallowMultipleComponent]
 public class Switch : MonoBehaviour
 {
     [Tooltip("Only targets with a matching activationGroup color will respond.")]

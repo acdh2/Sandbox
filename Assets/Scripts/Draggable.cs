@@ -11,6 +11,7 @@ public enum RigidbodyStateChange
 }
 
 [RequireComponent(typeof(Selectable))]
+[DisallowMultipleComponent]
 public class Draggable : MonoBehaviour
 {
     public bool shouldPropagateDragEvents = true;

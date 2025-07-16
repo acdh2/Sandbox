@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.VisualScripting;
 
+[DisallowMultipleComponent]
 public class DebugMonitor : MonoBehaviour
 {
     [Header("Debug Window Settings")]

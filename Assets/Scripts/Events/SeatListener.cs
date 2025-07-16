@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
-public class SeatListener : KeyPressListener, ISeatListener
+    public class SeatListener : KeyPressListener, ISeatListener
 {
     public UnityEvent onSeat;
     public UnityEvent onUnseat;

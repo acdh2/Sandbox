@@ -5,6 +5,7 @@ using System.Collections.Generic;
 /// Detects collisions from the player's character controller and sends appropriate collision events
 /// (enter, stay, exit) to objects that have a CollisionEventInvoker component.
 /// </summary>
+[DisallowMultipleComponent]
 public class PlayerCollisionTrigger : MonoBehaviour
 {
     // Keeps track of objects hit in the current and previous frames.

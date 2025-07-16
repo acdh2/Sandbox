@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class KeepUpright : MonoBehaviour
 {
     public Transform playerCapsule;

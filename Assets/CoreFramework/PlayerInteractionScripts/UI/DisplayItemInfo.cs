@@ -5,6 +5,7 @@ using TMPro;
 /// Displays information about the currently selected item, 
 /// but only when no drag operation is active.
 /// </summary>
+[DisallowMultipleComponent]
 public class DisplayItemInfo : MonoBehaviour
 {
     [Tooltip("Reference to the SelectionHandler managing current selection")]

@@ -4,6 +4,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Controls the crosshair UI position by following the mouse position.
 /// </summary>
+[DisallowMultipleComponent]
 public class CrossHairPositioning : MonoBehaviour
 {
     private RectTransform rectTransform;

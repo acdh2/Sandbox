@@ -9,6 +9,7 @@ using System.Linq;
 /// Pressing a key exits the seat and restores player control.
 /// </summary>
 [RequireComponent(typeof(Weldable))]
+[DisallowMultipleComponent]
 public class Seat : MonoBehaviour, IWeldListener
 {
     [Header("Seat Settings")]

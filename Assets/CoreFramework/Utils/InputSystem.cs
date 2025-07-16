@@ -20,6 +20,7 @@ public enum InputButton
     Jump
 }
 
+[DisallowMultipleComponent]
 public class InputSystem : MonoBehaviour
 {
 

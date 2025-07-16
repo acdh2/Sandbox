@@ -17,6 +17,7 @@ public enum DragState
 /// Requires a SelectionHandler component to function properly.
 /// </summary>
 [RequireComponent(typeof(SelectionHandler))]
+[DisallowMultipleComponent]
 public class DragHandler : MonoBehaviour
 {
     /// <summary>
@@ -207,11 +208,13 @@ public class DragHandler : MonoBehaviour
         if (selectedObject == null) return;
 
         Transform selectedTransform = selectedObject.transform;
+        Transform selectedRoot = selectedObject.transform.root;
+        if (selectedRoot == null) return;
 
         Vector3 cameraOffset = Vector3.zero;
 
         Vector3 toCamera = Camera.main.transform.position - selectedTransform.position;
-        if (Mathf.Abs(toCamera.x) > Mathf.Abs(toCamera.z))
+        if (Mathf.Abs(toCamera.x) > Mathf.Abs(toCamera.z * 1.5f))
         {
             if (toCamera.x > 0f) cameraOffset = Vector3.right;
             else cameraOffset = -Vector3.right;
@@ -223,9 +226,16 @@ public class DragHandler : MonoBehaviour
         }
         Vector3 rightVector = Vector3.Cross(cameraOffset, Vector3.up);
 
-        Quaternion rotation = Quaternion.AngleAxis(angle, rightVector);
-        selectedTransform.rotation = GetSnappedRotation(rotation * selectedTransform.rotation);
+        Quaternion deltaRotation = Quaternion.AngleAxis(angle, rightVector);
 
+        Vector3 pivot = selectedObject.transform.position;
+
+        // Rotate position around pivot
+        Vector3 direction = selectedRoot.position - pivot;
+        selectedRoot.position = pivot + deltaRotation * direction;
+        
+        // Apply rotation
+        selectedRoot.rotation = GetSnappedRotation(deltaRotation * selectedRoot.rotation);
         InitializeSelection(selectedObject.transform);
     }
 

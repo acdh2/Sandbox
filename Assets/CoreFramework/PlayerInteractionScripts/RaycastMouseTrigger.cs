@@ -4,6 +4,7 @@ using UnityEngine;
 /// Casts a ray from the center of the screen and triggers mouse events
 /// on objects that implement MouseEventInvoker when the left mouse button is used.
 /// </summary>
+[DisallowMultipleComponent]
 public class RaycastMouseTrigger : MonoBehaviour
 {
     [Tooltip("Maximum raycast distance.")]

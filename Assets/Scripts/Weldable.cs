@@ -23,7 +23,6 @@ public enum WeldType
 }
 
 [DisallowMultipleComponent]
-//[RequireComponent(typeof(Selectable))]
 public class Weldable : MonoBehaviour
 {
     [SerializeField]
@@ -158,14 +157,13 @@ public class Weldable : MonoBehaviour
 
     private void ApplyHierarchyWeld(Weldable target)
     {
-        if (transform.parent == null)
+        if (transform.parent != null)
         {
-            transform.SetParent(target.transform, true);
+            Transform currentRoot = transform.root;
+            currentRoot.SetParent(transform, true);
         }
-        else
-        {
-            target.transform.root.SetParent(transform, true);
-        }
+
+        transform.SetParent(target.transform, true);
     }
 
     private void ApplyPhysicsWeld(Weldable target)
