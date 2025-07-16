@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: 2905202244527054833}
   - component: {fileID: 7030157013057367064}
   - component: {fileID: 3457722708406739334}
+  - component: {fileID: 1103789640704064772}
   m_Layer: 0
   m_Name: Cheese
   m_TagString: Untagged
@@ -135,8 +136,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: 
-  isDraggable: 1
-  MakeRigidbodyKinematicWhenDragged: 1
 --- !u!114 &2905202244527054833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 3
+  weldMode: 3
 --- !u!65 &7030157013057367064
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -198,3 +197,16 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1103789640704064772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4441070312171517498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shouldPropagateDragEvents: 1

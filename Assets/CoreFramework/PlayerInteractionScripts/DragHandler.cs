@@ -41,10 +41,6 @@ public class DragHandler : MonoBehaviour
     public RotationAxisFlags allowRotation = RotationAxisFlags.All;
     public Vector3 rotationSnapDegrees = Vector3.zero;
 
-    [Header("Movement Settings")]
-    public bool smoothMovement = false;
-    public float moveResponsiveness = 100f;
-
     [Header("Rigidbody")]
     public RigidbodyStateChange rigidbodyStateChangeOnDrag = RigidbodyStateChange.SetKinematic;
     public RigidbodyStateChange rigidbodyStateChangeOnRelease = RigidbodyStateChange.SetNonKinematic;
@@ -255,7 +251,7 @@ public class DragHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies calculated position and rotation to the selected object, optionally with smoothing.
+    /// Applies calculated position and rotation to the selected object
     /// </summary>
     private void ApplyTransformToSelection()
     {
@@ -263,25 +259,6 @@ public class DragHandler : MonoBehaviour
         {
             selectedDraggable.UpdateDrag(targetPosition, targetRotation);
         }
-        // if (selectedTransform == null) return;
-
-        // if (smoothMovement)
-        // {
-        //     selectedTransform.position = Vector3.Lerp(selectedTransform.position, targetPosition, moveResponsiveness * Time.deltaTime);
-        //     Quaternion interpolatedRotation = Quaternion.Slerp(selectedTransform.rotation, targetRotation, moveResponsiveness * Time.deltaTime);
-
-        //     if (IsNormalized(interpolatedRotation))
-        //         selectedTransform.rotation = interpolatedRotation;
-        // }
-        // else
-        // {
-        //     selectedTransform.position = targetPosition;
-        //     if (IsNormalized(targetRotation))
-        //         selectedTransform.rotation = targetRotation;
-        // }
-
-        // //ApplyPlacementConstraints();
-        //}
     }
 
     /// <summary>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ConditionalEvent : MonoBehaviour
+public class ConditionalEventInvoker : MonoBehaviour
 {
     // Defines the types of conditions that can be checked
     [Serializable]

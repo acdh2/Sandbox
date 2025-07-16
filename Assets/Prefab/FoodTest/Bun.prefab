@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 447334264847207207}
   - component: {fileID: 7918049570174361935}
   - component: {fileID: 4394163451404498369}
+  - component: {fileID: 2522138093512441203}
   m_Layer: 0
   m_Name: Bun
   m_TagString: Untagged
@@ -70,8 +71,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: 
-  isDraggable: 1
-  MakeRigidbodyKinematicWhenDragged: 1
 --- !u!114 &7918049570174361935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84,7 +83,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 3
+  weldMode: 3
 --- !u!54 &4394163451404498369
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -112,6 +111,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &2522138093512441203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1501697942209459321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shouldPropagateDragEvents: 1
 --- !u!1 &1592310840535837330
 GameObject:
   m_ObjectHideFlags: 0

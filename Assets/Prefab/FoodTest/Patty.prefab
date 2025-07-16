@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 8957978617364653052}
   - component: {fileID: 1458831373591608462}
   - component: {fileID: 690257421016096773}
+  - component: {fileID: 1978963421031429155}
   m_Layer: 0
   m_Name: Patty
   m_TagString: Untagged
@@ -137,8 +138,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectDescription: 
-  isDraggable: 1
-  MakeRigidbodyKinematicWhenDragged: 1
 --- !u!114 &-8896959744650816086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79831ae605ed54f628ebbbb6ccaa3591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 3
+  weldMode: 3
 --- !u!65 &6328935695416274025
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -272,3 +271,16 @@ MonoBehaviour:
     OnTriggerExit:
       m_PersistentCalls:
         m_Calls: []
+--- !u!114 &1978963421031429155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6248097782152862734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shouldPropagateDragEvents: 1

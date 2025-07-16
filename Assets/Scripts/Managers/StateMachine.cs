@@ -13,10 +13,10 @@ public class StateMachine : MonoBehaviour
         public UnityEvent OnStop;
     }
 
-    public List<State> states = new List<State>();
-
     [Tooltip("Start state name, use 'None' for no active state")]
     public string startState = "None";
+
+    public List<State> states = new List<State>();
 
     private State currentState = null;
 
