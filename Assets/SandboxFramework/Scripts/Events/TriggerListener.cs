@@ -39,6 +39,8 @@ public class TriggerListener : MonoBehaviour
     /// <param name="other">Collider entering the trigger.</param>
     private void OnTriggerEnter(Collider other)
     {
+        if (!enabled) return;
+        
         string otherName = other.gameObject.name;
 
         foreach (var entry in triggers)
@@ -57,6 +59,8 @@ public class TriggerListener : MonoBehaviour
     /// <param name="other">Collider exiting the trigger.</param>
     private void OnTriggerExit(Collider other)
     {
+        if (!enabled) return;
+
         string otherName = other.gameObject.name;
 
         foreach (var entry in triggers)

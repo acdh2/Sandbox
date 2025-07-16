@@ -103,6 +103,8 @@ public class ConditionalEventInvoker : MonoBehaviour
     // Start evaluatie alleen als evaluationOrder == order
     public void BeginEvaluation(int order)
     {
+        if (!enabled) return;
+        
         if (evaluationOrder != order)
             return;
 
@@ -246,10 +248,10 @@ public class ConditionalEventInvoker : MonoBehaviour
         return condition.negate ? !match : match;
     }
 
-    private void Reset()
-    {
-        Collider col = GetComponent<Collider>();
-        if (col != null)
-            col.isTrigger = true;
-    }
+    // private void Reset()
+    // {
+    //     Collider col = GetComponent<Collider>();
+    //     if (col != null)
+    //         col.isTrigger = true;
+    // }
 }
