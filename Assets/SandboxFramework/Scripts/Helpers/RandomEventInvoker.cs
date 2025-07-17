@@ -22,6 +22,8 @@ public class RandomEventInvoker : MonoBehaviour
     /// </summary>
     public void InvokeRandomEvent()
     {
+        if (!enabled) return;
+        
         if (events == null || events.Length == 0)
         {
             Debug.LogWarning($"{name}: Geen events beschikbaar om aan te roepen.");

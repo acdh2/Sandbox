@@ -248,10 +248,4 @@ public class ConditionalEventInvoker : MonoBehaviour
         return condition.negate ? !match : match;
     }
 
-    // private void Reset()
-    // {
-    //     Collider col = GetComponent<Collider>();
-    //     if (col != null)
-    //         col.isTrigger = true;
-    // }
 }

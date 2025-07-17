@@ -17,7 +17,7 @@ public class Welder : MonoBehaviour
 
     //extra border around the collider that is used for checking if they overlap
     //this value is used to ensure two neighbouring cubes will still connect
-    private const float WeldProximityThreshold = 0.01f;
+    public float WeldProximityThreshold = 0.01f;
 
     public WeldType weldingType = WeldType.HierarchyBased;
 
@@ -53,7 +53,7 @@ public class Welder : MonoBehaviour
     private bool IsWeldable(GameObject obj)
     {
         var weldable = obj.GetComponent<Weldable>();
-        return weldable != null && weldable.CanAttach;
+        return weldable != null && weldable.enabled && weldable.CanAttach;
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public class Welder : MonoBehaviour
     private bool CanBeWelded(GameObject obj)
     {
         var weldable = obj.GetComponent<Weldable>();
-        return weldable != null && weldable.CanAttach;
+        return weldable != null && weldable.enabled && weldable.CanAttach;
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ public class Welder : MonoBehaviour
         if (collider == null) return null;
 
         Weldable targetWeldable = target.GetComponent<Weldable>();
-        if (targetWeldable == null) return null;
+        if (targetWeldable == null || !targetWeldable.enabled) return null;
 
         foreach (Collider overlap in FindPenetratingColliders(collider))
         {
@@ -170,7 +170,7 @@ public class Welder : MonoBehaviour
             if (!IsInSameHierarchy(target, other))
             {
                 Weldable weldableOther = other.GetComponentInParent<Weldable>();
-                if (weldableOther != null && weldableOther.CanReceive)
+                if (weldableOther != null && weldableOther.enabled && weldableOther.CanReceive)
                 {
                     if (!weldableOther.IsConnected(targetWeldable))
                     {
@@ -192,13 +192,13 @@ public class Welder : MonoBehaviour
         if (selected == null) return;
 
         Weldable selectedWeldable = selected.GetComponent<Weldable>();
-        if (selectedWeldable == null || !selectedWeldable.CanAttach) return;
+        if (selectedWeldable == null || !selectedWeldable.enabled || !selectedWeldable.CanAttach) return;
 
         for (int i = 0; i < MaxWeldsAtTheSameTime; i++)
         {
-            Weldable newParent = FindNewOverlappingWeldable(selected);
-            if (newParent == null) break;
-            selectedWeldable.WeldTo(newParent, weldingType);
+            Weldable overlappingWeldable = FindNewOverlappingWeldable(selected);
+            if (overlappingWeldable == null) break;
+            selectedWeldable.WeldTo(overlappingWeldable, weldingType);
         }
     }
 
@@ -211,7 +211,8 @@ public class Welder : MonoBehaviour
         if (target == null) return;
 
         Weldable weldable = target.GetComponent<Weldable>();
-        weldable?.Unweld();
+        if (weldable.enabled)
+            weldable?.Unweld();
     }
     
 }

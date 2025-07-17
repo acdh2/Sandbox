@@ -12,12 +12,12 @@ public class Selectable : MonoBehaviour
     private string objectDescription = "";
 
     /// <summary>
-    /// Gets the description text of this object.
+    /// Description of the object, displayed in UI or tooltips
     /// </summary>
     public string ObjectDescription
     {
-        get { return objectDescription; }
-        set { objectDescription = value; }
+        get => objectDescription;
+        set => objectDescription = value;
     }
 
 }

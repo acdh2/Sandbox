@@ -84,6 +84,8 @@ public class Variable : MonoBehaviour
 
     void Update()
     {
+        if (!enabled) return;
+
         currentTime += Time.deltaTime;
 
         if (currentTime >= 1f)
@@ -125,9 +127,12 @@ public class Variable : MonoBehaviour
             onValueChange?.Invoke(value);
             value = Mathf.FloorToInt(clampedValue);
 
-            foreach (Condition condition in conditions)
+            if (enabled)
             {
-                HandleCondition(condition);
+                foreach (Condition condition in conditions)
+                {
+                    HandleCondition(condition);
+                }
             }
         }
     }

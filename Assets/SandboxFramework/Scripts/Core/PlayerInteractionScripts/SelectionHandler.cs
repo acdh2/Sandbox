@@ -85,7 +85,7 @@ public class SelectionHandler : MonoBehaviour
         foreach (var hit in hits)
         {
             var selectable = hit.collider.GetComponentInParent<Selectable>();
-            if (selectable == null)
+            if (selectable == null || !selectable.enabled)
                 continue;
 
             if (hit.distance < closestDistance)

@@ -1,9 +1,12 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Defines how this object can participate in welding.
 /// </summary>
+[Serializable]
 public enum WeldMode
 {
     None,
@@ -25,8 +28,18 @@ public enum WeldType
 [DisallowMultipleComponent]
 public class Weldable : MonoBehaviour
 {
+    [Tooltip("Defines if the object can be welded or receive welds")]
     [SerializeField]
     private WeldMode weldMode = WeldMode.Both;
+
+    /// <summary>
+    /// Defines if the object can be welded or receive welds
+    /// </summary>
+    public WeldMode WeldMode
+    {
+        get => weldMode;
+        set => weldMode = value;
+    }    
 
     private WeldType currentWeldType = WeldType.Undefined;
     private readonly HashSet<Weldable> connections = new();
@@ -62,8 +75,9 @@ public class Weldable : MonoBehaviour
         }
     }
 
-    private void Start()
+    private System.Collections.IEnumerator Start()
     {
+        yield return null;
         TryAutoHierarchyWeldWithAncestor();
     }    
 
@@ -113,7 +127,6 @@ public class Weldable : MonoBehaviour
 
         // Notify only when groups are formed
         NotifyOnWeld(wasIsolated);
-
         target.NotifyOnWeld(targetWasIsolated);
     }
 
@@ -159,7 +172,17 @@ public class Weldable : MonoBehaviour
     {
         if (transform.parent != null)
         {
+            //make this top of hierarchy
             Transform currentRoot = transform.root;
+            List<Transform> children = new List<Transform>();
+            foreach (Weldable weldable in GetComponentsInChildren<Weldable>())
+            {
+                children.Add(weldable.transform);
+            }
+            foreach (Transform child in children)
+            {
+                child.SetParent(transform.parent, true);
+            }
             currentRoot.SetParent(transform, true);
         }
 

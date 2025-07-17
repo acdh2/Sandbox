@@ -14,8 +14,6 @@ GameObject:
   - component: {fileID: 547611119077722614}
   - component: {fileID: 6614821500823379765}
   - component: {fileID: 5914373148016549867}
-  - component: {fileID: 1692192236843636223}
-  - component: {fileID: 1355170284341373777}
   m_Layer: 0
   m_Name: CarBody
   m_TagString: Untagged
@@ -126,70 +124,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weldMode: 3
---- !u!114 &1692192236843636223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1392075582938418229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 931dad9435eae4a148a26a3d57ebf36e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  keyEvents: []
-  steeringSettings:
-    invert: 0
-    makeAbsolute: 0
-    cutoffMin: -1
-    cutoffMax: 1
-    mappingMin: -1
-    mappingMax: 1
-  onSteer:
-    m_PersistentCalls:
-      m_Calls: []
-  throttlingSettings:
-    invert: 0
-    makeAbsolute: 0
-    cutoffMin: -1
-    cutoffMax: 1
-    mappingMin: -1
-    mappingMax: 1
-  onThrottle:
-    m_PersistentCalls:
-      m_Calls: []
-  onSeat:
-    m_PersistentCalls:
-      m_Calls: []
-  onUnseat:
-    m_PersistentCalls:
-      m_Calls: []
-  onWheelPosition: []
---- !u!114 &1355170284341373777
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1392075582938418229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7f41ba64aed54e6a946f4eba9454ba0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  onWeld:
-    m_PersistentCalls:
-      m_Calls: []
-  onUnweld:
-    m_PersistentCalls:
-      m_Calls: []
-  onAdded:
-    m_PersistentCalls:
-      m_Calls: []
-  onRemoved:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &4810913821144538837
 GameObject:
   m_ObjectHideFlags: 0

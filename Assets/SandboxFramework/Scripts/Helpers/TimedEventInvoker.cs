@@ -95,6 +95,8 @@ public class TimedEventInvoker : MonoBehaviour
     /// </summary>
     private void HandlePlayback()
     {
+        if (!enabled) return;
+
         previousTime = currentTime;
         currentTime += Time.deltaTime * playbackSpeed;
         TimeFrame timeWindow = new TimeFrame(previousTime, currentTime);
@@ -177,6 +179,8 @@ public class TimedEventInvoker : MonoBehaviour
     /// </summary>
     private void FireEventsInWindow(TimeFrame time)
     {
+        if (!enabled) return;
+        
         foreach (var (eventTime, unityEvent) in processedEvents)
         {
             if (time.Contains(eventTime))
