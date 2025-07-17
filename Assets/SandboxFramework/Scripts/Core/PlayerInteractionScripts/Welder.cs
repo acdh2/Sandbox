@@ -12,7 +12,7 @@ enum WeldingType
 [DisallowMultipleComponent]
 public class Welder : MonoBehaviour
 {
-    private const int MaxWeldsAtTheSameTime = 64;
+    private const int MaxWeldsAtTheSameTime = 640;
     private const float MaxPenetrationThreshold = 0.01f;
 
     //extra border around the collider that is used for checking if they overlap
@@ -97,7 +97,6 @@ public class Welder : MonoBehaviour
     private GameObject GetWeldableAncestor(GameObject obj)
     {
         if (obj == null) return null;
-
         Transform current = obj.transform;
         while (current != null)
         {
@@ -211,8 +210,10 @@ public class Welder : MonoBehaviour
         if (target == null) return;
 
         Weldable weldable = target.GetComponent<Weldable>();
-        if (weldable.enabled)
-            weldable?.Unweld();
+        if (weldable && weldable.enabled)
+        {
+            weldable.Unweld();
+        }
     }
     
 }
