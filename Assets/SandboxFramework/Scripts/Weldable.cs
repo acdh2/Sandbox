@@ -272,11 +272,39 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Reparents all weldable ancestors under each other, ending with the selected object.
+    /// </summary>
+    public void ReparentWeldableAncestors()
+    {
+        Weldable root = this;
+        if (root == null) return;
+
+        List<Transform> weldableAncestors = new();
+        Transform current = root.transform;
+
+        while (current != null)
+        {
+            Weldable weldable = current.GetComponent<Weldable>();
+            if (weldable && weldable.CanAttach && weldable.CanReceive)
+            {
+                weldableAncestors.Add(current);
+            }
+            current = current.parent;
+        }
+
+        foreach (Transform transform in weldableAncestors)
+            transform.SetParent(null, true);
+
+        for (int i = weldableAncestors.Count - 1; i > 0; i--)
+            weldableAncestors[i].SetParent(weldableAncestors[i - 1], true);
+    }    
+
     private void ApplyHierarchyWeld(Weldable target)
     {
         if (transform.parent != null)
         {
-            SwapParent();
+            ReparentWeldableAncestors();
         }
         transform.SetParent(target.transform, true);
     }
