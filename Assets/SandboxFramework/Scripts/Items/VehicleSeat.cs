@@ -85,6 +85,8 @@ public class VehicleSeat : Seat, IWeldListener
     /// </summary>
     protected override void NotifyOnUnseatListeners()
     {
+        if (!enabled) return;
+
         base.NotifyOnUnseatListeners();
         foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
         {
@@ -97,6 +99,8 @@ public class VehicleSeat : Seat, IWeldListener
     /// </summary>
     protected override void NotifyOnSeatListeners()
     {
+        if (!enabled) return;
+
         base.NotifyOnSeatListeners();
         foreach (IVehicleListener vehicleListener in FindAllVehicleListeners())
         {
@@ -119,6 +123,8 @@ public class VehicleSeat : Seat, IWeldListener
     /// </summary>
     protected override void Update()
     {
+        if (!enabled) return;
+
         base.Update();
 
         if (isActive)
@@ -134,6 +140,8 @@ public class VehicleSeat : Seat, IWeldListener
     /// </summary>
     private void SendInput(float steer, float throttle)
     {
+        if (!enabled) return;
+
         foreach (IVehicleListener listener in FindAllVehicleListeners())
         {
             listener.OnSteer(steer);

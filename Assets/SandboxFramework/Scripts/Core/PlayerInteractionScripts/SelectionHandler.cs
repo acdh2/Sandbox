@@ -105,11 +105,12 @@ public class SelectionHandler : MonoBehaviour
     private void ApplySelectionLayer(GameObject root)
     {
         var stack = new Stack<GameObject>();
-        stack.Push(root.gameObject);
+        stack.Push(root.gameObject);//.transform.root.gameObject);
 
         while (stack.Count > 0)
         {
             var obj = stack.Pop();
+            if (obj != root && obj.GetComponent<Selectable>()) continue;//
 
             if (!originalLayers.ContainsKey(obj))
                 originalLayers[obj] = obj.layer;

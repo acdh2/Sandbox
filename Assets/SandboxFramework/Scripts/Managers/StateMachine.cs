@@ -15,7 +15,8 @@ public class StateMachine : MonoBehaviour
     }
 
     [Tooltip("Start state name, use 'None' for no active state")]
-    public string startState = "None";
+    [SerializeField]
+    private string startState = "None";
 
     public List<State> states = new List<State>();
 
@@ -40,6 +41,8 @@ public class StateMachine : MonoBehaviour
 
     public void SetState(string stateName)
     {
+        if (!enabled) return;
+
         if (string.Equals(stateName, "None", StringComparison.OrdinalIgnoreCase))
         {
             if (currentState != null)

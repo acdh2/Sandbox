@@ -60,6 +60,8 @@ public class DragHandler : MonoBehaviour
     private DragState currentState = DragState.Idle;
     public DragState CurrentState => currentState;
 
+    public bool useRotationKeys = true;
+
     private void Start()
     {
         cam = Camera.main;
@@ -103,7 +105,7 @@ public class DragHandler : MonoBehaviour
                     StopDragging();
                     return;
                 }
-                HandleRotation();
+                if (useRotationKeys) HandleRotation();
                 break;
         }
     }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 /// <summary>
 /// VehicleSeatListener listens for seat, steering, throttle, and weld events on a vehicle part,
@@ -134,7 +135,11 @@ public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldList
     /// <summary>
     /// Enable or disable steering event firing.
     /// </summary>
-    public void SetSteerListenerEnabled(bool value) => steerListenerEnabled = value;
+    public bool SteerListenerEnabled
+    {
+        get => steerListenerEnabled;
+        set => steerListenerEnabled = value;
+    }
 
     /// <summary>
     /// Enable or disable throttle event firing.

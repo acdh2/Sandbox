@@ -20,6 +20,8 @@ public class Switch : MonoBehaviour
     /// </summary>
     public void TurnOn()
     {
+        if (!enabled) return;
+
         foreach (var target in FindAllActivatables())
         {
             // Activate only if inactive and matching the activation group
@@ -35,6 +37,8 @@ public class Switch : MonoBehaviour
     /// </summary>
     public void TurnOff()
     {
+        if (!enabled) return;
+
         foreach (var target in FindAllActivatables())
         {
             if (target.IsActive())
@@ -50,6 +54,8 @@ public class Switch : MonoBehaviour
     /// </summary>
     public void Toggle()
     {
+        if (!enabled) return;
+
         foreach (var target in FindAllActivatables())
         {
             if (target.IsActive())
@@ -69,6 +75,8 @@ public class Switch : MonoBehaviour
     /// </summary>
     public void Reactivate()
     {
+        if (!enabled) return;
+
         TurnOff();
         TurnOn();
     }

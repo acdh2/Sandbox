@@ -22,6 +22,8 @@ public class Wheel : MonoBehaviour
     /// </summary>
     private void LateUpdate()
     {
+        if (!enabled) return;
+
         if (wheelCollider != null && wheelCollider.enabled)
         {
             // Retrieve the world position and rotation from the WheelCollider

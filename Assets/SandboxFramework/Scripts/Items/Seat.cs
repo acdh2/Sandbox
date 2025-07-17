@@ -3,6 +3,7 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using System.Linq;
+using Unity.VisualScripting;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
@@ -59,6 +60,8 @@ public class Seat : MonoBehaviour, IWeldListener
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!enabled) return;
+
         if (CanSeatPlayer(other))
             SeatPlayer(other.transform);
     }
@@ -99,6 +102,8 @@ public class Seat : MonoBehaviour, IWeldListener
 
     protected virtual void Update()
     {
+        if (!enabled) return;
+
         if (seatedPlayer != null)
             HandleKeyboardInput();
 
@@ -113,6 +118,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     private bool CanSeatPlayer(Collider other)
     {
+        if (!enabled) return false;
         return isWelded &&
                seatedPlayer == null &&
                debounceTimer <= 0f &&
@@ -124,6 +130,8 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     private void SeatPlayer(Transform player)
     {
+        if (!enabled) return;
+
         seatedPlayer = player;
         playerController = player.GetComponent<StarterAssets.FirstPersonController>();
 
@@ -153,6 +161,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     protected virtual void NotifyOnUnseatListeners()
     {
+        if (!enabled) return;
         foreach (ISeatListener seatListener in FindConnectedComponents<ISeatListener>())
         {
             seatListener.OnUnseat();
@@ -164,6 +173,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     protected virtual void NotifyOnSeatListeners()
     {
+        if (!enabled) return;
         foreach (ISeatListener seatListener in FindConnectedComponents<ISeatListener>())
         {
             seatListener.OnSeat();
@@ -184,6 +194,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     private bool IsExitRequested()
     {
+        if (!enabled) return true;
         return seatedPlayer != null && InputSystem.GetButtonDown(InputButton.Jump);
     }
 

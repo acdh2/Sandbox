@@ -170,6 +170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weldMode: 1
+  connections: []
 --- !u!114 &7602599477062628986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -426,7 +427,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 2723276090580392287}
           m_TargetAssemblyTypeName: VehicleSeatListener, Assembly-CSharp
-          m_MethodName: SetSteerListenerEnabled
+          m_MethodName: set_SteerListenerEnabled
           m_Mode: 6
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
