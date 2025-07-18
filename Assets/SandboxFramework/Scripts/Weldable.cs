@@ -5,18 +5,6 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Defines how this object can participate in welding.
-/// </summary>
-[Serializable]
-public enum WeldMode
-{
-    None,
-    AttachableOnly,
-    ReceivableOnly,
-    Both
-}
-
-/// <summary>
 /// Defines the mechanism of the welding (hierarchical or physical).
 /// </summary>
 public enum WeldType
@@ -29,45 +17,9 @@ public enum WeldType
 [DisallowMultipleComponent]
 public class Weldable : MonoBehaviour
 {
-    [Tooltip("Defines if the object can be welded or receive welds")]
-    [SerializeField]
-    private WeldMode weldMode = WeldMode.Both;
-
-    // public bool CanBeAttached
-    // {
-    //     set
-    //     {
-    //         if (value && CanReceive) weldMode = WeldMode.Both;
-    //         if (value && !CanReceive) weldMode = WeldMode.AttachableOnly;
-    //         if (CanReceive) weldMode = WeldMode.ReceivableOnly;
-    //         weldMode = WeldMode.None;
-    //     }
-    // }
-
-    // private void SetWeldMode(WeldMode value)
-    // {
-    //     this.weldMode = value;
-    // }
-
     private WeldType currentWeldType = WeldType.Undefined;
     private readonly HashSet<Weldable> connections = new();
     //public List<Weldable> connections = new();
-
-    public bool CanAttach
-    {
-        get => weldMode == WeldMode.AttachableOnly || weldMode == WeldMode.Both;
-        set => weldMode = value
-            ? (CanReceive ? WeldMode.Both : WeldMode.AttachableOnly)
-            : (CanReceive ? WeldMode.ReceivableOnly : WeldMode.None);
-    }
-
-    public bool CanReceive
-    {
-        get => weldMode == WeldMode.ReceivableOnly || weldMode == WeldMode.Both;
-        set => weldMode = value
-            ? (CanAttach ? WeldMode.Both : WeldMode.ReceivableOnly)
-            : (CanAttach ? WeldMode.AttachableOnly : WeldMode.None);
-    }
 
     private WeldType CurrentWeldType => currentWeldType;
 
@@ -83,11 +35,7 @@ public class Weldable : MonoBehaviour
                 // Check of deze weldable nog niet al verbonden is
                 if (!IsConnected(parentWeldable))
                 {
-                    // Alleen weld uitvoeren als modes compatibel zijn
-                    if (CanAttach && parentWeldable.CanReceive)
-                    {
-                        WeldTo(parentWeldable, WeldType.HierarchyBased, true);
-                    }
+                    WeldTo(parentWeldable, WeldType.HierarchyBased, true);
                 }
 
                 break; // Alleen eerste voorouder gebruiken
@@ -106,18 +54,12 @@ public class Weldable : MonoBehaviour
     /// <summary>
     /// Welds this object to a target using the specified weld type.
     /// </summary>
-    internal void WeldTo(Weldable target, WeldType weldType, bool isAutoWeld=false)
+    internal void WeldTo(Weldable target, WeldType weldType, bool isAutoWeld=false, Transform overlappingTransform=null)
     {
         if (!enabled) return;
 
         if (target == null || target == this)
             return;
-
-        if (!CanAttach || !target.CanReceive)
-        {
-            Debug.LogWarning($"Weld failed: mode mismatch ({name} ➜ {target.name})");
-            return;
-        }
 
         bool wasIsolated = connections.Count == 0;
         bool targetWasIsolated = target.connections.Count == 0;
@@ -135,9 +77,10 @@ public class Weldable : MonoBehaviour
         }
 
         if (target.IsConnected(this))
-            {
-                Debug.LogError("One-sided connection detected");
-            }
+        {
+            Debug.LogError("One-sided connection detected");
+        }
+
 
         AddConnection(target);
         target.AddConnection(this);
@@ -145,7 +88,7 @@ public class Weldable : MonoBehaviour
         // Perform weld action after establishing the connection
         if (weldType == WeldType.HierarchyBased && !isAutoWeld)
         {
-            ApplyHierarchyWeld(target);
+            ApplyHierarchyWeld(target, overlappingTransform);
         }
         else if (weldType == WeldType.PhysicsBased)
         {
@@ -167,12 +110,16 @@ public class Weldable : MonoBehaviour
         bool wasGrouped = connections.Count > 0;
         NotifyOnUnweld(wasGrouped);
 
-        foreach (var connected in connections)
+        List<Weldable> connectionsToRemove = new();
+
+        foreach (var connection in connections)
         {
-            if (connected.connections.Remove(this))
+            connectionsToRemove.Add(connection);
+
+            if (connection.connections.Remove(this))
             {
-                bool connectionIsIsolatedAfterUnweld = connected.connections.Count == 0;
-                connected.NotifyOnUnweld(connectionIsIsolatedAfterUnweld);
+                bool connectionIsIsolatedAfterUnweld = connection.connections.Count == 0;
+                connection.NotifyOnUnweld(connectionIsIsolatedAfterUnweld);
             }
         }
 
@@ -182,7 +129,7 @@ public class Weldable : MonoBehaviour
             RemovePhysicsWelds(connections);
 
         connections.Clear();
-        currentWeldType = WeldType.Undefined;
+        if (connections.Count < 1) currentWeldType = WeldType.Undefined;
     }
 
     private static Rigidbody GetOrAddRigidbody(GameObject obj)
@@ -206,7 +153,7 @@ public class Weldable : MonoBehaviour
         while (current != null)
         {
             var weldable = current.GetComponent<Weldable>();
-            if (weldable != null && weldable.CanAttach)
+            if (weldable != null)
                 lastFound = weldable;
 
             current = current.parent;
@@ -290,7 +237,7 @@ public class Weldable : MonoBehaviour
         while (current != null)
         {
             Weldable weldable = current.GetComponent<Weldable>();
-            if (weldable && weldable.CanAttach && weldable.CanReceive)
+            if (weldable)
             {
                 weldableAncestors.Add(current);
             }
@@ -304,13 +251,15 @@ public class Weldable : MonoBehaviour
             weldableAncestors[i].SetParent(weldableAncestors[i - 1], true);
     }    
 
-    private void ApplyHierarchyWeld(Weldable target)
+    private void ApplyHierarchyWeld(Weldable target, Transform overlappingTransform)
     {
+        Transform targetTransform = overlappingTransform;
+        if (targetTransform == null) targetTransform = target.transform;
         if (transform.parent != null)
         {
             ReparentWeldableAncestors();
         }
-        transform.SetParent(target.transform, true);
+        transform.SetParent(targetTransform, true);
     }
 
     private void ApplyHierarchyWeld2(Weldable target)
