@@ -1824,7 +1824,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0d3609d2952c407589299889aca74b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Target: {fileID: 1714661345}
+  target: {fileID: 1714661345}
 --- !u!114 &911711457
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1887,7 +1887,7 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 0}
+        - m_Target: {fileID: 1545722371}
           m_TargetAssemblyTypeName: DebugMonitor, Assembly-CSharp
           m_MethodName: Log
           m_Mode: 5
@@ -1918,7 +1918,7 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 0}
+        - m_Target: {fileID: 1545722371}
           m_TargetAssemblyTypeName: DebugMonitor, Assembly-CSharp
           m_MethodName: Log
           m_Mode: 5
@@ -7889,6 +7889,17 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!114 &1545722371 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4840232974601207717, guid: f39ff0f870c194923b08a8a6b219b68b, type: 3}
+  m_PrefabInstance: {fileID: 567841789887568673}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09badb5e8876d411cb4e0a2ebdf28ad3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1547498214
 GameObject:
   m_ObjectHideFlags: 0
@@ -8111,7 +8122,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 911711456}
         m_TargetAssemblyTypeName: LookAt, Assembly-CSharp
-        m_MethodName: set_target
+        m_MethodName: set_Target
         m_Mode: 2
         m_Arguments:
           m_ObjectArgument: {fileID: 1064463136}
@@ -8126,7 +8137,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 911711456}
         m_TargetAssemblyTypeName: LookAt, Assembly-CSharp
-        m_MethodName: set_target
+        m_MethodName: set_Target
         m_Mode: 2
         m_Arguments:
           m_ObjectArgument: {fileID: 1714661345}

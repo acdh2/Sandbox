@@ -16,6 +16,8 @@ public class Draggable : MonoBehaviour
 {
     public bool shouldPropagateDragEvents = true;
 
+    public bool shouldIgnoreRigidbodySettingFromDragger = false;
+
     private bool isBeingDragged = false;
     private Rigidbody rigidBody;
 
@@ -23,6 +25,7 @@ public class Draggable : MonoBehaviour
 
     public void StartDrag(RigidbodyStateChange stateChange)
     {
+        if (!enabled) return;
         rigidBody = GetComponent<Rigidbody>();
         OnGrab();
         isBeingDragged = true;
@@ -33,6 +36,7 @@ public class Draggable : MonoBehaviour
     private void ApplyRigidbodyStateChange(RigidbodyStateChange stateChange)
     {
         if (rigidBody == null) return;
+        if (shouldIgnoreRigidbodySettingFromDragger) return;
         if (stateChange == RigidbodyStateChange.Unchanged) return;
         rigidBody.isKinematic = stateChange == RigidbodyStateChange.SetKinematic;
     }
@@ -88,6 +92,8 @@ public class Draggable : MonoBehaviour
 
     public void EndDrag(RigidbodyStateChange stateChange)
     {
+        if (!enabled) return;
+
         OnRelease();
         ApplyRigidbodyStateChange(stateChange);        
         isBeingDragged = false;
@@ -131,6 +137,8 @@ public class Draggable : MonoBehaviour
 
     private void OnGrab()
     {
+        if (!enabled) return;
+
         foreach (DragListener dragListener in GetConnectedDragListeners())
         {
             dragListener.OnGrab();
@@ -139,6 +147,8 @@ public class Draggable : MonoBehaviour
 
     private void OnRelease()
     {
+        if (!enabled) return;
+
         foreach (DragListener dragListener in GetConnectedDragListeners())
         {
             dragListener.OnRelease();

@@ -75,7 +75,7 @@ public class DragHandler : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (selectionHandler.CurrentSelection == null)
+        if (selectionHandler.currentSelection == null)
         {
             StopDragging();
             return;
@@ -115,7 +115,7 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void TryStartDragging()
     {
-        GameObject selectedObject = selectionHandler.CurrentSelection;
+        GameObject selectedObject = selectionHandler.currentSelection;
         if (selectedObject == null) return;
 
         var draggable = selectedObject.GetComponent<Draggable>();
@@ -184,7 +184,7 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void RotateSelected(float x, float y, float z)
     {
-        GameObject selectedObject = selectionHandler.CurrentSelection;
+        GameObject selectedObject = selectionHandler.currentSelection;
         if (selectedObject == null) return;
         
         Transform selectedRoot = selectedObject.transform.root;
@@ -206,7 +206,7 @@ public class DragHandler : MonoBehaviour
 
     private void RotateSelectedTowardsCamera(float angle)
     {
-        GameObject selectedObject = selectionHandler.CurrentSelection;
+        GameObject selectedObject = selectionHandler.currentSelection;
         if (selectedObject == null) return;
 
         Transform selectedTransform = selectedObject.transform;

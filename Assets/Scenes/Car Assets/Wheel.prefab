@@ -76,7 +76,7 @@ Transform:
   m_GameObject: {fileID: 4710073407613877743}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.74, y: 1.12, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -170,7 +170,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weldMode: 1
-  connections: []
 --- !u!114 &7602599477062628986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,6 +196,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shouldPropagateDragEvents: 1
+  shouldIgnoreRigidbodySettingFromDragger: 0
 --- !u!1 &5225748711847651476
 GameObject:
   m_ObjectHideFlags: 0

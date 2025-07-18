@@ -26,7 +26,7 @@ public class DisplayItemInfo : MonoBehaviour
         GameObject selected = null;
         if (dragHandler == null || dragHandler.CurrentState == DragState.Idle)
         {
-            selected = selectionHandler != null ? selectionHandler.CurrentSelection : null;
+            selected = selectionHandler != null ? selectionHandler.currentSelection : null;
         }
 
         UpdateItemInfo(selected);

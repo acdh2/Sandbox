@@ -17,7 +17,8 @@ public enum InputButton
     Unweld,
     Rotate1,
     Rotate2,
-    Jump
+    Jump,
+    ShowHierarchy
 }
 
 [DisallowMultipleComponent]
@@ -43,6 +44,7 @@ public class InputSystem : MonoBehaviour
             { InputButton.Rotate1, input.Default.Rotate1 },
             { InputButton.Rotate2, input.Default.Rotate2 },
             { InputButton.Jump, input.Default.Jump },
+            { InputButton.ShowHierarchy, input.Default.ShowHierarchy }
         };
     }
 
@@ -61,6 +63,14 @@ public class InputSystem : MonoBehaviour
         if (input == null) return false;
         if (inputMap.TryGetValue(button, out var action))
             return action.WasPressedThisFrame();
+        return false;
+    }
+
+    public static bool GetButton(InputButton button)
+    {
+        if (input == null) return false;
+        if (inputMap.TryGetValue(button, out var action))
+            return action.IsPressed();
         return false;
     }
 

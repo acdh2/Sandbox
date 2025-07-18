@@ -44,14 +44,14 @@ public class Weldable : MonoBehaviour
     //     }
     // }
 
-    public void SetWeldMode(WeldMode value)
-    {
-        this.weldMode = value;
-    }
+    // private void SetWeldMode(WeldMode value)
+    // {
+    //     this.weldMode = value;
+    // }
 
     private WeldType currentWeldType = WeldType.Undefined;
-    //private readonly HashSet<Weldable> connections = new();
-    public List<Weldable> connections = new();
+    private readonly HashSet<Weldable> connections = new();
+    //public List<Weldable> connections = new();
 
     public bool CanAttach
     {
@@ -69,7 +69,7 @@ public class Weldable : MonoBehaviour
             : (CanAttach ? WeldMode.AttachableOnly : WeldMode.None);
     }
 
-    public WeldType CurrentWeldType => currentWeldType;
+    private WeldType CurrentWeldType => currentWeldType;
 
     private void TryAutoHierarchyWeldWithAncestor()
     {
@@ -108,6 +108,8 @@ public class Weldable : MonoBehaviour
     /// </summary>
     internal void WeldTo(Weldable target, WeldType weldType, bool isAutoWeld=false)
     {
+        if (!enabled) return;
+
         if (target == null || target == this)
             return;
 
@@ -160,6 +162,8 @@ public class Weldable : MonoBehaviour
     /// </summary>
     internal void Unweld()
     {
+        if (!enabled) return;
+
         bool wasGrouped = connections.Count > 0;
         NotifyOnUnweld(wasGrouped);
 
@@ -240,7 +244,7 @@ public class Weldable : MonoBehaviour
         return result;
     }
 
-    public void RefreshConnectionsFromHierarchyRoot()
+    private void RefreshConnectionsFromHierarchyRoot()
     {
         Weldable root = GetRootWeldable();
 
@@ -275,7 +279,7 @@ public class Weldable : MonoBehaviour
     /// <summary>
     /// Reparents all weldable ancestors under each other, ending with the selected object.
     /// </summary>
-    public void ReparentWeldableAncestors()
+    private void ReparentWeldableAncestors()
     {
         Weldable root = this;
         if (root == null) return;

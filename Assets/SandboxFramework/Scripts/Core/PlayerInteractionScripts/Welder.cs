@@ -33,7 +33,7 @@ public class Welder : MonoBehaviour
         // Trigger weld on current selection when weld button is pressed
         if (InputSystem.GetButtonDown(InputButton.Weld))
         {
-            GameObject selected = selectionHandler.CurrentSelection;
+            GameObject selected = selectionHandler.currentSelection;
             selectionHandler.ClearSelection();
             Weld(selected);
         }
@@ -41,7 +41,7 @@ public class Welder : MonoBehaviour
         // Trigger unweld on current selection when unweld button is pressed
         if (InputSystem.GetButtonDown(InputButton.Unweld))
         {
-            GameObject selected = selectionHandler.CurrentSelection;
+            GameObject selected = selectionHandler.currentSelection;
             selectionHandler.ClearSelection();
             Unweld(selected);
         }
@@ -157,8 +157,10 @@ public class Welder : MonoBehaviour
     /// </summary>
     private Weldable FindNewOverlappingWeldable(GameObject target)
     {
+        // foreach (Collider collider in target.GetComponentsInChildren<Collider>())
+        // {
         Collider collider = target.GetComponent<Collider>();
-        if (collider == null) return null;
+        //if (collider == null) return null;
 
         Weldable targetWeldable = target.GetComponent<Weldable>();
         if (targetWeldable == null || !targetWeldable.enabled) return null;
@@ -178,6 +180,7 @@ public class Welder : MonoBehaviour
                 }
             }
         }
+        // }
 
         return null;
     }
@@ -198,6 +201,11 @@ public class Welder : MonoBehaviour
             Weldable overlappingWeldable = FindNewOverlappingWeldable(selected);
             if (overlappingWeldable == null) break;
             selectedWeldable.WeldTo(overlappingWeldable, weldingType);
+        }
+
+        if (weldingType == WeldType.HierarchyBased)
+        {
+            selectionHandler.HighlightObject(selectedWeldable.transform.root.gameObject, true);
         }
     }
 
