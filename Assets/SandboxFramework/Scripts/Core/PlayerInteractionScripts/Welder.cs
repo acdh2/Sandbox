@@ -130,7 +130,7 @@ public class Welder : MonoBehaviour
         Bounds bounds = collider.bounds;
         Vector3 margin = new Vector3(WeldProximityThreshold, WeldProximityThreshold, WeldProximityThreshold);
 
-        Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents + margin, collider.transform.rotation);
+        Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents + margin, Quaternion.identity); //collider.transform.rotation);
         var penetrating = new List<Collider>();
 
         foreach (var candidate in candidates)
