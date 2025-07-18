@@ -1408,10 +1408,6 @@ PrefabInstance:
       propertyPath: m_OcclusionCulling
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 5099684616350230806, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: weldingType
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5126527961139664760, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4157,6 +4153,6 @@ SceneRoots:
   - {fileID: 358310165}
   - {fileID: 824929915}
   - {fileID: 670164580}
+  - {fileID: 1116394366673577198}
   - {fileID: 1307239049}
   - {fileID: 1522093481}
-  - {fileID: 1116394366673577198}

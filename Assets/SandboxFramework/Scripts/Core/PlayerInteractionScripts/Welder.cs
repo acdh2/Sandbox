@@ -179,11 +179,48 @@ public class Welder : MonoBehaviour
         return null;
     }
 
+    public void Weld(GameObject selected)
+    {
+        if (selected == null) return;
+
+        Weldable rootWeldable = selected.GetComponent<Weldable>();
+        if (rootWeldable == null || !rootWeldable.enabled) return;
+
+        var weldQueue = new Queue<Weldable>();
+        var visited = new HashSet<Weldable>();
+
+        weldQueue.Enqueue(rootWeldable);
+        visited.Add(rootWeldable);
+
+        int weldCount = 0;
+
+        while (weldQueue.Count > 0 && weldCount < MaxWeldsAtTheSameTime)
+        {
+            Weldable current = weldQueue.Dequeue();
+
+            // Zoek naar een nieuw overlapping weldable
+            Weldable overlappingWeldable = FindNewOverlappingWeldable(current.gameObject, out Transform overlapTransform);
+            if (overlappingWeldable != null && !visited.Contains(overlappingWeldable))
+            {
+                weldQueue.Enqueue(current);
+                current.WeldTo(overlappingWeldable, weldingType, false, overlapTransform);
+                weldQueue.Enqueue(overlappingWeldable);
+                visited.Add(overlappingWeldable);
+                weldCount++;
+            }
+        }
+
+        if (weldingType == WeldType.HierarchyBased)
+        {
+            selectionHandler.HighlightObject(rootWeldable.transform.root.gameObject, true);
+        }
+    }
+
     /// <summary>
     /// Attempts to weld the selected object to overlapping weldable objects.
     /// Performs up to MaxWeldsAtTheSameTime weld operations per call.
     /// </summary>
-    public void Weld(GameObject selected)
+    public void WeldOld(GameObject selected)
     {
         if (selected == null) return;
 
@@ -196,7 +233,7 @@ public class Welder : MonoBehaviour
             if (overlappingWeldable == null) break;
             selectedWeldable.WeldTo(overlappingWeldable, weldingType, false, overlappingTransform);
         }
-        
+
         if (weldingType == WeldType.HierarchyBased)
         {
             selectionHandler.HighlightObject(selectedWeldable.transform.root.gameObject, true);
