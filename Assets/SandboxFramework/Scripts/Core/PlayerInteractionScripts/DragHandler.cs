@@ -60,7 +60,8 @@ public class DragHandler : MonoBehaviour
     private DragState currentState = DragState.Idle;
     public DragState CurrentState => currentState;
 
-    public bool useRotationKeys = true;
+    public bool useRotationKey1 = true;
+    public bool useRotationKey2 = true;
 
     private void Start()
     {
@@ -105,7 +106,7 @@ public class DragHandler : MonoBehaviour
                     StopDragging();
                     return;
                 }
-                if (useRotationKeys) HandleRotation();
+                HandleRotation();
                 break;
         }
     }
@@ -169,11 +170,11 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void HandleRotation()
     {
-        if (InputSystem.GetButtonDown(InputButton.Rotate1))
+        if (useRotationKey1 && InputSystem.GetButtonDown(InputButton.Rotate1))
         {
             RotateSelected(0f, 90f, 0f);
         }
-        if (InputSystem.GetButtonDown(InputButton.Rotate2))
+        if (useRotationKey2 && InputSystem.GetButtonDown(InputButton.Rotate2))
         {
             RotateSelectedTowardsCamera(-90f);
         }
@@ -238,6 +239,13 @@ public class DragHandler : MonoBehaviour
         
         // Apply rotation
         selectedRoot.rotation = GetSnappedRotation(deltaRotation * selectedRoot.rotation);
+
+        Rigidbody rb = selectedRoot.GetComponent<Rigidbody>();
+        if (rb)
+        {
+            rb.MovePosition(selectedRoot.position);
+            rb.MoveRotation(selectedRoot.rotation);
+        }
         InitializeSelection(selectedObject.transform);
     }
 
