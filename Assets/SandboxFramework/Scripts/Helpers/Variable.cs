@@ -140,9 +140,6 @@ public class Variable : MonoBehaviour
         {
             value = clampedValue;
 
-            // Round down value to int (why after event? maybe intended)
-            value = Mathf.FloorToInt(clampedValue);
-
             // Fire the value changed event with the new value
             onValueChange?.Invoke(value);
 
