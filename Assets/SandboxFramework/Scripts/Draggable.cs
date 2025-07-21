@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using UnityEngine;
 
@@ -16,17 +15,18 @@ public enum RigidbodyStateChange
 public class Draggable : MonoBehaviour
 {
     public bool shouldPropagateDragEvents = true;
-
     public bool shouldIgnoreRigidbodySettingFromDragger = false;
 
     private bool isBeingDragged = false;
     private Rigidbody rigidBody;
 
-    private Matrix4x4 offsetMatrix;
-
+    /// <summary>
+    /// Called when dragging starts. Optionally modifies Rigidbody settings.
+    /// </summary>
     public void StartDrag(RigidbodyStateChange stateChange)
     {
         if (!enabled) return;
+
         rigidBody = GetComponent<Rigidbody>();
         OnGrab();
         isBeingDragged = true;
@@ -34,25 +34,34 @@ public class Draggable : MonoBehaviour
         ApplyRigidbodyStateChange(stateChange);
     }
 
+    /// <summary>
+    /// Changes the Rigidbody's kinematic state, if required.
+    /// </summary>
     private void ApplyRigidbodyStateChange(RigidbodyStateChange stateChange)
     {
-        if (rigidBody == null) return;
-        if (shouldIgnoreRigidbodySettingFromDragger) return;
+        if (rigidBody == null || shouldIgnoreRigidbodySettingFromDragger) return;
         if (stateChange == RigidbodyStateChange.Unchanged) return;
-        rigidBody.isKinematic = stateChange == RigidbodyStateChange.SetKinematic;
+
+        rigidBody.isKinematic = (stateChange == RigidbodyStateChange.SetKinematic);
     }
 
+    /// <summary>
+    /// Updates the object's position and rotation during dragging.
+    /// </summary>
     public void UpdateDrag(Vector3 position, Quaternion rotation)
     {
         if (!enabled || !isBeingDragged) return;
+
         ApplyTransformation(position, rotation);
         CustomFixedJoint.UpdateJoint(transform);
     }
 
+    /// <summary>
+    /// Applies the transformation using Rigidbody or Transform.
+    /// </summary>
     private void ApplyTransformation(Vector3 position, Quaternion rotation)
     {
-
-        if (rigidBody)
+        if (rigidBody != null)
         {
             MoveRigidbody(position, rotation);
         }
@@ -62,6 +71,9 @@ public class Draggable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Moves the object using Transform. Handles parented objects correctly.
+    /// </summary>
     private void MoveTransform(Vector3 position, Quaternion rotation)
     {
         if (transform.parent == null)
@@ -71,7 +83,6 @@ public class Draggable : MonoBehaviour
         }
         else
         {
-            // Bereken de offset van dit object t.o.v. de root
             Transform root = transform.root;
 
             Matrix4x4 currentLocalMatrix = root.worldToLocalMatrix * transform.localToWorldMatrix;
@@ -86,30 +97,40 @@ public class Draggable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Moves the object using Rigidbody methods.
+    /// </summary>
     private void MoveRigidbody(Vector3 position, Quaternion rotation)
     {
         rigidBody.MoveRotation(rotation);
         rigidBody.MovePosition(position);
     }
 
+    /// <summary>
+    /// Ends the dragging operation and restores Rigidbody settings if needed.
+    /// </summary>
     public void EndDrag(RigidbodyStateChange stateChange)
     {
         if (!enabled) return;
 
         OnRelease();
-        ApplyRigidbodyStateChange(stateChange);        
+        ApplyRigidbodyStateChange(stateChange);
         isBeingDragged = false;
     }
 
+    /// <summary>
+    /// Finds all drag listeners affected by this object.
+    /// </summary>
     private IDragListener[] GetConnectedDragListeners()
     {
         if (shouldPropagateDragEvents)
         {
             Weldable weldable = GetComponentInParent<Weldable>();
-            if (weldable)
+            if (weldable != null)
             {
                 return Utils.FindAllInHierarchyAndConnections<IDragListener>(weldable).ToArray();
             }
+
             return transform.root.GetComponentsInChildren<IDragListener>();
         }
         else
@@ -121,22 +142,29 @@ public class Draggable : MonoBehaviour
             while (stack.Count > 0)
             {
                 var current = stack.Pop();
+
                 if (current != transform && current.GetComponent<Weldable>() != null)
                     continue;
+
                 foreach (var listener in current.GetComponents<IDragListener>())
                 {
                     if (listener != null)
                         result.Add(listener);
                 }
+
                 foreach (Transform child in current)
                 {
                     stack.Push(child);
                 }
             }
+
             return result.ToArray();
         }
     }
 
+    /// <summary>
+    /// Notifies all listeners that the object was grabbed.
+    /// </summary>
     private void OnGrab()
     {
         if (!enabled) return;
@@ -147,6 +175,9 @@ public class Draggable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Notifies all listeners that the object was released.
+    /// </summary>
     private void OnRelease()
     {
         if (!enabled) return;
@@ -156,5 +187,4 @@ public class Draggable : MonoBehaviour
             dragListener.OnRelease();
         }
     }
-
 }

@@ -2,15 +2,15 @@ using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// Manages object selection via raycasting on objects with a Selectable component.
-/// Temporarily changes selected objects' layers for highlighting,
-/// and restores original layers upon deselection.
+/// Handles selection of objects using raycasting on components with a Selectable component.
+/// Selected objects are temporarily placed on a separate layer for highlighting,
+/// and their original layers are restored when deselected.
 /// </summary>
 [DisallowMultipleComponent]
 public class SelectionHandler : MonoBehaviour
 {
     [Header("Selection Settings")]
-    [Tooltip("Layer used for visual feedback on selected objects.")]
+    [Tooltip("Layer used to visually highlight selected objects.")]
     public string selectionLayerName = "Selection";
 
     public float raycastDistance = 8f;
@@ -50,40 +50,41 @@ public class SelectionHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Locks selection changes.
+    /// Prevents changes to the current selection.
     /// </summary>
     public void LockSelection() => selectionLocked = true;
 
     /// <summary>
-    /// Unlocks selection changes.
+    /// Allows the selection to be updated again.
     /// </summary>
     public void UnlockSelection() => selectionLocked = false;
 
     /// <summary>
-    /// Clears the current selection.
+    /// Clears the current selection and removes visual highlights.
     /// </summary>
     public void ClearSelection() => SetSelection(null);
 
     /// <summary>
-    /// Sets the current selection, restores layers of previously selected objects,
-    /// and applies selection layer to the new selection.
+    /// Sets the current selection and applies the selection layer for visual feedback.
+    /// If ShowHierarchy is active, applies the highlight to the root object instead.
     /// </summary>
+    /// <param name="newSelection">The newly selected object.</param>
     private void SetSelection(GameObject newSelection)
     {
         currentSelection = newSelection;
         bool showHierarchy = InputSystem.GetButton(InputButton.ShowHierarchy);
 
-        GameObject itemToHightlight = newSelection;
-        if (showHierarchy)
-            if (newSelection != null)
-                itemToHightlight = newSelection.transform.root.gameObject;
-                
-        ApplySelectionLayer(itemToHightlight, showHierarchy);
+        GameObject target = newSelection;
+        if (showHierarchy && newSelection != null)
+            target = newSelection.transform.root.gameObject;
+
+        ApplySelectionLayer(target, showHierarchy);
     }
 
     /// <summary>
-    /// Returns the closest selectable object under the cursor using raycasting.
+    /// Performs a raycast from the mouse position and returns the closest selectable object.
     /// </summary>
+    /// <returns>The closest GameObject with a Selectable component, or null if none found.</returns>
     private GameObject GetSelectableUnderCursor()
     {
         Ray ray = cam.ScreenPointToRay(InputSystem.GetPointerPosition());
@@ -109,13 +110,27 @@ public class SelectionHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Applies the selection layer to the root object and all its descendants,
-    /// storing their original layers for restoration.
+    /// Highlights the target object by assigning it to the selection layer.
+    /// Optionally includes all child objects.
     /// </summary>
+    /// <param name="target">The GameObject to highlight.</param>
+    /// <param name="recursive">Whether to apply the layer to all children.</param>
+    /// <param name="timeToHighlight">Time in seconds to keep selection locked after highlighting.</param>
+    public void HighlightObject(GameObject target, bool recursive = false, float timeToHighlight = 0.5f)
+    {
+        ApplySelectionLayer(target, recursive);
+        selectionLockedTimer = timeToHighlight;
+    }
+
+    /// <summary>
+    /// Applies the selection layer to the target object and (optionally) its children.
+    /// Remembers original layers so they can be restored.
+    /// </summary>
+    /// <param name="target">The GameObject to highlight.</param>
+    /// <param name="recursive">Whether to apply the layer recursively to all children.</param>
     private void ApplySelectionLayer(GameObject target, bool recursive)
     {
         RestoreOriginalLayers();
-
         if (target == null) return;
 
         var stack = new Stack<GameObject>();
@@ -124,7 +139,10 @@ public class SelectionHandler : MonoBehaviour
         while (stack.Count > 0)
         {
             var obj = stack.Pop();
-            if (!recursive && obj != target && obj.GetComponent<Selectable>()) continue;
+
+            // If not recursive and this is a child with a Selectable, skip it
+            if (!recursive && obj != target && obj.GetComponent<Selectable>())
+                continue;
 
             if (!originalLayers.ContainsKey(obj))
                 originalLayers[obj] = obj.layer;
@@ -136,14 +154,8 @@ public class SelectionHandler : MonoBehaviour
         }
     }
 
-    public void HighlightObject(GameObject target, bool recursive = false, float timeToHightlight = 0.5f)
-    {
-        ApplySelectionLayer(target, recursive);
-        selectionLockedTimer = timeToHightlight;
-    }
-
     /// <summary>
-    /// Restores the original layers of all previously selected objects.
+    /// Restores the original layers of all objects that were previously highlighted.
     /// </summary>
     private void RestoreOriginalLayers()
     {
@@ -152,6 +164,7 @@ public class SelectionHandler : MonoBehaviour
             if (kvp.Key != null)
                 kvp.Key.layer = kvp.Value;
         }
+
         originalLayers.Clear();
     }
 }

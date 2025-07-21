@@ -2,22 +2,22 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Represents an object that can be selected, with description and drag state.
+/// Represents an object that can be selected, with a description field.
+/// Often used for UI display or tooltips.
 /// </summary>
 [DisallowMultipleComponent]
 public class Selectable : MonoBehaviour
 {
-    [Tooltip("Description of the object, displayed in UI or tooltips")]
+    [Tooltip("The description of this object, shown in UI elements or tooltips.")]
     [SerializeField]
     private string objectDescription = "";
 
     /// <summary>
-    /// Description of the object, displayed in UI or tooltips
+    /// Public access to the object's description.
     /// </summary>
     public string ObjectDescription
     {
         get => objectDescription;
         set => objectDescription = value;
     }
-
 }

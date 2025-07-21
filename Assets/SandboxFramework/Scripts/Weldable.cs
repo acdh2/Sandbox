@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Defines the mechanism of the welding (hierarchical or physical).
+/// Defines the type of welding behavior between objects.
 /// </summary>
 public enum WeldType
 {
@@ -19,10 +18,18 @@ public class Weldable : MonoBehaviour
 {
     private WeldType currentWeldType = WeldType.Undefined;
     private readonly HashSet<Weldable> connections = new();
-    //public List<Weldable> connections = new();
 
     private WeldType CurrentWeldType => currentWeldType;
 
+    private IEnumerator Start()
+    {
+        yield return null;
+        TryAutoHierarchyWeldWithAncestor();
+    }
+
+    /// <summary>
+    /// Attempts to automatically weld this object to the first parent Weldable found in the hierarchy.
+    /// </summary>
     private void TryAutoHierarchyWeldWithAncestor()
     {
         Transform current = transform.parent;
@@ -30,35 +37,22 @@ public class Weldable : MonoBehaviour
         while (current != null)
         {
             var parentWeldable = current.GetComponent<Weldable>();
-            if (parentWeldable != null)
+            if (parentWeldable != null && !IsConnected(parentWeldable))
             {
-                // Check of deze weldable nog niet al verbonden is
-                if (!IsConnected(parentWeldable))
-                {
-                    WeldTo(parentWeldable, WeldType.HierarchyBased, true);
-                }
-
-                break; // Alleen eerste voorouder gebruiken
+                WeldTo(parentWeldable, WeldType.HierarchyBased, true);
+                break;
             }
 
             current = current.parent;
         }
     }
 
-    private System.Collections.IEnumerator Start()
-    {
-        yield return null;
-        TryAutoHierarchyWeldWithAncestor();
-    }    
-
     /// <summary>
     /// Welds this object to a target using the specified weld type.
     /// </summary>
-    internal void WeldTo(Weldable target, WeldType weldType, bool isAutoWeld=false, Transform overlappingTransform=null)
+    internal void WeldTo(Weldable target, WeldType weldType, bool isAutoWeld = false, Transform overlappingTransform = null)
     {
-        if (!enabled) return;
-
-        if (target == null || target == this)
+        if (!enabled || target == null || target == this)
             return;
 
         bool wasIsolated = connections.Count == 0;
@@ -81,11 +75,9 @@ public class Weldable : MonoBehaviour
             Debug.LogError("One-sided connection detected");
         }
 
-
         AddConnection(target);
         target.AddConnection(this);
 
-        // Perform weld action after establishing the connection
         if (weldType == WeldType.HierarchyBased && !isAutoWeld)
         {
             ApplyHierarchyWeld(target, overlappingTransform);
@@ -95,13 +87,12 @@ public class Weldable : MonoBehaviour
             ApplyPhysicsWeld(target);
         }
 
-        // Notify only when groups are formed
         NotifyOnWeld(wasIsolated);
         target.NotifyOnWeld(targetWasIsolated);
     }
 
     /// <summary>
-    /// Unwelds this object from all connections.
+    /// Unwelds this object from all connected weldables.
     /// </summary>
     internal void Unweld()
     {
@@ -132,101 +123,72 @@ public class Weldable : MonoBehaviour
         if (connections.Count < 1) currentWeldType = WeldType.Undefined;
     }
 
-    private static Rigidbody GetOrAddRigidbody(GameObject obj)
+    /// <summary>
+    /// Applies hierarchy-based welding by reparenting to the target.
+    /// </summary>
+    private void ApplyHierarchyWeld(Weldable target, Transform overlappingTransform)
     {
-        var rb = obj.GetComponent<Rigidbody>();
-        if (rb == null)
+        Transform targetTransform = overlappingTransform ?? target.transform;
+
+        if (transform.parent != null)
         {
-            rb = obj.AddComponent<Rigidbody>();
-            rb.mass = 1f; // Default mass
-            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            ReparentWeldableAncestors();
         }
 
-        return rb;
+        transform.SetParent(targetTransform, true);
     }
 
-
-    private Weldable GetRootWeldable()
+    /// <summary>
+    /// Applies physics-based welding using custom joints.
+    /// </summary>
+    private void ApplyPhysicsWeld(Weldable target)
     {
-        Transform current = transform;
-        Weldable lastFound = null;
+        Rigidbody thisRb = GetOrAddRigidbody(gameObject);
+        Rigidbody targetRb = GetOrAddRigidbody(target.gameObject);
 
-        while (current != null)
-        {
-            var weldable = current.GetComponent<Weldable>();
-            if (weldable != null)
-                lastFound = weldable;
+        CustomFixedJoint joint = gameObject.AddComponent<CustomFixedJoint>();
+        joint.targetTransform = target.transform;
 
-            current = current.parent;
-        }
-
-        return lastFound;
+        CustomFixedJoint joint2 = target.gameObject.AddComponent<CustomFixedJoint>();
+        joint2.targetTransform = transform;
     }
 
-    private List<Weldable> GetChildWeldables()
+    /// <summary>
+    /// Removes hierarchy-based welds by unparenting connected weldables.
+    /// </summary>
+    private void RemoveHierarchyWelds(IEnumerable<Weldable> connected)
     {
-        var result = new List<Weldable>();
+        List<Weldable> children = GetChildWeldables();
+        transform.SetParent(null, true);
 
-        var stack = new Stack<Transform>();
-        foreach (Transform child in transform)
+        foreach (Weldable weldable in children)
         {
-            stack.Push(child);
-        }
-
-        while (stack.Count > 0)
-        {
-            Transform current = stack.Pop();
-            Weldable weldable = current.GetComponent<Weldable>();
-            if (weldable)
-            {
-                result.Add(weldable);
-            }
-            else
-            {
-                foreach (Transform child in current)
-                {
-                    stack.Push(child);
-                }
-            }
-        }
-        return result;
-    }
-
-    private void RefreshConnectionsFromHierarchyRoot()
-    {
-        Weldable root = GetRootWeldable();
-
-        var stack = new Stack<Weldable>();
-        stack.Push(root);
-
-        while (stack.Count > 0)
-        {
-            var currentWeldable = stack.Pop();
-            currentWeldable.connections.Clear();
-
-            foreach (Weldable weldable in currentWeldable.GetChildWeldables())
-            {
-                currentWeldable.connections.Add(weldable);
-                stack.Push(weldable);
-            }
-        }
-    }
-
-    private void SwapParent()
-    {
-        if (transform.parent == null) return;
-
-        Weldable weldableParent = transform.parent.GetComponentInParent<Weldable>();
-        if (weldableParent)
-        {
-            weldableParent.SwapParent();
-            weldableParent.transform.SetParent(transform, true);
+            weldable.transform.SetParent(null, true);
         }
     }
 
     /// <summary>
-    /// Reparents all weldable ancestors under each other, ending with the selected object.
+    /// Removes physics-based welds by destroying joint components.
+    /// </summary>
+    private void RemovePhysicsWelds(IEnumerable<Weldable> connected)
+    {
+        foreach (var other in connected)
+        {
+            foreach (var joint in other.GetComponents<CustomFixedJoint>())
+            {
+                if (joint.targetTransform == transform)
+                    Destroy(joint);
+            }
+        }
+
+        foreach (var joint in GetComponents<CustomFixedJoint>())
+        {
+            Destroy(joint);
+        }
+    }
+
+    /// <summary>
+    /// Reparents all weldable ancestors to create a clean hierarchy chain.
     /// </summary>
     private void ReparentWeldableAncestors()
     {
@@ -251,93 +213,77 @@ public class Weldable : MonoBehaviour
 
         for (int i = weldableAncestors.Count - 1; i > 0; i--)
             weldableAncestors[i].SetParent(weldableAncestors[i - 1], true);
-    }    
-
-    private void ApplyHierarchyWeld(Weldable target, Transform overlappingTransform)
-    {
-        Transform targetTransform = overlappingTransform;
-        if (targetTransform == null) targetTransform = target.transform;
-        if (transform.parent != null)
-        {
-            ReparentWeldableAncestors();
-        }
-        transform.SetParent(targetTransform, true);
     }
 
-    private void ApplyHierarchyWeld2(Weldable target)
+    /// <summary>
+    /// Gets or adds a Rigidbody to a GameObject.
+    /// </summary>
+    private static Rigidbody GetOrAddRigidbody(GameObject obj)
     {
-        if (transform.parent != null)
+        var rb = obj.GetComponent<Rigidbody>();
+        if (rb == null)
         {
-            Transform currentRoot = transform.root;
-            List<Transform> children = new List<Transform>();
-            foreach (Weldable weldable in GetComponentsInChildren<Weldable>())
+            rb = obj.AddComponent<Rigidbody>();
+            rb.mass = 1f;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+        }
+
+        return rb;
+    }
+
+    /// <summary>
+    /// Returns the topmost Weldable in the parent hierarchy.
+    /// </summary>
+    private Weldable GetRootWeldable()
+    {
+        Transform current = transform;
+        Weldable lastFound = null;
+
+        while (current != null)
+        {
+            var weldable = current.GetComponent<Weldable>();
+            if (weldable != null)
+                lastFound = weldable;
+
+            current = current.parent;
+        }
+
+        return lastFound;
+    }
+
+    /// <summary>
+    /// Returns all Weldable components in the child hierarchy.
+    /// </summary>
+    private List<Weldable> GetChildWeldables()
+    {
+        var result = new List<Weldable>();
+        var stack = new Stack<Transform>();
+
+        foreach (Transform child in transform)
+        {
+            stack.Push(child);
+        }
+
+        while (stack.Count > 0)
+        {
+            Transform current = stack.Pop();
+            Weldable weldable = current.GetComponent<Weldable>();
+
+            if (weldable)
             {
-                children.Add(weldable.transform);
+                result.Add(weldable);
             }
-            foreach (Transform child in children)
+            else
             {
-                child.SetParent(transform.parent, true);
+                foreach (Transform child in current)
+                {
+                    stack.Push(child);
+                }
             }
-            transform.SetParent(null, true);
-            currentRoot.SetParent(transform, true);
         }
 
-        transform.SetParent(target.transform, true);
-    }
-
-    private void ApplyPhysicsWeld(Weldable target)
-    {
-        Rigidbody thisRb = GetOrAddRigidbody(gameObject);
-        Rigidbody targetRb = GetOrAddRigidbody(target.gameObject);
-
-        //thisRb.isKinematic = true;
-        //targetRb.isKinematic = true;
-
-        CustomFixedJoint joint = gameObject.AddComponent<CustomFixedJoint>();
-        joint.targetTransform = target.transform;
-        CustomFixedJoint joint2 = target.gameObject.AddComponent<CustomFixedJoint>();
-        joint2.targetTransform = transform;        
-        // FixedJoint joint = gameObject.AddComponent<FixedJoint>();
-        // joint.connectedBody = targetRb;
-    }
-
-    private void RemoveHierarchyWelds(IEnumerable<Weldable> connected)
-    {
-        List<Weldable> children = GetChildWeldables();
-        transform.SetParent(null, true);
-        foreach (Weldable weldable in children)
-        {
-            weldable.transform.SetParent(null, true);
-        }
-        //RefreshConnectionsFromHierarchyRoot();
-    }
-
-    private void RemovePhysicsWelds(IEnumerable<Weldable> connected)
-    {
-        Rigidbody rb = GetComponent<Rigidbody>();
-        foreach (var other in connected)
-        {
-            // foreach (var joint in other.GetComponents<FixedJoint>())
-            // {
-            //     if (joint.connectedBody == GetComponent<Rigidbody>())
-            //         Destroy(joint);
-            // }
-            foreach (var joint in other.GetComponents<CustomFixedJoint>())
-            {
-                if (joint.targetTransform == transform)
-                    Destroy(joint);
-            }
-
-        }
-
-        foreach (var joint in GetComponents<CustomFixedJoint>())
-        {
-            Destroy(joint);
-        }
-        // foreach (var joint in GetComponents<FixedJoint>())
-        // {
-        //     Destroy(joint);
-        // }
+        return result;
     }
 
     /// <summary>
@@ -369,11 +315,17 @@ public class Weldable : MonoBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Returns whether this Weldable is connected to another.
+    /// </summary>
     internal bool IsConnected(Weldable other)
     {
         return connections.Contains(other);
     }
 
+    /// <summary>
+    /// Adds a connection to another Weldable.
+    /// </summary>
     private void AddConnection(Weldable other)
     {
         if (other != null && other != this)
@@ -382,6 +334,9 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Attempts to set the weld type for this object.
+    /// </summary>
     private bool TrySetWeldType(WeldType newType)
     {
         if (currentWeldType == WeldType.Undefined)
@@ -395,7 +350,7 @@ public class Weldable : MonoBehaviour
 
     /// <summary>
     /// Retrieves all IWeldListener components in this object and its descendants,
-    /// skipping children with their own Weldable.
+    /// skipping children that have their own Weldable component.
     /// </summary>
     private IEnumerable<IWeldListener> GetDescendantWeldListeners()
     {
@@ -422,6 +377,9 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Notifies listeners that this object has been welded.
+    /// </summary>
     private void NotifyOnWeld(bool joinedWeldGroup)
     {
         foreach (var listener in GetDescendantWeldListeners())
@@ -431,6 +389,9 @@ public class Weldable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Notifies listeners that this object has been unwelded.
+    /// </summary>
     private void NotifyOnUnweld(bool leavedWeldGroup)
     {
         foreach (var listener in GetDescendantWeldListeners())

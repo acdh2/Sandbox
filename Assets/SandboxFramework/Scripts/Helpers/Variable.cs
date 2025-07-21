@@ -3,24 +3,25 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [Serializable]
-public enum ComparisionMode
+public enum ComparisonMode
 {
-    SmallerThen,
-    GreaterThen
+    SmallerThen,   // Checks if value is less than the comparison value
+    GreaterThen    // Checks if value is greater than the comparison value
 }
 
 [Serializable]
 public struct Condition
 {
-    public ComparisionMode comparisionMode;
-    public float value;
-    public UnityEvent OnEvaluateToTrue;
+    public ComparisonMode comparisonMode; // Comparison type for this condition
+    public float value;                      // The value to compare against
+    public UnityEvent OnEvaluateToTrue;     // Event triggered when condition evaluates to true
 }
 
 /// <summary>
-/// Manages a specific variable.
-/// This script should be placed on a child GameObject of the main Object.
-/// The GameObject's name will be used as the identifier for this variable and its Animator parameter.
+/// Manages a single variable associated with this GameObject.
+/// This script should be attached to a child GameObject of the main object.
+/// The GameObject's name is used as an identifier for this variable and also as
+/// the name of the corresponding Animator parameter to synchronize.
 /// </summary>
 public class Variable : MonoBehaviour
 {
@@ -28,57 +29,67 @@ public class Variable : MonoBehaviour
     [Tooltip("The current value of this variable.")]
     public float value;
 
-    [Tooltip("The minimum allowed value for this variable.")]
+    [Tooltip("Minimum allowed value for this variable.")]
     public float minValue = 0f;
 
-    [Tooltip("The maximum allowed value for this variable.")]
+    [Tooltip("Maximum allowed value for this variable.")]
     public float maxValue = 100f;
 
-    [Tooltip("The amount this variable changes per second (e.g., -1 for hunger, 0.5 for energy).")]
+    [Tooltip("Rate of change of this variable per second (positive or negative).")]
     public float changePerSecond = 0f;
 
     [Header("UI & Event Coupling")]
-    [Tooltip("Event triggered when the PetVar's value changes, passing the new value.")]
+    [Tooltip("Event fired whenever the variable's value changes, passing the new value.")]
     public UnityEvent<float> onValueChange;
 
-    public Condition[] conditions;
+    public Condition[] conditions; // Array of conditions to evaluate on value change
 
-    private Animator animator = null;
-    private string varName = "";
+    private Animator animator = null;   // Reference to parent Animator component
+    private string varName = "";        // The variable name, taken from GameObject name
 
-    private float currentTime = 0f;
+    private float currentTime = 0f;     // Accumulates deltaTime to apply value changes per second
 
+    /// <summary>
+    /// Sets the rate of change per second for this variable.
+    /// </summary>
     public void SetChangePerSecond(float value)
     {
         changePerSecond = value;
     }
 
+    /// <summary>
+    /// Checks if the animator has a parameter matching the variable name.
+    /// </summary>
     bool VariableExistsInAnimator(Animator animator, string varName)
     {
         if (animator == null) return false;
 
-        bool parameterWasFound = false;
         for (var i = 0; i < animator.parameterCount; i++)
         {
             var parameter = animator.GetParameter(i);
-            if (parameter.name == varName)
+            if (parameter.name == varName && parameter.type == AnimatorControllerParameterType.Float)
             {
-                parameterWasFound = true;
+                return true;
             }
         }
-        return parameterWasFound;
+        return false;
     }
 
     void Awake()
     {
+        // Use this GameObject's name as the variable name
         varName = gameObject.name;
 
+        // Get Animator component from parent
         animator = GetComponentInParent<Animator>();
+
+        // If Animator doesn't have the parameter, clear animator reference
         if (!VariableExistsInAnimator(animator, varName))
         {
             animator = null;
         }
 
+        // Initialize the value (clamp and invoke events)
         SetValue(value);
     }
 
@@ -86,15 +97,19 @@ public class Variable : MonoBehaviour
     {
         if (!enabled) return;
 
+        // Accumulate deltaTime to apply changes per whole seconds
         currentTime += Time.deltaTime;
 
         if (currentTime >= 1f)
         {
+            // Calculate whole seconds passed
             int steps = Mathf.FloorToInt(currentTime);
             currentTime -= steps;
 
+            // Update the variable value by the accumulated amount
             SetValue(value + changePerSecond * steps);
 
+            // Update Animator parameter if available
             if (animator != null)
             {
                 animator.SetFloat(varName, value);
@@ -103,32 +118,37 @@ public class Variable : MonoBehaviour
     }
 
     /// <summary>
-    /// Changes the PetVar's value by a relative amount.
-    /// The value will be clamped between minValue and maxValue.
+    /// Changes the variable's value by a relative amount, with clamping and event triggers.
     /// </summary>
-    /// <param name="amount">The amount to add to the current value (can be positive or negative).</param>
+    /// <param name="amount">Amount to add (can be negative).</param>
     public void ChangeValue(float amount)
     {
-        SetValue(value + amount); // Re-use SetValue for clamping and event triggering
+        SetValue(value + amount);
     }
 
     /// <summary>
-    /// Sets the PetVar's value to an absolute new value.
-    /// The value will be clamped between minValue and maxValue.
+    /// Sets the variable to an absolute value, clamped within min and max.
+    /// Triggers onValueChange and evaluates conditions if value changed.
     /// </summary>
-    /// <param name="newValue">The absolute new value to set.</param>
+    /// <param name="newValue">New absolute value.</param>
     public void SetValue(float newValue)
     {
+        // Clamp value within allowed range
         float clampedValue = Mathf.Clamp(newValue, minValue, maxValue);
 
         if (value != clampedValue)
         {
             value = clampedValue;
-            onValueChange?.Invoke(value);
+
+            // Round down value to int (why after event? maybe intended)
             value = Mathf.FloorToInt(clampedValue);
+
+            // Fire the value changed event with the new value
+            onValueChange?.Invoke(value);
 
             if (enabled)
             {
+                // Evaluate all conditions with the new value
                 foreach (Condition condition in conditions)
                 {
                     HandleCondition(condition);
@@ -137,18 +157,22 @@ public class Variable : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Checks the condition against the current value and invokes event if true.
+    /// </summary>
     private void HandleCondition(Condition condition)
     {
         bool isTrue = false;
-        switch (condition.comparisionMode)
+        switch (condition.comparisonMode)
         {
-            case ComparisionMode.SmallerThen:
+            case ComparisonMode.SmallerThen:
                 isTrue = value < condition.value;
                 break;
-            case ComparisionMode.GreaterThen:
+            case ComparisonMode.GreaterThen:
                 isTrue = value > condition.value;
                 break;
         }
+
         if (isTrue)
         {
             condition.OnEvaluateToTrue?.Invoke();

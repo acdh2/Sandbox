@@ -14,32 +14,33 @@ using Unity.VisualScripting;
 public class Seat : MonoBehaviour, IWeldListener
 {
     [Header("Seat Settings")]
-    public Transform seatPoint;                 // Position and rotation where the player sits
+    public Transform seatPoint;                 // Position and rotation where the player will sit
     public string playerTag = "Player";         // Tag to identify player objects
-    public float debounceDuration = 1f;         // Time after unseating before next seating allowed
+    public float debounceDuration = 1f;         // Cooldown time after unseating before another seating is allowed
 
-    public UnityEvent onSeat;                    // Event fired when player sits
-    public UnityEvent onUnseat;                  // Event fired when player leaves seat
+    public UnityEvent onSeat;                    // Event triggered when player sits
+    public UnityEvent onUnseat;                  // Event triggered when player leaves the seat
 
-    private Transform seatedPlayer;              // Currently seated player transform
-    private Transform originalParent;            // Stored original parent to restore hierarchy
-    private int originalLayer;                   // Stored original layer to restore after unseating
-    private StarterAssets.FirstPersonController playerController; // Reference to player's controller script
-    private float debounceTimer = 0f;            // Timer to prevent rapid reseating
+    private Transform seatedPlayer;              // Currently seated player transform reference
+    private Transform originalParent;            // Original parent of the player to restore hierarchy on unseat
+    private int originalLayer;                   // Original layer of the player to restore on unseat
+    private StarterAssets.FirstPersonController playerController; // Reference to player's movement controller
+    private float debounceTimer = 0f;            // Timer to prevent immediate reseating
 
-    private bool isWelded;                       // Whether seat is welded (available for seating)
+    private bool isWelded;                       // Indicates if seat is welded (active/available for seating)
 
-    // List of keys to check for input; can be customized in inspector
+    // List of keys to check for input (can be customized via inspector)
     public List<Key> keysToCheck = new List<Key>();
 
     /// <summary>
-    /// Returns the GameObject of the currently seated player, or null if none.
+    /// Returns the currently seated player's GameObject, or null if no one is seated.
     /// </summary>
     public GameObject GetSeatedPlayer()
     {
         return seatedPlayer?.gameObject;
     }
 
+    // IWeldListener interface methods (empty here but can be extended)
     public void OnAdded()
     {
     }
@@ -48,16 +49,19 @@ public class Seat : MonoBehaviour, IWeldListener
     {
     }
 
-    // Weld state handlers from IWeldListener interface
+    // Called when the seat becomes welded (active)
     public virtual void OnWeld()
     {
         isWelded = true;
     }
+
+    // Called when the seat becomes unwelded (inactive)
     public virtual void OnUnweld()
     {
         isWelded = false;
     }
 
+    // Trigger event called when another collider enters this seat's trigger zone
     private void OnTriggerEnter(Collider other)
     {
         if (!enabled) return;
@@ -66,19 +70,22 @@ public class Seat : MonoBehaviour, IWeldListener
             SeatPlayer(other.transform);
     }
 
+    /// <summary>
+    /// Finds components of type T connected to this seat via welds or hierarchy.
+    /// </summary>
     protected IReadOnlyList<T> FindConnectedComponents<T>() where T : class
     {
         Weldable weldable = GetComponent<Weldable>();
         return Utils.FindAllInHierarchyAndConnections<T>(weldable);
-        //return transform.root.GetComponentsInChildren<T>(true);
+        // Alternative: return transform.root.GetComponentsInChildren<T>(true);
     }    
 
     /// <summary>
-    /// Handles keyboard input to notify keypress listeners.
+    /// Handles keyboard input from the configured keys and notifies listeners.
     /// </summary>
     private void HandleKeyboardInput()
     {
-        // Gather pressed keys from the configured list
+        // Collect all keys pressed this frame from the configured list
         List<Key> keysPressed = new List<Key>();
         foreach (Key key in keysToCheck)
         {
@@ -90,7 +97,7 @@ public class Seat : MonoBehaviour, IWeldListener
 
         if (keysPressed.Count == 0) return;
 
-        // Notify all IKeypressListener components in root hierarchy
+        // Notify all connected IKeypressListener components about the pressed keys
         foreach (IKeypressListener keyPressListener in FindConnectedComponents<IKeypressListener>())
         {
             foreach (Key pressedKey in keysPressed)
@@ -100,6 +107,7 @@ public class Seat : MonoBehaviour, IWeldListener
         }
     }
 
+    // Called every frame to update input and seat state
     protected virtual void Update()
     {
         if (!enabled) return;
@@ -114,19 +122,21 @@ public class Seat : MonoBehaviour, IWeldListener
     }
 
     /// <summary>
-    /// Determines if a player can be seated based on state and tag.
+    /// Checks if the player can currently be seated based on various conditions.
     /// </summary>
     private bool CanSeatPlayer(Collider other)
     {
         if (!enabled) return false;
-        return isWelded &&
-               seatedPlayer == null &&
-               debounceTimer <= 0f &&
-               other.CompareTag(playerTag);
+
+        return isWelded &&                 // Seat must be welded (active)
+               seatedPlayer == null &&     // No player currently seated
+               debounceTimer <= 0f &&      // Debounce timer must have elapsed
+               other.CompareTag(playerTag);// The collider must have the player tag
     }
 
     /// <summary>
-    /// Moves player to seat point, disables movement, and stores original state.
+    /// Seats the player by moving them to the seat point and disabling their movement.
+    /// Stores the player's original parent and layer for later restoration.
     /// </summary>
     private void SeatPlayer(Transform player)
     {
@@ -135,29 +145,31 @@ public class Seat : MonoBehaviour, IWeldListener
         seatedPlayer = player;
         playerController = player.GetComponent<StarterAssets.FirstPersonController>();
 
-        // Disable player movement if controller found
+        // Disable player movement if controller component exists
         playerController?.SetMovementEnabled(false);
 
-        // Store player's original hierarchy and layer
+        // Store original hierarchy and layer to restore later
         originalParent = player.parent?.parent;
         originalLayer = player.gameObject.layer;
 
-        // Snap player to seat and reparent under seatPoint
+        // Move player to seat position and rotation, and reparent under seatPoint
         player.SetPositionAndRotation(seatPoint.position, seatPoint.rotation);
         player.parent.SetParent(seatPoint);
 
-        // Invoke seat events
+        // Trigger events related to seating
         onSeat?.Invoke();
         OnSeat(player.gameObject);
         NotifyOnSeatListeners();
     }
 
-    // Virtual methods for subclasses to override on seat/unseat
+    // Virtual method called when player is seated; can be overridden in derived classes
     protected virtual void OnSeat(GameObject player) { }
+
+    // Virtual method called when player unseats; can be overridden in derived classes
     protected virtual void OnUnseat(GameObject player) { }
 
     /// <summary>
-    /// Notifies all listeners about unseating.
+    /// Notifies all connected ISeatListener components about unseating.
     /// </summary>
     protected virtual void NotifyOnUnseatListeners()
     {
@@ -169,7 +181,7 @@ public class Seat : MonoBehaviour, IWeldListener
     }
 
     /// <summary>
-    /// Notifies all listeners about seating.
+    /// Notifies all connected ISeatListener components about seating.
     /// </summary>
     protected virtual void NotifyOnSeatListeners()
     {
@@ -181,7 +193,7 @@ public class Seat : MonoBehaviour, IWeldListener
     }
 
     /// <summary>
-    /// Counts down the debounce timer to prevent rapid re-seating.
+    /// Updates the debounce timer, counting down until seating can occur again.
     /// </summary>
     private void UpdateDebounceTimer()
     {
@@ -190,7 +202,7 @@ public class Seat : MonoBehaviour, IWeldListener
     }
 
     /// <summary>
-    /// Returns true if seated and exit key (Jump) is pressed.
+    /// Returns true if the player is seated and the exit key (Jump) is pressed.
     /// </summary>
     private bool IsExitRequested()
     {
@@ -199,7 +211,8 @@ public class Seat : MonoBehaviour, IWeldListener
     }
 
     /// <summary>
-    /// Restores player control, hierarchy, and state upon exiting seat.
+    /// Handles exiting the seat: restores player movement, hierarchy, layer, and triggers unseat events.
+    /// Also resets the debounce timer.
     /// </summary>
     private void ExitSeat()
     {
@@ -215,21 +228,21 @@ public class Seat : MonoBehaviour, IWeldListener
         // Re-enable player movement
         playerController?.SetMovementEnabled(true);
 
-        // Restore player's original hierarchy
+        // Restore player's original parent in hierarchy
         Transform playerTransform = seatedPlayer;
         playerTransform.parent.SetParent(originalParent);
 
-        // Preserve forward vector or reset to upright
+        // Maintain player's forward direction or reset to upright if invalid
         Vector3 forward = playerTransform.forward.normalized;
         if (forward.sqrMagnitude > 0f)
             playerTransform.forward = forward;
         else
             playerTransform.up = Vector3.up;
 
-        // Restore original layer
+        // Restore player's original layer
         playerTransform.gameObject.layer = originalLayer;
 
-        // Clear seated player and reset debounce
+        // Clear seated player reference and reset debounce timer
         seatedPlayer = null;
         playerController = null;
         debounceTimer = debounceDuration;

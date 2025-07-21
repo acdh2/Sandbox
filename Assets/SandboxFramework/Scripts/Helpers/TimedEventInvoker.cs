@@ -16,7 +16,7 @@ public class TimedEventInvoker : MonoBehaviour
 
         public TimeFrame(float a, float b)
         {
-            // Ensure start <= end
+            // Ensure that start is always less or equal than end
             if (b > a)
             {
                 start = a;
@@ -30,7 +30,7 @@ public class TimedEventInvoker : MonoBehaviour
         }
 
         /// <summary>
-        /// Checks if a given time 't' is inside the time frame (inclusive).
+        /// Checks if a given time 't' lies within this time frame (inclusive).
         /// </summary>
         public bool Contains(float t)
         {
@@ -41,49 +41,52 @@ public class TimedEventInvoker : MonoBehaviour
     [Serializable]
     public class TimedEvent
     {
-        public float delay;       // Time in seconds when event fires
-        public UnityEvent unityEvent;  // The event to invoke
+        public float delay;           // Time in seconds when this event should fire
+        public UnityEvent unityEvent; // The UnityEvent to invoke at the specified delay
     }
 
     public enum PlaybackMode
     {
-        Once,       // Play from start to end once
-        Loop,       // Loop from end back to start or vice versa
-        PingPong    // Play forward and backward repeatedly
+        Once,       // Play events once from start to end
+        Loop,       // Loop playback continuously from end back to start (or reverse)
+        PingPong    // Play forward then backward repeatedly (bouncing)
     }
 
-    [SerializeField] private List<TimedEvent> events = new List<TimedEvent>();
-    [SerializeField] private PlaybackMode mode = PlaybackMode.Once;
-    [SerializeField] private float playbackSpeed = 1.0f;
-    [SerializeField] private bool autoPlay = true;
+    [SerializeField] private List<TimedEvent> events = new List<TimedEvent>();  // List of timed events
+    [SerializeField] private PlaybackMode mode = PlaybackMode.Once;             // Playback mode
+    [SerializeField] private float playbackSpeed = 1.0f;                        // Playback speed multiplier
+    [SerializeField] private bool autoPlay = true;                             // Should playback start automatically
 
-    private bool isPlaying = false;
-    private float currentTime = 0f;
-    private float previousTime = 0f;
-    private float duration = 0f;
+    private bool isPlaying = false;     // Is playback currently active
+    private float currentTime = 0f;     // Current playback time
+    private float previousTime = 0f;    // Playback time at previous frame
+    private float duration = 0f;        // Total duration of all events (max delay)
 
-    // Cached, sorted list of event times and their UnityEvents
+    // Cached and sorted list of event times with their corresponding UnityEvents
     private List<(float time, UnityEvent unityEvent)> processedEvents = new();
 
     private void OnValidate()
     {
-        // Recalculate processed events and duration when values are changed in inspector
+        // When values change in inspector, update the processed events and duration
         ProcessEvents();
     }
 
     private void Awake()
     {
+        // Initialize event processing before use
         ProcessEvents();
     }
 
     private void Start()
     {
+        // Start playback automatically if enabled
         if (autoPlay)
             Play();
     }
 
     private void Update()
     {
+        // Skip update if not playing or no events to process
         if (!isPlaying || processedEvents.Count == 0)
             return;
 
@@ -91,21 +94,21 @@ public class TimedEventInvoker : MonoBehaviour
     }
 
     /// <summary>
-    /// Core playback handler advancing time, handling playback modes, and firing events accordingly.
+    /// Core playback loop: advance time, handle playback modes, and trigger events accordingly.
     /// </summary>
     private void HandlePlayback()
     {
         if (!enabled) return;
 
         previousTime = currentTime;
-        currentTime += Time.deltaTime * playbackSpeed;
+        currentTime += Time.deltaTime * playbackSpeed;  // Advance time with speed factor
         TimeFrame timeWindow = new TimeFrame(previousTime, currentTime);
         bool handledInSwitch = false;
 
         switch (mode)
         {
             case PlaybackMode.Once:
-                // Clamp time and stop at boundaries when playback reaches the start or end
+                // If playback exceeds bounds, clamp time, fire events in remaining window and stop
                 if ((playbackSpeed >= 0 && currentTime > duration) || (playbackSpeed < 0 && currentTime < 0))
                 {
                     currentTime = Mathf.Clamp(currentTime, 0f, duration);
@@ -120,9 +123,9 @@ public class TimedEventInvoker : MonoBehaviour
                 if (playbackSpeed >= 0 && currentTime > duration)
                 {
                     float overshoot = currentTime - duration;
-                    // Fire events from previousTime to end
+                    // Fire events from previous time to end
                     FireEventsInWindow(new TimeFrame(timeWindow.start, duration));
-                    // Loop back to beginning plus overshoot
+                    // Loop back to start plus overshoot
                     currentTime = overshoot;
                     // Fire events from start to overshoot
                     FireEventsInWindow(new TimeFrame(0f, currentTime));
@@ -131,11 +134,11 @@ public class TimedEventInvoker : MonoBehaviour
                 else if (playbackSpeed < 0 && currentTime < 0)
                 {
                     float overshoot = -currentTime;
-                    // Fire events from previousTime to start
+                    // Fire events from previous time down to start
                     FireEventsInWindow(new TimeFrame(timeWindow.start, 0f));
                     // Loop back to end minus overshoot
                     currentTime = duration - overshoot;
-                    // Fire events from currentTime to end
+                    // Fire events from current time up to end
                     FireEventsInWindow(new TimeFrame(currentTime, duration));
                     handledInSwitch = true;
                 }
@@ -145,29 +148,29 @@ public class TimedEventInvoker : MonoBehaviour
                 if (currentTime > duration)
                 {
                     float overshoot = currentTime - duration;
-                    currentTime = duration - overshoot; // Reflect backward
-                    playbackSpeed *= -1; // Reverse direction
-                    // Fire events forward to end
+                    currentTime = duration - overshoot; // Reflect backwards inside range
+                    playbackSpeed *= -1;                 // Reverse playback direction
+                    // Fire forward events to end
                     FireEventsInWindow(new TimeFrame(timeWindow.start, duration));
-                    // Fire events backward from end to reflected time
+                    // Fire backward events from end to reflected time
                     FireEventsInWindow(new TimeFrame(duration, currentTime));
                     handledInSwitch = true;
                 }
                 else if (currentTime < 0)
                 {
                     float overshoot = -currentTime;
-                    currentTime = overshoot; // Reflect forward
-                    playbackSpeed *= -1; // Reverse direction
-                    // Fire events backward to start
+                    currentTime = overshoot;  // Reflect forwards inside range
+                    playbackSpeed *= -1;      // Reverse playback direction
+                    // Fire backward events to start
                     FireEventsInWindow(new TimeFrame(timeWindow.start, 0f));
-                    // Fire events forward from start to reflected time
+                    // Fire forward events from start to reflected time
                     FireEventsInWindow(new TimeFrame(0f, currentTime));
                     handledInSwitch = true;
                 }
                 break;
         }
 
-        // If no special case handled, just fire events in the current frame window
+        // If no special handling in switch, fire events in the current frame's time window
         if (!handledInSwitch)
         {
             FireEventsInWindow(timeWindow);
@@ -175,12 +178,12 @@ public class TimedEventInvoker : MonoBehaviour
     }
 
     /// <summary>
-    /// Invokes all events whose times fall within the given time frame.
+    /// Invokes all events whose scheduled times fall within the given time frame.
     /// </summary>
     private void FireEventsInWindow(TimeFrame time)
     {
         if (!enabled) return;
-        
+
         foreach (var (eventTime, unityEvent) in processedEvents)
         {
             if (time.Contains(eventTime))
@@ -191,14 +194,14 @@ public class TimedEventInvoker : MonoBehaviour
     }
 
     /// <summary>
-    /// Immediately jumps playback to a specific time and fires events scheduled exactly at that time.
+    /// Jumps playback to a specific time and immediately fires events scheduled exactly at that time.
     /// </summary>
-    /// <param name="time">Time in seconds to jump to</param>
+    /// <param name="time">Time in seconds to jump to (clamped to valid range)</param>
     public void JumpTo(float time)
     {
         currentTime = Mathf.Clamp(time, 0f, duration);
         previousTime = currentTime;
-        // Fire events exactly at currentTime only
+        // Fire events scheduled exactly at currentTime
         FireEventsInWindow(new TimeFrame(currentTime, currentTime));
     }
 
@@ -206,7 +209,7 @@ public class TimedEventInvoker : MonoBehaviour
     public void Pause() => isPlaying = false;
 
     /// <summary>
-    /// Stops playback and resets time to zero.
+    /// Stops playback and resets current time to zero.
     /// </summary>
     public void Stop()
     {
@@ -215,7 +218,7 @@ public class TimedEventInvoker : MonoBehaviour
     }
 
     /// <summary>
-    /// Processes the list of events by caching them with their times and determining total duration.
+    /// Processes and caches all events, sorting them by delay time and determining total playback duration.
     /// </summary>
     private void ProcessEvents()
     {
@@ -233,7 +236,7 @@ public class TimedEventInvoker : MonoBehaviour
                 duration = e.delay;
         }
 
-        // Sort events by scheduled time ascending
+        // Sort events by their scheduled time ascending
         processedEvents.Sort((a, b) => a.time.CompareTo(b.time));
     }
 }

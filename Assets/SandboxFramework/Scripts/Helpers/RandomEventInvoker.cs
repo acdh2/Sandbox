@@ -3,14 +3,15 @@ using UnityEngine.Events;
 
 public class RandomEventInvoker : MonoBehaviour
 {
-    [Tooltip("Lijst van mogelijke UnityEvents waarvan er willekeurig één wordt aangeroepen.")]
+    [Tooltip("List of possible UnityEvents from which one will be randomly invoked.")]
     public UnityEvent[] events;
 
-    [Tooltip("Voer automatisch één van de events uit bij Start.")]
+    [Tooltip("Automatically invoke one of the events on Start.")]
     public bool invokeOnStart = false;
 
     void Start()
     {
+        // If invokeOnStart is true, call a random event when the script starts
         if (invokeOnStart)
         {
             InvokeRandomEvent();
@@ -18,26 +19,31 @@ public class RandomEventInvoker : MonoBehaviour
     }
 
     /// <summary>
-    /// Roept een willekeurig UnityEvent aan uit de lijst.
+    /// Invokes a random UnityEvent from the events array.
     /// </summary>
     public void InvokeRandomEvent()
     {
+        // Do nothing if this component is disabled
         if (!enabled) return;
-        
+
+        // Check if the events array is null or empty
         if (events == null || events.Length == 0)
         {
-            Debug.LogWarning($"{name}: Geen events beschikbaar om aan te roepen.");
+            Debug.LogWarning($"{name}: No events available to invoke.");
             return;
         }
 
+        // Pick a random index in the events array
         int index = Random.Range(0, events.Length);
+
+        // Invoke the selected event if it is not null
         if (events[index] != null)
         {
             events[index].Invoke();
         }
         else
         {
-            Debug.LogWarning($"{name}: Geselecteerd event is null.");
+            Debug.LogWarning($"{name}: Selected event is null.");
         }
     }
 }

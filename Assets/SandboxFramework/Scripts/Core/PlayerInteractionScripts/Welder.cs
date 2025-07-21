@@ -1,12 +1,5 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-
-enum WeldingType
-{
-    HierarchyBased,
-    PhysicsBased
-}
 
 [RequireComponent(typeof(SelectionHandler))]
 [DisallowMultipleComponent]
@@ -15,8 +8,8 @@ public class Welder : MonoBehaviour
     private const int MaxWeldsAtTheSameTime = 640;
     private const float MaxPenetrationThreshold = 0.01f;
 
-    //extra border around the collider that is used for checking if they overlap
-    //this value is used to ensure two neighbouring cubes will still connect
+    // Extra margin around the collider used to check for overlaps.
+    // This ensures neighboring cubes can still connect.
     public float WeldProximityThreshold = 0.01f;
 
     public WeldType weldingType = WeldType.HierarchyBased;
@@ -30,7 +23,7 @@ public class Welder : MonoBehaviour
 
     private void Update()
     {
-        // Trigger weld on current selection when weld button is pressed
+        // When the weld button is pressed, weld the currently selected object.
         if (InputSystem.GetButtonDown(InputButton.Weld))
         {
             GameObject selected = selectionHandler.currentSelection;
@@ -38,7 +31,7 @@ public class Welder : MonoBehaviour
             Weld(selected);
         }
 
-        // Trigger unweld on current selection when unweld button is pressed
+        // When the unweld button is pressed, unweld the currently selected object.
         if (InputSystem.GetButtonDown(InputButton.Unweld))
         {
             GameObject selected = selectionHandler.currentSelection;
@@ -48,7 +41,7 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if the object is weldable in a mode that allows it to attach to others.
+    /// Checks if the given object has an enabled Weldable component.
     /// </summary>
     private bool IsWeldable(GameObject obj)
     {
@@ -57,16 +50,14 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns true if the object has weldable children or is parented under a weldable ancestor.
+    /// Returns true if the object has any weldable children or a weldable ancestor.
     /// </summary>
     private bool IsWelded(GameObject obj)
     {
-        // Check if any child is weldable
         foreach (Transform child in obj.transform)
             if (IsWeldable(child.gameObject))
                 return true;
 
-        // Check if any ancestor is weldable
         if (obj.transform.parent != null)
             return GetWeldableAncestor(obj.transform.parent.gameObject) != null;
 
@@ -74,7 +65,7 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if the object can currently attach to others (active weldable).
+    /// Checks if the object currently has an enabled Weldable component.
     /// </summary>
     private bool CanBeWelded(GameObject obj)
     {
@@ -83,7 +74,8 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Traverses upward in the hierarchy to find the closest weldable ancestor.
+    /// Finds the closest ancestor of the object that has an enabled Weldable component.
+    /// Returns null if none found.
     /// </summary>
     private GameObject GetWeldableAncestor(GameObject obj)
     {
@@ -99,7 +91,7 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Determines if two GameObjects share the same root ancestor (are in the same hierarchy).
+    /// Checks whether two objects belong to the same root hierarchy.
     /// </summary>
     private bool IsInSameHierarchy(GameObject a, GameObject b)
     {
@@ -107,7 +99,11 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if two colliders are penetrating each other beyond a configured threshold.
+    /// Checks if two colliders are penetrating each other beyond a threshold.
+    /// 
+    /// NOTE: The comparison "distance >= effectiveThreshold" might be incorrect.
+    /// Typically, penetration occurs if the computed distance is negative (overlap),
+    /// so consider revising this condition.
     /// </summary>
     private bool IsPenetrating(Collider a, Collider b)
     {
@@ -123,14 +119,15 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Finds colliders overlapping the given collider that are penetrating it.
+    /// Finds colliders overlapping the given collider and returns those penetrating it.
     /// </summary>
     private Collider[] FindPenetratingColliders(Collider collider)
     {
         Bounds bounds = collider.bounds;
         Vector3 margin = new Vector3(WeldProximityThreshold, WeldProximityThreshold, WeldProximityThreshold);
 
-        Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents + margin, Quaternion.identity); //collider.transform.rotation);
+        // Get all colliders overlapping the collider's bounds plus margin
+        Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents + margin, Quaternion.identity);
         var penetrating = new List<Collider>();
 
         foreach (var candidate in candidates)
@@ -144,16 +141,15 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Finds a weldable object overlapping the target that can receive a weld connection.
+    /// Searches for a weldable object overlapping the target that can be welded to it.
+    /// Outputs the overlapping transform found.
     /// </summary>
     private Weldable FindNewOverlappingWeldable(GameObject target, out Transform overlappingTransform)
     {
         overlappingTransform = null;
 
-        // foreach (Collider collider in target.GetComponentsInChildren<Collider>())
-        // {
         Collider collider = target.GetComponent<Collider>();
-        //if (collider == null) return null;
+        if (collider == null) return null;
 
         Weldable targetWeldable = target.GetComponent<Weldable>();
         if (targetWeldable == null || !targetWeldable.enabled) return null;
@@ -174,11 +170,14 @@ public class Welder : MonoBehaviour
                 }
             }
         }
-        // }
 
         return null;
     }
 
+    /// <summary>
+    /// Performs welding of the selected object to overlapping weldables.
+    /// Processes up to MaxWeldsAtTheSameTime welds per call.
+    /// </summary>
     public void Weld(GameObject selected)
     {
         if (selected == null) return;
@@ -198,7 +197,7 @@ public class Welder : MonoBehaviour
         {
             Weldable current = weldQueue.Dequeue();
 
-            // Zoek naar een nieuw overlapping weldable
+            // Find a new weldable overlapping object
             Weldable overlappingWeldable = FindNewOverlappingWeldable(current.gameObject, out Transform overlapTransform);
             if (overlappingWeldable != null && !visited.Contains(overlappingWeldable))
             {
@@ -217,31 +216,7 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Attempts to weld the selected object to overlapping weldable objects.
-    /// Performs up to MaxWeldsAtTheSameTime weld operations per call.
-    /// </summary>
-    public void WeldOld(GameObject selected)
-    {
-        if (selected == null) return;
-
-        Weldable selectedWeldable = selected.GetComponent<Weldable>();
-        if (selectedWeldable == null || !selectedWeldable.enabled) return;
-
-        for (int i = 0; i < MaxWeldsAtTheSameTime; i++)
-        {
-            Weldable overlappingWeldable = FindNewOverlappingWeldable(selected, out Transform overlappingTransform);
-            if (overlappingWeldable == null) break;
-            selectedWeldable.WeldTo(overlappingWeldable, weldingType, false, overlappingTransform);
-        }
-
-        if (weldingType == WeldType.HierarchyBased)
-        {
-            selectionHandler.HighlightObject(selectedWeldable.transform.root.gameObject, true);
-        }
-    }
-
-    /// <summary>
-    /// Detaches the selected weldable object from its parent weld base.
+    /// Detaches the weldable object from its parent weld base.
     /// </summary>
     private void Unweld(GameObject target)
     {
@@ -249,10 +224,9 @@ public class Welder : MonoBehaviour
         if (target == null) return;
 
         Weldable weldable = target.GetComponent<Weldable>();
-        if (weldable && weldable.enabled)
+        if (weldable != null && weldable.enabled)
         {
             weldable.Unweld();
         }
     }
-    
 }
