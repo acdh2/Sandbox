@@ -150,10 +150,6 @@ public class DragHandler : MonoBehaviour
     {
         if (currentState != DragState.Dragging) return;
 
-        // if (selectedTransform != null) //hiero
-        // {
-        //     OnReleaseEvent(selectedTransform.gameObject);
-        // }
         if (selectedDraggable != null)
         {
             selectedDraggable.EndDrag(rigidbodyStateChangeOnRelease);

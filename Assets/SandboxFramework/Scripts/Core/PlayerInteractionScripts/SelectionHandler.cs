@@ -136,7 +136,7 @@ public class SelectionHandler : MonoBehaviour
         }
     }
 
-    public void HighlightObject(GameObject target, bool recursive = false, float timeToHightlight = 1f)
+    public void HighlightObject(GameObject target, bool recursive = false, float timeToHightlight = 0.5f)
     {
         ApplySelectionLayer(target, recursive);
         selectionLockedTimer = timeToHightlight;

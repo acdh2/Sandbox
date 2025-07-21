@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using UnityEngine;
 
@@ -45,6 +46,7 @@ public class Draggable : MonoBehaviour
     {
         if (!enabled || !isBeingDragged) return;
         ApplyTransformation(position, rotation);
+        CustomFixedJoint.UpdateJoint(transform);
     }
 
     private void ApplyTransformation(Vector3 position, Quaternion rotation)

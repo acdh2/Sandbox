@@ -139,6 +139,8 @@ public class Weldable : MonoBehaviour
         {
             rb = obj.AddComponent<Rigidbody>();
             rb.mass = 1f; // Default mass
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
         }
 
         return rb;
@@ -288,8 +290,15 @@ public class Weldable : MonoBehaviour
         Rigidbody thisRb = GetOrAddRigidbody(gameObject);
         Rigidbody targetRb = GetOrAddRigidbody(target.gameObject);
 
-        FixedJoint joint = gameObject.AddComponent<FixedJoint>();
-        joint.connectedBody = targetRb;
+        //thisRb.isKinematic = true;
+        //targetRb.isKinematic = true;
+
+        CustomFixedJoint joint = gameObject.AddComponent<CustomFixedJoint>();
+        joint.targetTransform = target.transform;
+        CustomFixedJoint joint2 = target.gameObject.AddComponent<CustomFixedJoint>();
+        joint2.targetTransform = transform;        
+        // FixedJoint joint = gameObject.AddComponent<FixedJoint>();
+        // joint.connectedBody = targetRb;
     }
 
     private void RemoveHierarchyWelds(IEnumerable<Weldable> connected)
@@ -305,19 +314,30 @@ public class Weldable : MonoBehaviour
 
     private void RemovePhysicsWelds(IEnumerable<Weldable> connected)
     {
+        Rigidbody rb = GetComponent<Rigidbody>();
         foreach (var other in connected)
         {
-            foreach (var joint in other.GetComponents<FixedJoint>())
+            // foreach (var joint in other.GetComponents<FixedJoint>())
+            // {
+            //     if (joint.connectedBody == GetComponent<Rigidbody>())
+            //         Destroy(joint);
+            // }
+            foreach (var joint in other.GetComponents<CustomFixedJoint>())
             {
-                if (joint.connectedBody == GetComponent<Rigidbody>())
+                if (joint.targetTransform == transform)
                     Destroy(joint);
             }
+
         }
 
-        foreach (var joint in GetComponents<FixedJoint>())
+        foreach (var joint in GetComponents<CustomFixedJoint>())
         {
             Destroy(joint);
         }
+        // foreach (var joint in GetComponents<FixedJoint>())
+        // {
+        //     Destroy(joint);
+        // }
     }
 
     /// <summary>

@@ -850,6 +850,10 @@ PrefabInstance:
       propertyPath: m_OcclusionCulling
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5099684616350230806, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: weldingType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5126527961139664760, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -896,7 +900,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6556307555316582679, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 6556307555316582679, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -971,12 +975,32 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
-      propertyPath: rigidbodyStateChangeOnDrag
+      propertyPath: useRotationKey1
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: useRotationKey2
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rotationSnapDegrees.x
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rotationSnapDegrees.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rotationSnapDegrees.z
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: rigidbodyStateChangeOnDrag
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7707080727159613314, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: rigidbodyStateChangeOnRelease
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8980829570170599058, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: Priority.Enabled
@@ -1781,6 +1805,7 @@ GameObject:
   - component: {fileID: 1673148618}
   - component: {fileID: 1673148617}
   - component: {fileID: 1673148616}
+  - component: {fileID: 1673148620}
   m_Layer: 0
   m_Name: Floor
   m_TagString: Untagged
@@ -1877,6 +1902,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1673148620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1673148615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1810c47abfc754be388eb3b4d2d6e426, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1976477759
 GameObject:
   m_ObjectHideFlags: 0
