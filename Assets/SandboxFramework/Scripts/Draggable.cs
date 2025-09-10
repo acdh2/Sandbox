@@ -53,7 +53,7 @@ public class Draggable : MonoBehaviour
         if (!enabled || !isBeingDragged) return;
 
         ApplyTransformation(position, rotation);
-        CustomFixedJoint.UpdateJoint(transform);
+        CustomFixedJoint.UpdateJoints(transform);
     }
 
     /// <summary>
