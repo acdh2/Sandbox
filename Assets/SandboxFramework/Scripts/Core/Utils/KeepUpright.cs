@@ -1,9 +1,18 @@
+using StarterAssets;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class KeepUpright : MonoBehaviour
 {
     public Transform playerCapsule;
+
+    void Start()
+    {
+        if (playerCapsule == null)
+        {
+            playerCapsule = FindAnyObjectByType<FirstPersonController>()?.gameObject.transform;
+        }
+    }
 
     void LateUpdate()
     {

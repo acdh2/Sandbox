@@ -35,16 +35,33 @@ public class Draggable : MonoBehaviour
     }
 
     /// <summary>
-    /// Changes the Rigidbody's kinematic state, if required.
+    /// Changes the Rigidbody's kinematic state, if required, for all connected rigidbodies.
     /// </summary>
     private void ApplyRigidbodyStateChange(RigidbodyStateChange stateChange)
     {
-        if (rigidBody == null || shouldIgnoreRigidbodySettingFromDragger) return;
-        if (stateChange == RigidbodyStateChange.Unchanged) return;
+        if (shouldIgnoreRigidbodySettingFromDragger || stateChange == RigidbodyStateChange.Unchanged)
+            return;
 
-        rigidBody.isKinematic = (stateChange == RigidbodyStateChange.SetKinematic);
-    }
+        Weldable weldable = GetComponent<Weldable>();
 
+        IReadOnlyList<Rigidbody> rigidbodies;
+        if (weldable)
+        {
+            // Find all rigidbodies in the connected hierarchy/weld
+            rigidbodies = Utils.FindAllInHierarchyAndConnections<Rigidbody>(weldable);
+        }
+        else
+        {
+            rigidbodies = new List<Rigidbody> { rigidBody }.AsReadOnly();
+        }
+
+        foreach (var rb in rigidbodies)
+            {
+                if (rb == null) continue;
+                rb.isKinematic = (stateChange == RigidbodyStateChange.SetKinematic);
+            }
+    }    
+    
     /// <summary>
     /// Updates the object's position and rotation during dragging.
     /// </summary>

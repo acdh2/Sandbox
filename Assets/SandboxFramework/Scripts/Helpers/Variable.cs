@@ -5,16 +5,16 @@ using UnityEngine.Events;
 [Serializable]
 public enum ComparisonMode
 {
-    SmallerThen,   // Checks if value is less than the comparison value
-    GreaterThen    // Checks if value is greater than the comparison value
+    SmallerThan,   // Checks if value is less than the comparison value
+    GreaterThan    // Checks if value is greater than the comparison value
 }
 
 [Serializable]
 public struct Condition
 {
-    public ComparisonMode comparisonMode; // Comparison type for this condition
-    public float value;                      // The value to compare against
-    public UnityEvent OnEvaluateToTrue;     // Event triggered when condition evaluates to true
+    public ComparisonMode comparisonMode;  // Comparison type for this condition
+    public float value;                    // The value to compare against
+    public UnityEvent OnEvaluateToTrue;    // Event triggered when condition evaluates to true
 }
 
 /// <summary>
@@ -42,11 +42,11 @@ public class Variable : MonoBehaviour
     [Tooltip("Event fired whenever the variable's value changes, passing the new value.")]
     public UnityEvent<float> onValueChange;
 
-    public Condition[] conditions; // Array of conditions to evaluate on value change
+    [Tooltip("Conditions that are evaluated whenever the value changes.")]
+    public Condition[] conditions;
 
     private Animator animator = null;   // Reference to parent Animator component
     private string varName = "";        // The variable name, taken from GameObject name
-
     private float currentTime = 0f;     // Accumulates deltaTime to apply value changes per second
 
     /// <summary>
@@ -77,19 +77,15 @@ public class Variable : MonoBehaviour
 
     void Awake()
     {
-        // Use this GameObject's name as the variable name
         varName = gameObject.name;
-
-        // Get Animator component from parent
         animator = GetComponentInParent<Animator>();
 
-        // If Animator doesn't have the parameter, clear animator reference
         if (!VariableExistsInAnimator(animator, varName))
         {
             animator = null;
         }
 
-        // Initialize the value (clamp and invoke events)
+        // Initialize the value
         SetValue(value);
     }
 
@@ -97,30 +93,20 @@ public class Variable : MonoBehaviour
     {
         if (!enabled) return;
 
-        // Accumulate deltaTime to apply changes per whole seconds
         currentTime += Time.deltaTime;
 
         if (currentTime >= 1f)
         {
-            // Calculate whole seconds passed
             int steps = Mathf.FloorToInt(currentTime);
             currentTime -= steps;
 
-            // Update the variable value by the accumulated amount
             SetValue(value + changePerSecond * steps);
-
-            // Update Animator parameter if available
-            if (animator != null)
-            {
-                animator.SetFloat(varName, value);
-            }
         }
     }
 
     /// <summary>
     /// Changes the variable's value by a relative amount, with clamping and event triggers.
     /// </summary>
-    /// <param name="amount">Amount to add (can be negative).</param>
     public void ChangeValue(float amount)
     {
         SetValue(value + amount);
@@ -130,49 +116,54 @@ public class Variable : MonoBehaviour
     /// Sets the variable to an absolute value, clamped within min and max.
     /// Triggers onValueChange and evaluates conditions if value changed.
     /// </summary>
-    /// <param name="newValue">New absolute value.</param>
     public void SetValue(float newValue)
     {
-        // Clamp value within allowed range
         float clampedValue = Mathf.Clamp(newValue, minValue, maxValue);
 
         if (value != clampedValue)
         {
+            float oldValue = value;
             value = clampedValue;
 
-            // Fire the value changed event with the new value
+            // Always sync animator
+            if (animator != null)
+            {
+                animator.SetFloat(varName, value);
+            }
+
+            // Fire value changed event
             onValueChange?.Invoke(value);
 
             if (enabled)
             {
-                // Evaluate all conditions with the new value
                 foreach (Condition condition in conditions)
                 {
-                    HandleCondition(condition);
+                    bool wasTrue = EvaluateCondition(condition, oldValue);
+                    bool isTrue  = EvaluateCondition(condition, value);
+
+                    // Edge-trigger: only invoke when transitioning from false → true
+                    if (!wasTrue && isTrue)
+                    {
+                        condition.OnEvaluateToTrue?.Invoke();
+                    }
                 }
             }
         }
     }
 
     /// <summary>
-    /// Checks the condition against the current value and invokes event if true.
+    /// Evaluates a condition against a given value.
     /// </summary>
-    private void HandleCondition(Condition condition)
+    private bool EvaluateCondition(Condition condition, float testValue)
     {
-        bool isTrue = false;
         switch (condition.comparisonMode)
         {
-            case ComparisonMode.SmallerThen:
-                isTrue = value < condition.value;
-                break;
-            case ComparisonMode.GreaterThen:
-                isTrue = value > condition.value;
-                break;
-        }
-
-        if (isTrue)
-        {
-            condition.OnEvaluateToTrue?.Invoke();
+            case ComparisonMode.SmallerThan:
+                return testValue < condition.value;
+            case ComparisonMode.GreaterThan:
+                return testValue > condition.value;
+            default:
+                return false;
         }
     }
 }

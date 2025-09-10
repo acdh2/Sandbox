@@ -19,8 +19,16 @@ public class TeleportationBehaviour : MonoBehaviour
     {
         if (characterController == null)
         {
-            Debug.LogWarning("No character controller assigned to TeleportBehaviour.");
-            Destroy(this);
+            characterController = FindAnyObjectByType<CharacterController>();
+            if (characterController == null)
+            {
+                Debug.LogWarning("No character controller assigned to TeleportBehaviour.");
+                Destroy(this);
+            }
+        }
+        if (cinemachineVirtualCamera == null)
+        {
+            cinemachineVirtualCamera = FindAnyObjectByType<CinemachineCamera>();
         }
     }
 
@@ -31,7 +39,7 @@ public class TeleportationBehaviour : MonoBehaviour
     /// </summary>
     void LateUpdate() 
     {
-        if (teleportationTarget != null) {
+        if (enabled && teleportationTarget != null) {
             TeleportImmediatelyTo(teleportationTarget);
             teleportationTarget = null;
         }
@@ -44,7 +52,8 @@ public class TeleportationBehaviour : MonoBehaviour
     /// <param name="targetTransform">Transform to teleport to</param>
     public void TeleportTo(Transform targetTransform)
     {
-        teleportationTarget = targetTransform;
+        if (enabled)
+            teleportationTarget = targetTransform;
     }
 
     /// <summary>
