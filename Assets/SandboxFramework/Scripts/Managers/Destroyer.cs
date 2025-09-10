@@ -47,7 +47,7 @@ public class Destroyer : MonoBehaviour
     /// Public method to start destroying all GameObjects currently inside the trigger.
     /// It triggers a coroutine that destroys objects after one frame delay.
     /// </summary>
-    void DestroyOverlappingItems()
+    public void DestroyOverlappingItems()
     {
         StartCoroutine(DestroyOneFrameLater());
     }
