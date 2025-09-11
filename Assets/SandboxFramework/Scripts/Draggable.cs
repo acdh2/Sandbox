@@ -45,7 +45,7 @@ public class Draggable : MonoBehaviour
         Weldable weldable = GetComponent<Weldable>();
 
         IReadOnlyList<Rigidbody> rigidbodies;
-        if (weldable)
+        if (weldable && weldable.weldType == WeldType.HierarchyBased)
         {
             // Find all rigidbodies in the connected hierarchy/weld
             rigidbodies = Utils.FindAllInHierarchyAndConnections<Rigidbody>(weldable);

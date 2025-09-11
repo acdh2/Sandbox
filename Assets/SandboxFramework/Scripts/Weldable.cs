@@ -19,7 +19,7 @@ public class Weldable : MonoBehaviour
     private WeldType currentWeldType = WeldType.Undefined;
     private readonly HashSet<Weldable> connections = new();
 
-    private WeldType CurrentWeldType => currentWeldType;
+    public WeldType weldType => currentWeldType;
 
     private IEnumerator Start()
     {
