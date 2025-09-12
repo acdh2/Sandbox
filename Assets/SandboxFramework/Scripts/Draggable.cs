@@ -20,12 +20,16 @@ public class Draggable : MonoBehaviour
     private bool isBeingDragged = false;
     private Rigidbody rigidBody;
 
+    private Vector3 throwVelocity = Vector3.zero;
+
     /// <summary>
     /// Called when dragging starts. Optionally modifies Rigidbody settings.
     /// </summary>
     public void StartDrag(RigidbodyStateChange stateChange)
     {
         if (!enabled) return;
+
+        throwVelocity = Vector3.zero;
 
         rigidBody = GetComponent<Rigidbody>();
         OnGrab();
@@ -68,6 +72,11 @@ public class Draggable : MonoBehaviour
     public void UpdateDrag(Vector3 position, Quaternion rotation)
     {
         if (!enabled || !isBeingDragged) return;
+
+        if (rigidBody != null)
+        {
+            throwVelocity = throwVelocity * 0.9f + ((position - rigidBody.position) / Time.deltaTime) * 0.1f;
+        }
 
         ApplyTransformation(position, rotation);
         CustomFixedJoint.UpdateJoint(transform);
@@ -126,13 +135,23 @@ public class Draggable : MonoBehaviour
     /// <summary>
     /// Ends the dragging operation and restores Rigidbody settings if needed.
     /// </summary>
-    public void EndDrag(RigidbodyStateChange stateChange)
+    public void EndDrag(RigidbodyStateChange stateChange, float throwMultiplier, float maxThrowVelocity)
     {
         if (!enabled) return;
 
         OnRelease();
         ApplyRigidbodyStateChange(stateChange);
         isBeingDragged = false;
+
+        if (rigidBody != null && !rigidBody.isKinematic)
+        {
+            Vector3 newThrowVelocity = throwVelocity * throwMultiplier;
+            if (newThrowVelocity.magnitude > maxThrowVelocity)
+            {
+                newThrowVelocity = newThrowVelocity.normalized * maxThrowVelocity;
+            }
+            rigidBody.linearVelocity = newThrowVelocity;
+        }
     }
 
     /// <summary>

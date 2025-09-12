@@ -2773,6 +2773,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
+      propertyPath: maxThrowVelocity
+      value: 7.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
       propertyPath: rotationSnapDegrees.x
       value: 90
       objectReference: {fileID: 0}

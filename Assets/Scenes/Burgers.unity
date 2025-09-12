@@ -2073,12 +2073,20 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
+      propertyPath: throwVelocity
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
       propertyPath: useRotationKey1
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
       propertyPath: useRotationKey2
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
+      propertyPath: maxThrowVelocity
+      value: 7.5
       objectReference: {fileID: 0}
     - target: {fileID: 8612214027620538447, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
       propertyPath: m_Name

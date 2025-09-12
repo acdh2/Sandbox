@@ -41,6 +41,8 @@ public class DragHandler : MonoBehaviour
     [Header("Rigidbody")]
     public RigidbodyStateChange rigidbodyStateChangeOnDrag = RigidbodyStateChange.SetKinematic;
     public RigidbodyStateChange rigidbodyStateChangeOnRelease = RigidbodyStateChange.SetNonKinematic;
+    public float throwMultiplier = 1.5f;
+    public float maxThrowVelocity = 15f;
 
     private Camera cam;
     private Draggable selectedDraggable;
@@ -143,7 +145,7 @@ public class DragHandler : MonoBehaviour
 
         if (selectedDraggable != null)
         {
-            selectedDraggable.EndDrag(rigidbodyStateChangeOnRelease);
+            selectedDraggable.EndDrag(rigidbodyStateChangeOnRelease, throwMultiplier, maxThrowVelocity);
             selectedDraggable = null;
         }
 
