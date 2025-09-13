@@ -31,6 +31,7 @@ public class DragHandler : MonoBehaviour
     }
 
     [Header("Grid Settings")]
+    public bool useGrid = true;
     public Vector3 gridSize = Vector3.one;
     public Vector3 gridCenter = Vector3.zero;
 
@@ -285,14 +286,15 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private Vector3 SnapToGrid(Vector3 position)
     {
-        Vector3 offset = position - gridCenter;
+        Vector3 offset = position;
 
-        if (gridSize.x > 0)
+        if (useGrid)
+        {
+            offset -= gridCenter;
             offset.x = Mathf.Round(offset.x / gridSize.x) * gridSize.x;
-        if (gridSize.y > 0)
             offset.y = Mathf.Round(offset.y / gridSize.y) * gridSize.y;
-        if (gridSize.z > 0)
             offset.z = Mathf.Round(offset.z / gridSize.z) * gridSize.z;
+        }
 
         return gridCenter + offset;
     }

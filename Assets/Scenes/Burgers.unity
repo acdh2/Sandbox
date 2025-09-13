@@ -2053,6 +2053,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1714661345}
     - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
+      propertyPath: useGrid
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
       propertyPath: gridSize.x
       value: 0
       objectReference: {fileID: 0}
