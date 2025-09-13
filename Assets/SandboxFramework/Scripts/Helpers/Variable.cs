@@ -38,6 +38,9 @@ public class Variable : MonoBehaviour
     [Tooltip("Rate of change of this variable per second (positive or negative).")]
     public float changePerSecond = 0f;
 
+    [Tooltip("If true, updates the value smoothly every frame instead of in whole steps per second.")]
+    public bool smoothUpdate = false;
+
     [Header("UI & Event Coupling")]
     [Tooltip("Event fired whenever the variable's value changes, passing the new value.")]
     public UnityEvent<float> onValueChange;
@@ -93,17 +96,26 @@ public class Variable : MonoBehaviour
     {
         if (!enabled) return;
 
-        currentTime += Time.deltaTime;
-
-        if (currentTime >= 1f)
+        if (smoothUpdate)
         {
-            int steps = Mathf.FloorToInt(currentTime);
-            currentTime -= steps;
+            // Smooth (per frame) update
+            SetValue(value + changePerSecond * Time.deltaTime);
+        }
+        else
+        {
+            // Stepwise (per second) update
+            currentTime += Time.deltaTime;
 
-            SetValue(value + changePerSecond * steps);
+            if (currentTime >= 1f)
+            {
+                int steps = Mathf.FloorToInt(currentTime);
+                currentTime -= steps;
+
+                SetValue(value + changePerSecond * steps);
+            }
         }
     }
-
+    
     /// <summary>
     /// Changes the variable's value by a relative amount, with clamping and event triggers.
     /// </summary>

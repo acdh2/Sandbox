@@ -14,6 +14,7 @@ public enum RigidbodyStateChange
 [DisallowMultipleComponent]
 public class Draggable : MonoBehaviour
 {
+    public bool RemoveFromParentOnStart = false;
     public bool shouldPropagateDragEvents = true;
     public bool shouldIgnoreRigidbodySettingFromDragger = false;
 
@@ -21,6 +22,14 @@ public class Draggable : MonoBehaviour
     private Rigidbody rigidBody;
 
     private Vector3 throwVelocity = Vector3.zero;
+
+    void Start()
+    {
+        if (RemoveFromParentOnStart)
+        {
+            transform.parent = null;
+        }
+    }
 
     /// <summary>
     /// Called when dragging starts. Optionally modifies Rigidbody settings.
