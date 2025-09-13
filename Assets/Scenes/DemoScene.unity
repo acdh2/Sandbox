@@ -5007,7 +5007,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7109327719394489377, guid: f348011c61f0c4f78818cf7eb51cbfcc, type: 3}
       propertyPath: m_Name
-      value: Silver (1)
+      value: Silver
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
