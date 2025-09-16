@@ -5670,7 +5670,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'State Machine
+  m_text: 'StateMachine
 
 '
   m_isRightToLeft: 0
@@ -7796,7 +7796,7 @@ GameObject:
   m_Component:
   - component: {fileID: 556854004}
   m_Layer: 0
-  m_Name: State Machine
+  m_Name: StateMachine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

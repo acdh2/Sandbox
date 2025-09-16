@@ -14,7 +14,7 @@ public enum RigidbodyStateChange
 [DisallowMultipleComponent]
 public class Draggable : MonoBehaviour
 {
-    public bool RemoveFromParentOnStart = false;
+    public bool dragParentHierarchy = true;
     public bool shouldPropagateDragEvents = true;
     public bool shouldIgnoreRigidbodySettingFromDragger = false;
 
@@ -22,14 +22,6 @@ public class Draggable : MonoBehaviour
     private Rigidbody rigidBody;
 
     private Vector3 throwVelocity = Vector3.zero;
-
-    void Start()
-    {
-        if (RemoveFromParentOnStart)
-        {
-            transform.parent = null;
-        }
-    }
 
     /// <summary>
     /// Called when dragging starts. Optionally modifies Rigidbody settings.
@@ -118,7 +110,7 @@ public class Draggable : MonoBehaviour
         }
         else
         {
-            Transform root = transform.root;
+            Transform root = dragParentHierarchy?transform.root:transform;
 
             Matrix4x4 currentLocalMatrix = root.worldToLocalMatrix * transform.localToWorldMatrix;
             Matrix4x4 desiredWorldMatrix = Matrix4x4.TRS(position, rotation, transform.lossyScale);
@@ -176,7 +168,8 @@ public class Draggable : MonoBehaviour
                 return Utils.FindAllInHierarchyAndConnections<IDragListener>(weldable).ToArray();
             }
 
-            return transform.root.GetComponentsInChildren<IDragListener>();
+            Transform root = dragParentHierarchy?transform.root:transform;
+            return root.GetComponentsInChildren<IDragListener>();
         }
         else
         {

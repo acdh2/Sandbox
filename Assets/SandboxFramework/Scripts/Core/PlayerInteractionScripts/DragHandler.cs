@@ -69,6 +69,11 @@ public class DragHandler : MonoBehaviour
         HandleInput();
     }
 
+    public void SetGridEnabled(bool mode)
+    {
+        useGrid = mode;
+    }
+
     private void FixedUpdate()
     {
         if (selectionHandler.currentSelection == null)
@@ -171,20 +176,20 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void RotateSelected(float x, float y, float z)
     {
-        GameObject selectedObject = selectionHandler.currentSelection;
-        if (selectedObject == null) return;
+        if (selectedDraggable == null) return;
 
-        Transform selectedRoot = selectedObject.transform.root;
+        bool useRoot = selectedDraggable.dragParentHierarchy;
+        Transform selectedRoot = useRoot?selectedDraggable.transform.root:selectedDraggable.transform;
         if (selectedRoot == null) return;
 
-        Vector3 pivot = selectedObject.transform.position;
+        Vector3 pivot = selectedDraggable.transform.localPosition;
         Quaternion deltaRotation = Quaternion.Euler(x, y, z);
 
-        Vector3 direction = selectedRoot.position - pivot;
-        selectedRoot.position = pivot + deltaRotation * direction;
+        Vector3 direction = selectedRoot.localPosition - pivot;
+        selectedRoot.localPosition = pivot + deltaRotation * direction;
         selectedRoot.rotation = GetSnappedRotation(deltaRotation * selectedRoot.rotation);
 
-        InitializeSelection(selectedObject.transform);
+        InitializeSelection(selectedDraggable.transform);
     }
 
     /// <summary>
@@ -192,11 +197,11 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void RotateSelectedTowardsCamera(float angle)
     {
-        GameObject selectedObject = selectionHandler.currentSelection;
-        if (selectedObject == null) return;
+        if (selectedDraggable == null) return;
+        Transform selectedTransform = selectedDraggable.transform;
 
-        Transform selectedTransform = selectedObject.transform;
-        Transform selectedRoot = selectedObject.transform.root;
+        bool useRoot = selectedDraggable.dragParentHierarchy;
+        Transform selectedRoot = useRoot?selectedDraggable.transform.root:selectedDraggable.transform;
         if (selectedRoot == null) return;
 
         Vector3 cameraOffset = Vector3.zero;
@@ -209,7 +214,7 @@ public class DragHandler : MonoBehaviour
 
         Vector3 rightVector = Vector3.Cross(cameraOffset, Vector3.up);
         Quaternion deltaRotation = Quaternion.AngleAxis(angle, rightVector);
-        Vector3 pivot = selectedObject.transform.position;
+        Vector3 pivot = selectedDraggable.transform.position;
 
         Vector3 direction = selectedRoot.position - pivot;
         selectedRoot.position = pivot + deltaRotation * direction;
@@ -222,7 +227,7 @@ public class DragHandler : MonoBehaviour
             rb.MoveRotation(selectedRoot.rotation);
         }
 
-        InitializeSelection(selectedObject.transform);
+        InitializeSelection(selectedDraggable.transform);
     }
 
     /// <summary>
@@ -294,9 +299,10 @@ public class DragHandler : MonoBehaviour
             offset.x = Mathf.Round(offset.x / gridSize.x) * gridSize.x;
             offset.y = Mathf.Round(offset.y / gridSize.y) * gridSize.y;
             offset.z = Mathf.Round(offset.z / gridSize.z) * gridSize.z;
+            offset += gridCenter;
         }
 
-        return gridCenter + offset;
+        return offset;
     }
 
     /// <summary>
