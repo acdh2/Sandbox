@@ -24,7 +24,6 @@ public class Seat : MonoBehaviour, IWeldListener
     private Transform seatedPlayer;              // Currently seated player transform reference
     private Transform originalParent;            // Original parent of the player to restore hierarchy on unseat
     private int originalLayer;                   // Original layer of the player to restore on unseat
-    private StarterAssets.FirstPersonController playerController; // Reference to player's movement controller
     private float debounceTimer = 0f;            // Timer to prevent immediate reseating
 
     private bool isWelded;                       // Indicates if seat is welded (active/available for seating)
@@ -143,13 +142,16 @@ public class Seat : MonoBehaviour, IWeldListener
         if (!enabled) return;
 
         seatedPlayer = player;
-        playerController = player.GetComponent<StarterAssets.FirstPersonController>();
 
         // Disable player movement if controller component exists
-        playerController?.SetMovementEnabled(false);
+        CharacterController characterController = player.GetComponent<CharacterController>();
+        if (characterController != null)
+        {
+            characterController.enabled = false;
+        }
 
         // Store original hierarchy and layer to restore later
-        originalParent = player.parent?.parent;
+            originalParent = player.parent?.parent;
         originalLayer = player.gameObject.layer;
 
         // Move player to seat position and rotation, and reparent under seatPoint
@@ -226,7 +228,11 @@ public class Seat : MonoBehaviour, IWeldListener
         NotifyOnUnseatListeners();
 
         // Re-enable player movement
-        playerController?.SetMovementEnabled(true);
+        CharacterController characterController = player.GetComponent<CharacterController>();
+        if (characterController != null)
+        {
+            characterController.enabled = true;
+        }
 
         // Restore player's original parent in hierarchy
         Transform playerTransform = seatedPlayer;
@@ -244,7 +250,6 @@ public class Seat : MonoBehaviour, IWeldListener
 
         // Clear seated player reference and reset debounce timer
         seatedPlayer = null;
-        playerController = null;
         debounceTimer = debounceDuration;
     }
 }

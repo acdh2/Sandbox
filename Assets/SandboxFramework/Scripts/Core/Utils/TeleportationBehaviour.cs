@@ -1,10 +1,11 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using UnityEngine.TextCore.Text;
 
 public class TeleportationBehaviour : MonoBehaviour
 {
     // Reference to the Cinemachine virtual camera controlling the view
-    public CinemachineCamera cinemachineVirtualCamera;
+    public CinemachineCamera cinemachineCamera;
     // Reference to the CharacterController component for the player
     public CharacterController characterController;
 
@@ -20,15 +21,16 @@ public class TeleportationBehaviour : MonoBehaviour
         if (characterController == null)
         {
             characterController = FindAnyObjectByType<CharacterController>();
-            if (characterController == null)
-            {
-                Debug.LogWarning("No character controller assigned to TeleportBehaviour.");
-                Destroy(this);
-            }
         }
-        if (cinemachineVirtualCamera == null)
+        if (characterController == null)
         {
-            cinemachineVirtualCamera = FindAnyObjectByType<CinemachineCamera>();
+            Debug.LogWarning("No character controller assigned to TeleportBehaviour.");
+            Destroy(this);
+            return;
+        }
+        if (cinemachineCamera == null)
+        {
+            cinemachineCamera = FindAnyObjectByType<CinemachineCamera>();
         }
     }
 
@@ -59,7 +61,7 @@ public class TeleportationBehaviour : MonoBehaviour
     /// <summary>
     /// Immediately teleports the character to the target position and rotation.
     /// Temporarily disables the CharacterController to avoid physics conflicts.
-    /// Also warps the Cinemachine virtual camera target to keep camera in sync.
+    /// Also warps the Cinemachine camera target to keep camera in sync.
     /// </summary>
     /// <param name="targetTransform">Transform to teleport to</param>
     private void TeleportImmediatelyTo(Transform targetTransform)
@@ -68,9 +70,9 @@ public class TeleportationBehaviour : MonoBehaviour
         {
             // Store current camera follow position before teleport
             var currentCameraPosition = Vector3.zero;
-            if (cinemachineVirtualCamera != null && cinemachineVirtualCamera.Follow != null)
+            if (cinemachineCamera != null && cinemachineCamera.Follow != null)
             {
-                currentCameraPosition = cinemachineVirtualCamera.Follow.transform.position;
+                currentCameraPosition = cinemachineCamera.Follow.transform.position;
             }
 
             // Disable CharacterController to safely change position
@@ -84,11 +86,11 @@ public class TeleportationBehaviour : MonoBehaviour
             characterController.enabled = true;
 
             // Inform Cinemachine camera of the warp to avoid visual glitches
-            if (cinemachineVirtualCamera != null && cinemachineVirtualCamera.Follow != null)
+            if (cinemachineCamera != null && cinemachineCamera.Follow != null)
             {
-                cinemachineVirtualCamera.OnTargetObjectWarped(
-                    cinemachineVirtualCamera.Follow,
-                    cinemachineVirtualCamera.Follow.transform.position - currentCameraPosition
+                cinemachineCamera.OnTargetObjectWarped(
+                    cinemachineCamera.Follow,
+                    cinemachineCamera.Follow.transform.position - currentCameraPosition
                 );
             }
         }

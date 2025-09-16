@@ -2241,7 +2241,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a5abddcc215a54407a44462f15987c10, type: 2}
+  - {fileID: 2100000, guid: 7e871c3f8ea494f7db220a2ff7718b2b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2283,6 +2283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dragParentHierarchy: 1
   shouldPropagateDragEvents: 1
   shouldIgnoreRigidbodySettingFromDragger: 0
 --- !u!114 &1307239053
@@ -2703,7 +2704,7 @@ MonoBehaviour:
   onMouseDownEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1931368941}
+      - m_Target: {fileID: 1931368951}
         m_TargetAssemblyTypeName: TeleportationBehaviour, Assembly-CSharp
         m_MethodName: TeleportTo
         m_Mode: 2
@@ -3419,17 +3420,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
---- !u!114 &1931368941 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8932022481242983943, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
-  m_PrefabInstance: {fileID: 746006465959732131}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee15dd65b36d84aa4a8763f0b1118ad2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1931368945 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7801057382709454501, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
@@ -3450,6 +3440,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4321472da242e4b1e8ad1658c497e601, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1931368951 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4401835293047107363, guid: fd2486027d9f1403dbc13912326d3e13, type: 3}
+  m_PrefabInstance: {fileID: 746006465959732131}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee15dd65b36d84aa4a8763f0b1118ad2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &1950660091 stripped
