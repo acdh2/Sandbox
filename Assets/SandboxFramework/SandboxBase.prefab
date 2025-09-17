@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6690997582921729833}
   - component: {fileID: 7191963667568335038}
   - component: {fileID: 4401835293047107363}
+  - component: {fileID: 2150696668866276256}
   m_Layer: 0
   m_Name: SandboxBase
   m_TagString: Untagged
@@ -194,3 +195,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cinemachineCamera: {fileID: 0}
   characterController: {fileID: 0}
+--- !u!114 &2150696668866276256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8612214027620538447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fae66fff720342098ac91ef498728ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineCameraPrefab: {fileID: 5656107871406623177, guid: 5e0bacfe7798a438daf3695d364589e4, type: 3}
