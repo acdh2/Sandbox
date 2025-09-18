@@ -86,7 +86,7 @@ MonoBehaviour:
   rayLength: 2
   groundMask:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 1
   rotationSpeed: 10
 --- !u!1 &3219883534379807651
 GameObject:
@@ -97,8 +97,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6122309350688707217}
-  - component: {fileID: 1349732174408910045}
-  - component: {fileID: 1109028010859465406}
   - component: {fileID: 5944389757114182019}
   - component: {fileID: 7561889800910091375}
   - component: {fileID: 3606171025031911491}
@@ -125,34 +123,6 @@ Transform:
   - {fileID: 5802147957823935424}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1349732174408910045
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3219883534379807651}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c14a531c091ed47028b32c51846c2dd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objectDescription: A slime
---- !u!114 &1109028010859465406
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3219883534379807651}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RemoveFromParentOnStart: 1
-  shouldPropagateDragEvents: 1
-  shouldIgnoreRigidbodySettingFromDragger: 0
 --- !u!64 &5944389757114182019
 MeshCollider:
   m_ObjectHideFlags: 0
