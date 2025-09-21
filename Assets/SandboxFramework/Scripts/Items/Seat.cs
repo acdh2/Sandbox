@@ -1,9 +1,11 @@
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using System.Linq;
 using Unity.VisualScripting;
+using StarterAssets;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
@@ -77,7 +79,7 @@ public class Seat : MonoBehaviour, IWeldListener
         Weldable weldable = GetComponent<Weldable>();
         return Utils.FindAllInHierarchyAndConnections<T>(weldable);
         // Alternative: return transform.root.GetComponentsInChildren<T>(true);
-    }    
+    }
 
     /// <summary>
     /// Handles keyboard input from the configured keys and notifies listeners.
@@ -144,10 +146,10 @@ public class Seat : MonoBehaviour, IWeldListener
         seatedPlayer = player;
 
         // Disable player movement if controller component exists
-        CharacterController characterController = player.GetComponent<CharacterController>();
-        if (characterController != null)
+        FirstPersonController firstPersonController = player.GetComponent<FirstPersonController>();
+        if (firstPersonController != null)
         {
-            characterController.enabled = false;
+            firstPersonController.enabled = false;
         }
 
         // Store original hierarchy and layer to restore later
@@ -219,19 +221,13 @@ public class Seat : MonoBehaviour, IWeldListener
     private void ExitSeat()
     {
         if (seatedPlayer == null) return;
-
         GameObject player = seatedPlayer.gameObject;
 
-        // Invoke unseat events
-        onUnseat?.Invoke();
-        OnUnseat(player);
-        NotifyOnUnseatListeners();
-
         // Re-enable player movement
-        CharacterController characterController = player.GetComponent<CharacterController>();
-        if (characterController != null)
+        FirstPersonController firstPersonController = player.GetComponent<FirstPersonController>();
+        if (firstPersonController != null)
         {
-            characterController.enabled = true;
+            firstPersonController.enabled = true;
         }
 
         // Restore player's original parent in hierarchy
@@ -251,5 +247,38 @@ public class Seat : MonoBehaviour, IWeldListener
         // Clear seated player reference and reset debounce timer
         seatedPlayer = null;
         debounceTimer = debounceDuration;
+    }
+
+    void LateUpdate()
+    {
+        CameraRotation();
+    }
+
+    FirstPersonController firstPersonController = null;
+    MethodInfo cameraRotationMethod = null;
+    
+    private void CameraRotation()
+    {
+        if (seatedPlayer == null) return;
+        if (firstPersonController == null)
+        {
+            GameObject player = seatedPlayer.gameObject;
+            firstPersonController = player.GetComponent<FirstPersonController>();
+        }
+        if (firstPersonController != null && !firstPersonController.enabled)
+            {
+                if (cameraRotationMethod == null)
+                {
+                    cameraRotationMethod = typeof(FirstPersonController).GetMethod(
+                            "CameraRotation",
+                            BindingFlags.Instance | BindingFlags.NonPublic
+                        );
+                }
+
+                if (cameraRotationMethod != null)
+                {
+                    cameraRotationMethod.Invoke(firstPersonController, null);
+                }
+            }
     }
 }
