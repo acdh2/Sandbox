@@ -151,7 +151,7 @@ public class Seat : MonoBehaviour, IWeldListener
         }
 
         // Store original hierarchy and layer to restore later
-            originalParent = player.parent?.parent;
+        originalParent = player.parent?.parent;
         originalLayer = player.gameObject.layer;
 
         // Move player to seat position and rotation, and reparent under seatPoint

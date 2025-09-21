@@ -25,6 +25,7 @@ public class AddOutlineCamera : MonoBehaviour
         UniversalAdditionalCameraData cameraData = camera.GetUniversalAdditionalCameraData();
         if (cameraData != null)
         {
+            cameraData.renderPostProcessing = true;
             cameraData.SetRenderer(1); //1=PC_Renderer
         }
 

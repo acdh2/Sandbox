@@ -6,7 +6,7 @@ using UnityEngine.Events;
 /// Requires a Collider component to register mouse events from Unity.
 /// </summary>
 [RequireComponent(typeof(Collider))]
-public class MouseEventInvoker : MonoBehaviour
+public class MouseListener : MonoBehaviour
 {
     [Header("Mouse Events")]
     [Tooltip("Invoked when the mouse button is pressed down on this GameObject.")]

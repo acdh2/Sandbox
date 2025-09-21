@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Detects collisions from the player's character controller and sends appropriate collision events
-/// (enter, stay, exit) to objects that have a CollisionEventInvoker component.
+/// (enter, stay, exit) to objects that have a CollisionListener component.
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerCollisionTrigger : MonoBehaviour
@@ -21,16 +21,16 @@ public class PlayerCollisionTrigger : MonoBehaviour
         GameObject hitObject = hit.gameObject;
         currentFrameHits.Add(hitObject);
 
-        CollisionEventInvoker invoker = hitObject.GetComponent<CollisionEventInvoker>();
-        if (invoker == null) return;
+        CollisionListener collisionListener = hitObject.GetComponent<CollisionListener>();
+        if (collisionListener == null) return;
 
         if (previousFrameHits.Contains(hitObject))
         {
-            invoker.OnPlayerCollisionStay();
+            collisionListener.OnPlayerCollisionStay();
         }
         else
         {
-            invoker.OnPlayerCollisionEnter();
+            collisionListener.OnPlayerCollisionEnter();
         }
     }
 
@@ -44,7 +44,7 @@ public class PlayerCollisionTrigger : MonoBehaviour
         {
             if (!currentFrameHits.Contains(obj))
             {
-                obj.GetComponent<CollisionEventInvoker>()?.OnPlayerCollisionExit();
+                obj.GetComponent<CollisionListener>()?.OnPlayerCollisionExit();
             }
         }
 

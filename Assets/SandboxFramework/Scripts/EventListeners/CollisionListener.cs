@@ -4,7 +4,7 @@ using UnityEngine.Events;
 /// <summary>
 /// Exposes collision events and custom player-triggered events via UnityEvents.
 /// </summary>
-public class CollisionEventInvoker : MonoBehaviour
+public class CollisionListener : MonoBehaviour
 {
     [Header("Physics Collision Events")]
     public UnityEvent onCollisionEnter;

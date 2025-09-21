@@ -13,12 +13,12 @@ public class RaycastMouseTrigger : MonoBehaviour
     /// <summary>
     /// Performs a raycast from the center of the screen and returns the MouseEventInvoker component if found.
     /// </summary>
-    private MouseEventInvoker GetMouseEventTarget()
+    private MouseListener GetMouseEventTarget()
     {
         Ray ray = Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f));
         if (Physics.Raycast(ray, out RaycastHit hit, rayDistance))
         {
-            return hit.collider.GetComponent<MouseEventInvoker>();
+            return hit.collider.GetComponent<MouseListener>();
         }
         return null;
     }
