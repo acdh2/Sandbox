@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class RandomEventInvoker : MonoBehaviour
+public class RandomTrigger : MonoBehaviour
 {
     [Tooltip("List of possible UnityEvents from which one will be randomly invoked.")]
     public UnityEvent[] events;

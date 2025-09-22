@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class RecipeInvoker : MonoBehaviour
+public class RecipeTrigger : MonoBehaviour
 {
     [Serializable]
     public class Recipe

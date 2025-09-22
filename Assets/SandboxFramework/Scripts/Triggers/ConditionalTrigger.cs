@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ConditionalEventInvoker : MonoBehaviour
+public class ConditionalTrigger : MonoBehaviour
 {
     [Serializable]
     public enum ContinueOption
@@ -144,7 +144,7 @@ public class ConditionalEventInvoker : MonoBehaviour
             (ProceedOrderOnResult == ContinueOption.Fail && !result))
         {
             int nextOrder = order + 1;
-            var invokers = GetComponents<ConditionalEventInvoker>();
+            var invokers = GetComponents<ConditionalTrigger>();
             foreach (var invoker in invokers)
             {
                 if (invoker.evaluationOrder == nextOrder)

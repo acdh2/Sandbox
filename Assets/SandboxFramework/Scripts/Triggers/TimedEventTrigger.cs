@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class TimedEventInvoker : MonoBehaviour
+public class TimerTrigger : MonoBehaviour
 {
     /// <summary>
     /// Represents a time interval with a start and end boundary.
