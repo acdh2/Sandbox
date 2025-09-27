@@ -58,6 +58,8 @@ public class DragHandler : MonoBehaviour
     public bool useRotationKey1 = true;
     public bool useRotationKey2 = true;
 
+    public bool toggleToDrag = false;
+
     private void Start()
     {
         cam = Camera.main;
@@ -102,7 +104,8 @@ public class DragHandler : MonoBehaviour
                 break;
 
             case DragState.Dragging:
-                if (selectedDraggable == null || InputSystem.GetPointerUp())
+                bool endDrag = toggleToDrag ? InputSystem.GetPointerDown() : InputSystem.GetPointerUp();
+                if (selectedDraggable == null || endDrag)
                 {
                     StopDragging();
                     return;
