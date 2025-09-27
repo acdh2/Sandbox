@@ -21,8 +21,14 @@ public class Weldable : MonoBehaviour
 
     public WeldType weldType => currentWeldType;
 
+    public bool removeFromParentAtAwake = false;
+
     private IEnumerator Start()
     {
+        if (removeFromParentAtAwake)
+        {
+            transform.SetParent(null, true);
+        }
         yield return null;
         TryAutoHierarchyWeldWithAncestor();
     }

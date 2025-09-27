@@ -174,23 +174,29 @@ public class DragHandler : MonoBehaviour
             RotateSelectedTowardsCamera(-90f);
     }
 
-    /// <summary>
-    /// Rotates the selected object around its pivot by specific Euler angles.
-    /// </summary>
     private void RotateSelected(float x, float y, float z)
     {
         if (selectedDraggable == null) return;
 
-        bool useRoot = selectedDraggable.dragParentHierarchy;
-        Transform selectedRoot = useRoot?selectedDraggable.transform.root:selectedDraggable.transform;
+        // Determine if we rotate the root of the hierarchy
+        Transform selectedRoot = selectedDraggable.transform.root;
         if (selectedRoot == null) return;
 
-        Vector3 pivot = selectedDraggable.transform.localPosition;
+        // World position of the selected object's pivot
+        Vector3 pivotWorldPos = selectedDraggable.transform.position;
+
+        // Desired rotation delta
         Quaternion deltaRotation = Quaternion.Euler(x, y, z);
 
-        Vector3 direction = selectedRoot.localPosition - pivot;
-        selectedRoot.localPosition = pivot + deltaRotation * direction;
-        selectedRoot.rotation = GetSnappedRotation(deltaRotation * selectedRoot.rotation);
+        // Vector from root to pivot
+        Vector3 direction = selectedRoot.position - pivotWorldPos;
+
+        // Move and rotate the root so the selected object rotates around its pivot
+        selectedRoot.position = pivotWorldPos + deltaRotation * direction;
+        selectedRoot.rotation = deltaRotation * selectedRoot.rotation;
+
+        // Optional: snap rotation if you have a snapping function
+        selectedRoot.rotation = GetSnappedRotation(selectedRoot.rotation);
 
         InitializeSelection(selectedDraggable.transform);
     }
@@ -203,8 +209,7 @@ public class DragHandler : MonoBehaviour
         if (selectedDraggable == null) return;
         Transform selectedTransform = selectedDraggable.transform;
 
-        bool useRoot = selectedDraggable.dragParentHierarchy;
-        Transform selectedRoot = useRoot?selectedDraggable.transform.root:selectedDraggable.transform;
+        Transform selectedRoot = selectedDraggable.transform.root;
         if (selectedRoot == null) return;
 
         Vector3 cameraOffset = Vector3.zero;

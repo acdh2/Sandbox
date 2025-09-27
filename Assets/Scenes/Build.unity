@@ -338,6 +338,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -395,6 +399,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -493,6 +501,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -555,6 +567,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -873,6 +889,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -1021,7 +1041,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 585471645}
-  - component: {fileID: 585471646}
   m_Layer: 0
   m_Name: House
   m_TagString: Untagged
@@ -1064,18 +1083,6 @@ Transform:
   - {fileID: 678761310}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &585471646
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 585471644}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13fb88153ba79422c80e4050909fa61a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &598357403
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1084,6 +1091,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -1976,6 +1987,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -2235,6 +2250,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -2307,6 +2326,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -2462,7 +2485,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dragParentHierarchy: 1
   shouldPropagateDragEvents: 1
   shouldIgnoreRigidbodySettingFromDragger: 0
 --- !u!114 &1307239053
@@ -2512,6 +2534,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -2569,6 +2595,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3152,6 +3182,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3317,6 +3351,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3374,6 +3412,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3431,6 +3473,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3493,6 +3539,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3550,6 +3600,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3694,6 +3748,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3751,6 +3809,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
@@ -3943,6 +4005,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 585471645}
     m_Modifications:
+    - target: {fileID: 5321140015325370691, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
+      propertyPath: removeFromParentAtAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7522775681573611154, guid: dc000c7a4af5b4b93b93566c52807eb6, type: 3}
       propertyPath: m_Name
       value: Block
