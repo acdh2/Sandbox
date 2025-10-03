@@ -70,7 +70,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 89c78355a41ba4b04b4f61bb0a4e5447, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -92,6 +92,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89c78355a41ba4b04b4f61bb0a4e5447, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7152411573809486221}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89c78355a41ba4b04b4f61bb0a4e5447, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2073434162910262774}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 89c78355a41ba4b04b4f61bb0a4e5447, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3114398813745873182}
   m_SourcePrefab: {fileID: 100100000, guid: 89c78355a41ba4b04b4f61bb0a4e5447, type: 3}
 --- !u!1 &9001402872259738564 stripped
 GameObject:
@@ -123,9 +129,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dragParentHierarchy: 0
   shouldPropagateDragEvents: 1
   shouldIgnoreRigidbodySettingFromDragger: 0
+  removeFromParentAtAwake: 1
 --- !u!33 &4655152687023998992
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -201,3 +207,65 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -2432090755550338912, guid: 89c78355a41ba4b04b4f61bb0a4e5447, type: 3}
+--- !u!114 &2073434162910262774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9001402872259738564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9212d6992e64743acac1c1dd9fcdde79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onGrab:
+    m_PersistentCalls:
+      m_Calls: []
+  onRelease:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3114398813745873182}
+        m_TargetAssemblyTypeName: Unity.AI.Navigation.NavMeshSurface, Unity.AI.Navigation
+        m_MethodName: BuildNavMesh
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &3114398813745873182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9001402872259738564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 320
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.033333335
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0

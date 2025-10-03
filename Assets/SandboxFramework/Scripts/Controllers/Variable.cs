@@ -5,16 +5,26 @@ using UnityEngine.Events;
 [Serializable]
 public enum ComparisonMode
 {
-    SmallerThan,   // Checks if value is less than the comparison value
-    GreaterThan    // Checks if value is greater than the comparison value
+    SmallerThan,        // Checks if value is less than the comparison value (<)
+    GreaterThan,        // Checks if value is greater than the comparison value (>)
+    SmallerThanOrEqual, // Checks if value is less than or equal to the comparison value (<=)
+    GreaterThanOrEqual  // Checks if value is greater than or equal to the comparison value (>=)
 }
 
 [Serializable]
 public struct Condition
 {
-    public ComparisonMode comparisonMode;  // Comparison type for this condition
-    public float value;                    // The value to compare against
-    public UnityEvent OnEvaluateToTrue;    // Event triggered when condition evaluates to true
+    [Tooltip("Comparison type for this condition.")]
+    public ComparisonMode comparisonMode;
+    
+    [Tooltip("The value to compare against.")]
+    public float value;
+    
+    [Tooltip("Event triggered when this condition evaluates to true.")]
+    public UnityEvent OnEvaluateToTrue;
+    
+    [Tooltip("If true, stops evaluating subsequent conditions once this one evaluates to true.")]
+    public bool stopIfTrue; // Added for prioritized evaluation
 }
 
 /// <summary>
@@ -61,7 +71,7 @@ public class Variable : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if the animator has a parameter matching the variable name.
+    /// Checks if the animator has a parameter matching the variable name and type (Float).
     /// </summary>
     bool VariableExistsInAnimator(Animator animator, string varName)
     {
@@ -81,14 +91,16 @@ public class Variable : MonoBehaviour
     void Awake()
     {
         varName = gameObject.name;
+        // Search in parent to find the main object's Animator
         animator = GetComponentInParent<Animator>();
 
         if (!VariableExistsInAnimator(animator, varName))
         {
+            // If parameter doesn't exist, ignore the Animator sync
             animator = null;
         }
 
-        // Initialize the value
+        // Initialize the value with clamping and event triggers
         SetValue(value);
     }
 
@@ -157,6 +169,12 @@ public class Variable : MonoBehaviour
                     if (!wasTrue && isTrue)
                     {
                         condition.OnEvaluateToTrue?.Invoke();
+                        
+                        // NEW: Prioritized evaluation (stop-if-true logic)
+                        if (condition.stopIfTrue)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -172,8 +190,12 @@ public class Variable : MonoBehaviour
         {
             case ComparisonMode.SmallerThan:
                 return testValue < condition.value;
+            case ComparisonMode.SmallerThanOrEqual:
+                return testValue <= condition.value;
             case ComparisonMode.GreaterThan:
                 return testValue > condition.value;
+            case ComparisonMode.GreaterThanOrEqual:
+                return testValue >= condition.value;
             default:
                 return false;
         }

@@ -86,7 +86,7 @@ MonoBehaviour:
   rayLength: 2
   groundMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 256
   rotationSpeed: 10
 --- !u!1 &3219883534379807651
 GameObject:

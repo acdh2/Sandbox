@@ -4657,9 +4657,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1d8073f11874480a95687decfaf2ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dragParentHierarchy: 1
   shouldPropagateDragEvents: 1
   shouldIgnoreRigidbodySettingFromDragger: 0
+  removeFromParentAtAwake: 0
 --- !u!114 &354914167
 MonoBehaviour:
   m_ObjectHideFlags: 0

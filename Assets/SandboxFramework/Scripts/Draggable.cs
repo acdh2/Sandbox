@@ -16,11 +16,17 @@ public class Draggable : MonoBehaviour
 {
     public bool shouldPropagateDragEvents = true;
     public bool shouldIgnoreRigidbodySettingFromDragger = false;
-
+    public bool removeFromParentAtAwake = false;
     private bool isBeingDragged = false;
     private Rigidbody rigidBody;
-
     private Vector3 throwVelocity = Vector3.zero;
+    void Awake()
+    {
+        if (removeFromParentAtAwake)
+        {
+            transform.SetParent(null, true);
+        }
+    }
 
     /// <summary>
     /// Called when dragging starts. Optionally modifies Rigidbody settings.
