@@ -48,11 +48,11 @@ public class DisplayItemInfo : MonoBehaviour
             string name = item.name;
             string description = item.GetComponent<Selectable>()?.ObjectDescription ?? string.Empty;
 
-            itemName.text = name;
-            itemDescription.text = description;
-
             itemName.enabled = true;
             itemDescription.enabled = true;
+
+            itemName.SetText(name);
+            itemDescription.SetText(description);
         }
         else
         {

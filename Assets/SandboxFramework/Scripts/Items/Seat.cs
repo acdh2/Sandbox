@@ -151,7 +151,11 @@ public class Seat : MonoBehaviour, IWeldListener
         {
             firstPersonController.enabled = false;
         }
-
+        CharacterController characterController = player.GetComponent<CharacterController>();
+        if (characterController != null)
+        {
+            characterController.enabled = false;
+        }
         // Store original hierarchy and layer to restore later
         originalParent = player.parent?.parent;
         originalLayer = player.gameObject.layer;
@@ -223,13 +227,22 @@ public class Seat : MonoBehaviour, IWeldListener
         if (seatedPlayer == null) return;
         GameObject player = seatedPlayer.gameObject;
 
+        // Trigger events related to seating
+        onUnseat?.Invoke();
+        OnUnseat(player.gameObject);
+        NotifyOnUnseatListeners();
+
         // Re-enable player movement
         FirstPersonController firstPersonController = player.GetComponent<FirstPersonController>();
         if (firstPersonController != null)
         {
             firstPersonController.enabled = true;
         }
-
+        CharacterController characterController = player.GetComponent<CharacterController>();
+        if (characterController != null)
+        {
+            characterController.enabled = true;
+        }
         // Restore player's original parent in hierarchy
         Transform playerTransform = seatedPlayer;
         playerTransform.parent.SetParent(originalParent);
