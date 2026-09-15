@@ -8,7 +8,7 @@ public class LookAt : MonoBehaviour
     public Transform target;
 
     // Property wrapper around the target field
-    [SerializeField]
+    //[SerializeField]
     public Transform Target
     {
         get { return target; }
