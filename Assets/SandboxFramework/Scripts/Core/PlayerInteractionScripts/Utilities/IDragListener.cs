@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public interface IDragListener
 {
     public void OnGrab();

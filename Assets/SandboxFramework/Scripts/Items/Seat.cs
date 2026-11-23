@@ -1,15 +1,13 @@
-using System.Reflection;
+using System.Collections.Generic;
+using StarterAssets;
 using UnityEngine;
 using UnityEngine.Events;
-using System.Collections.Generic;
 using UnityEngine.InputSystem;
-using System.Linq;
-using Unity.VisualScripting;
-using StarterAssets;
 
 /// <summary>
 /// Allows a player to sit on a seat when entering a trigger zone.
-/// Pressing a key exits the seat and restores player control.
+/// The seat only works once it is welded to another object.
+/// Pressing the Jump key exits the seat and restores player control.
 /// </summary>
 [RequireComponent(typeof(Weldable))]
 [DisallowMultipleComponent]
@@ -98,12 +96,12 @@ public class Seat : MonoBehaviour, IWeldListener
 
         if (keysPressed.Count == 0) return;
 
-        // Notify all connected IKeypressListener components about the pressed keys
-        foreach (IKeypressListener keyPressListener in FindConnectedComponents<IKeypressListener>())
+        // Notify all connected ISeatedKeyListener components about the pressed keys
+        foreach (ISeatedKeyListener keyListener in FindConnectedComponents<ISeatedKeyListener>())
         {
             foreach (Key pressedKey in keysPressed)
             {
-                keyPressListener.OnKeyPress(pressedKey);
+                keyListener.OnKeyPress(pressedKey);
             }
         }
     }
@@ -111,8 +109,6 @@ public class Seat : MonoBehaviour, IWeldListener
     // Called every frame to update input and seat state
     protected virtual void Update()
     {
-        if (!enabled) return;
-
         if (seatedPlayer != null)
             HandleKeyboardInput();
 
@@ -214,8 +210,7 @@ public class Seat : MonoBehaviour, IWeldListener
     /// </summary>
     private bool IsExitRequested()
     {
-        if (!enabled) return true;
-        return seatedPlayer != null && InputSystem.GetButtonDown(InputButton.Jump);
+        return seatedPlayer != null && SandboxInput.GetButtonDown(InputButton.Jump);
     }
 
     /// <summary>
@@ -229,7 +224,7 @@ public class Seat : MonoBehaviour, IWeldListener
 
         // Trigger events related to seating
         onUnseat?.Invoke();
-        OnUnseat(player.gameObject);
+        OnUnseat(player);
         NotifyOnUnseatListeners();
 
         // Re-enable player movement
@@ -262,36 +257,18 @@ public class Seat : MonoBehaviour, IWeldListener
         debounceTimer = debounceDuration;
     }
 
+    /// <summary>
+    /// While seated, the FirstPersonController is disabled (so the player can't walk),
+    /// but we still want the player to look around with the mouse.
+    /// </summary>
     void LateUpdate()
     {
-        CameraRotation();
-    }
-
-    FirstPersonController firstPersonController = null;
-    MethodInfo cameraRotationMethod = null;
-    
-    private void CameraRotation()
-    {
         if (seatedPlayer == null) return;
-        if (firstPersonController == null)
-        {
-            GameObject player = seatedPlayer.gameObject;
-            firstPersonController = player.GetComponent<FirstPersonController>();
-        }
-        if (firstPersonController != null && !firstPersonController.enabled)
-            {
-                if (cameraRotationMethod == null)
-                {
-                    cameraRotationMethod = typeof(FirstPersonController).GetMethod(
-                            "CameraRotation",
-                            BindingFlags.Instance | BindingFlags.NonPublic
-                        );
-                }
 
-                if (cameraRotationMethod != null)
-                {
-                    cameraRotationMethod.Invoke(firstPersonController, null);
-                }
-            }
+        FirstPersonController firstPersonController = seatedPlayer.GetComponent<FirstPersonController>();
+        if (firstPersonController != null && !firstPersonController.enabled)
+        {
+            firstPersonController.CameraRotation();
+        }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent] // Prevent multiple instances of this component on one GameObject
 public class StateMachine : MonoBehaviour
@@ -10,8 +11,11 @@ public class StateMachine : MonoBehaviour
     public class State
     {
         public string name;           // Name identifier of the state
-        public UnityEvent OnStart;    // Event triggered when the state starts
-        public UnityEvent OnStop;     // Event triggered when the state stops
+        [FormerlySerializedAs("OnStart")]
+        public UnityEvent onStart;    // Event triggered when the state starts
+
+        [FormerlySerializedAs("OnStop")]
+        public UnityEvent onStop;     // Event triggered when the state stops
     }
 
     [Tooltip("Start state name, use 'None' for no active state")]
@@ -55,7 +59,7 @@ public class StateMachine : MonoBehaviour
         {
             if (currentState != null)
             {
-                currentState.OnStop?.Invoke();
+                currentState.onStop?.Invoke();
                 currentState = null;
             }
             return;
@@ -73,12 +77,33 @@ public class StateMachine : MonoBehaviour
         if (newState == currentState)
             return;
 
-        // If there is a current active state, invoke its OnStop event
+        // If there is a current active state, invoke its onStop event
         if (currentState != null)
-            currentState.OnStop?.Invoke();
+            currentState.onStop?.Invoke();
 
-        // Activate the new state and invoke its OnStart event
+        // Activate the new state and invoke its onStart event
         currentState = newState;
-        currentState.OnStart?.Invoke();
+        currentState.onStart?.Invoke();
+    }
+
+    /// <summary>
+    /// Changes to the next state in the list.
+    /// After the last state it starts again with the first one.
+    /// With two states this toggles between them.
+    /// </summary>
+    public void NextState()
+    {
+        if (!enabled) return; // Do nothing if this component is disabled
+
+        // Do nothing if there are no states to switch to
+        if (states.Count == 0)
+            return;
+
+        // Find the position of the current state in the list (-1 if no state is active)
+        int currentIndex = states.IndexOf(currentState);
+
+        // Go to the next state, wrapping around to the first state after the last one
+        int nextIndex = (currentIndex + 1) % states.Count;
+        SetState(states[nextIndex].name);
     }
 }

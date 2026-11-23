@@ -1,6 +1,10 @@
-using StarterAssets;
 using UnityEngine;
 
+/// <summary>
+/// Keeps this object standing upright: it may turn left/right (Y axis),
+/// but tilting forward/backward or sideways is undone every frame.
+/// Only applies when the object has no parent (e.g. is not welded to something).
+/// </summary>
 [DisallowMultipleComponent]
 public class KeepUpright : MonoBehaviour
 {
@@ -8,9 +12,8 @@ public class KeepUpright : MonoBehaviour
     {
         if (transform.parent == null)
         {
-            transform.rotation = Quaternion.identity;
-            float rotationY = transform.rotation.eulerAngles.y;
-            transform.rotation = Quaternion.Euler(0, rotationY, 0);
+            float rotationY = transform.eulerAngles.y;
+            transform.rotation = Quaternion.Euler(0f, rotationY, 0f);
         }
     }
 }

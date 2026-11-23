@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
-[Serializable]
 public enum ComparisonMode
 {
     SmallerThan,        // Checks if value is less than the comparison value (<)
@@ -21,10 +21,11 @@ public struct Condition
     public float value;
     
     [Tooltip("Event triggered when this condition evaluates to true.")]
-    public UnityEvent OnEvaluateToTrue;
+    [FormerlySerializedAs("OnEvaluateToTrue")]
+    public UnityEvent onEvaluateToTrue;
     
     [Tooltip("If true, stops evaluating subsequent conditions once this one evaluates to true.")]
-    public bool stopIfTrue; // Added for prioritized evaluation
+    public bool stopIfTrue;
 }
 
 /// <summary>
@@ -106,8 +107,6 @@ public class Variable : MonoBehaviour
 
     void Update()
     {
-        if (!enabled) return;
-
         if (smoothUpdate)
         {
             // Smooth (per frame) update
@@ -168,9 +167,9 @@ public class Variable : MonoBehaviour
                     // Edge-trigger: only invoke when transitioning from false → true
                     if (!wasTrue && isTrue)
                     {
-                        condition.OnEvaluateToTrue?.Invoke();
+                        condition.onEvaluateToTrue?.Invoke();
                         
-                        // NEW: Prioritized evaluation (stop-if-true logic)
+                        // Stop checking the remaining conditions if requested
                         if (condition.stopIfTrue)
                         {
                             break;

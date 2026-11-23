@@ -44,6 +44,10 @@ public class RecipeTrigger : MonoBehaviour
 
     private void Update()
     {
+        // Objects destroyed inside the trigger never call OnTriggerExit, so remove them here
+        collidersInTrigger.RemoveWhere(collider => collider == null);
+        lockedColliders.RemoveWhere(collider => collider == null);
+
         if (collidersInTrigger.Count == 0)
         {
             ResetReaction();

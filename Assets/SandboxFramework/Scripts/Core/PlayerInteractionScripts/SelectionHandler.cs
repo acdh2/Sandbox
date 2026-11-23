@@ -15,7 +15,7 @@ public class SelectionHandler : MonoBehaviour
 
     public float raycastDistance = 8f;
 
-    public GameObject currentSelection { get; private set; }
+    public GameObject CurrentSelection { get; private set; }
 
     private Camera cam;
     private bool selectionLocked = false;
@@ -71,8 +71,8 @@ public class SelectionHandler : MonoBehaviour
     /// <param name="newSelection">The newly selected object.</param>
     private void SetSelection(GameObject newSelection)
     {
-        currentSelection = newSelection;
-        bool showHierarchy = InputSystem.GetButton(InputButton.ShowHierarchy);
+        CurrentSelection = newSelection;
+        bool showHierarchy = SandboxInput.GetButton(InputButton.ShowHierarchy);
 
         GameObject target = newSelection;
         if (showHierarchy && newSelection != null)
@@ -87,7 +87,7 @@ public class SelectionHandler : MonoBehaviour
     /// <returns>The closest GameObject with a Selectable component, or null if none found.</returns>
     private GameObject GetSelectableUnderCursor()
     {
-        Ray ray = cam.ScreenPointToRay(InputSystem.GetPointerPosition());
+        Ray ray = cam.ScreenPointToRay(SandboxInput.GetPointerPosition());
         RaycastHit[] hits = Physics.RaycastAll(ray, raycastDistance);
 
         GameObject closest = null;

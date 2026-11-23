@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public interface IVehicleListener
 {
     void OnSteer(float value);

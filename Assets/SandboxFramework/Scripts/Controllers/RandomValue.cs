@@ -1,13 +1,15 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
-[Serializable]
 public enum ComparisonModeInt
 {
     SmallerThan,   // Checks if value is less than the comparison value
     GreaterThan,   // Checks if value is greater than the comparison value
-    Equals         // Checks if value is exactly equal to the comparison value
+    Equals,             // Checks if value is exactly equal to the comparison value
+    SmallerThanOrEqual, // Checks if value is less than or equal to the comparison value
+    GreaterThanOrEqual  // Checks if value is greater than or equal to the comparison value
 }
 
 [Serializable]
@@ -15,16 +17,24 @@ public struct ConditionInt
 {
     public ComparisonModeInt comparisonMode;  // Comparison type for this condition
     public int value;                         // The value to compare against
-    public UnityEvent OnEvaluateToTrue;       // Event triggered when condition evaluates to true
-    public UnityEvent OnEvaluateToFalse;       // Event triggered when condition evaluates to false
+
+    [FormerlySerializedAs("OnEvaluateToTrue")]
+    public UnityEvent onEvaluateToTrue;       // Event triggered when condition evaluates to true
+
+    [FormerlySerializedAs("OnEvaluateToFalse")]
+    public UnityEvent onEvaluateToFalse;      // Event triggered when condition evaluates to false
 }
 
 [Serializable]
 public struct ScriptCondition
 {
     public ComparisonModeInt comparisonMode;  // Comparison type for this condition
-    public UnityEvent OnEvaluateToTrue;       // Event triggered when condition evaluates to true
-    public UnityEvent OnEvaluateToFalse;       // Event triggered when condition evaluates to false
+
+    [FormerlySerializedAs("OnEvaluateToTrue")]
+    public UnityEvent onEvaluateToTrue;       // Event triggered when condition evaluates to true
+
+    [FormerlySerializedAs("OnEvaluateToFalse")]
+    public UnityEvent onEvaluateToFalse;      // Event triggered when condition evaluates to false
 }
 
 /// <summary>
@@ -49,7 +59,7 @@ public class RandomValue : MonoBehaviour
     public float intervalSeconds = 1f;
 
     [Header("Events & Conditions")]
-    [Tooltip("Called whenever the value changes.")]
+    [Tooltip("Called whenever a value is set (also when it is the same as before).")]
     public UnityEvent<int> onValueChange;
 
     [Tooltip("Conditions that are evaluated when the value changes, or manually via EvaluateConditions.")]
@@ -74,7 +84,7 @@ public class RandomValue : MonoBehaviour
 
     void Update()
     {
-        if (!enabled || !autoRandom) return;
+        if (!autoRandom) return;
 
         timer += Time.deltaTime;
         if (timer >= intervalSeconds)
@@ -91,11 +101,8 @@ public class RandomValue : MonoBehaviour
     {
         newValue = Mathf.Clamp(newValue, minValue, maxValue);
 
-        // if (value != newValue)
-        // {
         value = newValue;
         onValueChange?.Invoke(value);
-        // }
 
         EvaluateConditions();
     }
@@ -119,42 +126,54 @@ public class RandomValue : MonoBehaviour
         {
             if (EvaluateCondition(condition.comparisonMode, condition.value, value))
             {
-                condition.OnEvaluateToTrue?.Invoke();
+                condition.onEvaluateToTrue?.Invoke();
             }
             else
             {
-                condition.OnEvaluateToFalse?.Invoke();
+                condition.onEvaluateToFalse?.Invoke();
             }
         }
     }
 
-    private bool EvaluateCondition(ComparisonModeInt comparisonMode, int value, int testValue)
+    /// <summary>
+    /// Returns true if testValue compares to compareValue according to comparisonMode.
+    /// Example: SmallerThan with compareValue 5 is true for testValue 3.
+    /// </summary>
+    private bool EvaluateCondition(ComparisonModeInt comparisonMode, int compareValue, int testValue)
     {
         switch (comparisonMode)
         {
             case ComparisonModeInt.SmallerThan:
-                return testValue < value;
+                return testValue < compareValue;
             case ComparisonModeInt.GreaterThan:
-                return testValue > value;
+                return testValue > compareValue;
             case ComparisonModeInt.Equals:
-                return testValue == value;
+                return testValue == compareValue;
+            case ComparisonModeInt.SmallerThanOrEqual:
+                return testValue <= compareValue;
+            case ComparisonModeInt.GreaterThanOrEqual:
+                return testValue >= compareValue;
             default:
                 return false;
         }
     }
 
+    /// <summary>
+    /// Compares the current value against valueToTest using the scriptConditions
+    /// and fires their events. Handy to call from a UnityEvent.
+    /// </summary>
     public void RunScriptCondition(int valueToTest)
     {
         foreach (var condition in scriptConditions)
         {
             if (EvaluateCondition(condition.comparisonMode, valueToTest, value))
             {
-                condition.OnEvaluateToTrue?.Invoke();
+                condition.onEvaluateToTrue?.Invoke();
             }
             else
             {
-                condition.OnEvaluateToFalse?.Invoke();
+                condition.onEvaluateToFalse?.Invoke();
             }
         }
-    }        
+    }
 }

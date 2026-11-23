@@ -1,7 +1,9 @@
 using UnityEngine;
 using Unity.Cinemachine;
-using UnityEngine.TextCore.Text;
 
+/// <summary>
+/// Teleports the player to a target Transform. Call TeleportTo from a UnityEvent.
+/// </summary>
 public class TeleportationBehaviour : MonoBehaviour
 {
     // Reference to the Cinemachine virtual camera controlling the view
@@ -13,8 +15,8 @@ public class TeleportationBehaviour : MonoBehaviour
     private Transform teleportationTarget = null;
 
     /// <summary>
-    /// Initialization check to ensure a CharacterController is assigned.
-    /// If missing, logs a warning and destroys this component.
+    /// Finds the player's CharacterController and Cinemachine camera if they were not assigned.
+    /// If no CharacterController exists, logs a warning and removes this component.
     /// </summary>
     void Start()
     {
@@ -41,7 +43,8 @@ public class TeleportationBehaviour : MonoBehaviour
     /// </summary>
     void LateUpdate() 
     {
-        if (enabled && teleportationTarget != null) {
+        if (teleportationTarget != null)
+        {
             TeleportImmediatelyTo(teleportationTarget);
             teleportationTarget = null;
         }

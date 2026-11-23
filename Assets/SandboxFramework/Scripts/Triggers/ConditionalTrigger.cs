@@ -2,7 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// Checks the objects inside this trigger against a list of conditions
+/// (name, tag, layer, state, ...) and fires onConditionsMet or onConditionsFailed.
+/// Several ConditionalTriggers on one object can be chained with evaluationOrder (if / else if / else).
+/// </summary>
 public class ConditionalTrigger : MonoBehaviour
 {
     [Serializable]
@@ -46,13 +52,17 @@ public class ConditionalTrigger : MonoBehaviour
     public UnityEvent onConditionsMet;                             // Event fired when conditions are met
     public UnityEvent onConditionsFailed;                          // Event fired when conditions fail
 
-    public float TimeToEvaluate = 0f;  // Delay time before evaluating conditions
+    [Tooltip("Delay in seconds before the conditions are evaluated.")]
+    [FormerlySerializedAs("TimeToEvaluate")]
+    public float timeToEvaluate = 0f;
     private float evaluationTimer = -1f; // Internal timer counting down evaluation delay
 
     [Tooltip("Lower values evaluate first. Higher values act like 'else' branches.")]
     public int evaluationOrder = 0;   // Order of evaluation to chain multiple invokers
 
-    public ContinueOption ProceedOrderOnResult = ContinueOption.Both; // When to proceed to next evaluationOrder
+    [Tooltip("When to continue with the ConditionalTrigger that has the next evaluationOrder.")]
+    [FormerlySerializedAs("ProceedOrderOnResult")]
+    public ContinueOption proceedOrderOnResult = ContinueOption.Both;
 
     private readonly HashSet<Collider> collidersInTrigger = new HashSet<Collider>(); // Colliders currently inside trigger
 
@@ -111,9 +121,9 @@ public class ConditionalTrigger : MonoBehaviour
         currentEvaluatingOrder = order;
 
         // If there's a delay, start timer, otherwise evaluate immediately
-        if (TimeToEvaluate > 0f)
+        if (timeToEvaluate > 0f)
         {
-            evaluationTimer = TimeToEvaluate;
+            evaluationTimer = timeToEvaluate;
         }
         else
         {
@@ -139,9 +149,9 @@ public class ConditionalTrigger : MonoBehaviour
         }
 
         // Check if next evaluation order should be triggered based on result and settings
-        if (ProceedOrderOnResult == ContinueOption.Both ||
-            (ProceedOrderOnResult == ContinueOption.Success && result) ||
-            (ProceedOrderOnResult == ContinueOption.Fail && !result))
+        if (proceedOrderOnResult == ContinueOption.Both ||
+            (proceedOrderOnResult == ContinueOption.Success && result) ||
+            (proceedOrderOnResult == ContinueOption.Fail && !result))
         {
             int nextOrder = order + 1;
             var invokers = GetComponents<ConditionalTrigger>();
@@ -162,6 +172,9 @@ public class ConditionalTrigger : MonoBehaviour
     /// </summary>
     private bool Evaluate()
     {
+        // Objects destroyed inside the trigger never call OnTriggerExit, so remove them here
+        collidersInTrigger.RemoveWhere(collider => collider == null);
+
         // Start with base result depending on logic (true for AND, false for OR)
         bool result = (conditionLogic == LogicalOperator.And);
 

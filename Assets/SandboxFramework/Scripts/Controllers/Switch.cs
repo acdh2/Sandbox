@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using NUnit.Framework.Interfaces;
 using UnityEngine;
 
 /// <summary>
@@ -33,7 +32,7 @@ public class Switch : MonoBehaviour
     }
 
     /// <summary>
-    /// Deactivates all currently active IActivatable components within the welded structure.
+    /// Deactivates all matching and currently active IActivatable components within the welded structure.
     /// </summary>
     public void TurnOff()
     {
@@ -41,7 +40,8 @@ public class Switch : MonoBehaviour
 
         foreach (var target in FindAllActivatables())
         {
-            if (target.IsActive())
+            // Deactivate only if active and matching the activation group
+            if (target.IsActive() && target.MatchActivationGroup(activationGroup))
             {
                 target.OnDeactivate();
             }
@@ -49,8 +49,7 @@ public class Switch : MonoBehaviour
     }
 
     /// <summary>
-    /// Toggles the activation state of all IActivatable components within the welded structure.
-    /// Only activates those matching the activation group when toggling on.
+    /// Toggles the activation state of all matching IActivatable components within the welded structure.
     /// </summary>
     public void Toggle()
     {
@@ -58,11 +57,15 @@ public class Switch : MonoBehaviour
 
         foreach (var target in FindAllActivatables())
         {
+            // Skip targets from other activation groups
+            if (!target.MatchActivationGroup(activationGroup))
+                continue;
+
             if (target.IsActive())
             {
                 target.OnDeactivate();
             }
-            else if (target.MatchActivationGroup(activationGroup))
+            else
             {
                 target.OnActivate();
             }
@@ -70,8 +73,8 @@ public class Switch : MonoBehaviour
     }
 
     /// <summary>
-    /// Forces a reactivation cycle: first turns off all active components,
-    /// then turns on all matching inactive components.
+    /// Forces a reactivation cycle: first turns off all matching components,
+    /// then turns them on again.
     /// </summary>
     public void Reactivate()
     {

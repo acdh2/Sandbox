@@ -1,16 +1,13 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[System.Serializable]
 public enum InputAxis
 {
     Horizontal,
     Vertical
 }
 
-[System.Serializable]
 public enum InputButton
 {
     Weld,
@@ -21,8 +18,13 @@ public enum InputButton
     ShowHierarchy
 }
 
+/// <summary>
+/// Central access point for all player input in the Sandbox.
+/// Other scripts call the static methods, e.g. SandboxInput.GetButtonDown(InputButton.Weld).
+/// (Named SandboxInput to avoid confusion with Unity's own UnityEngine.InputSystem.)
+/// </summary>
 [DisallowMultipleComponent]
-public class InputSystem : MonoBehaviour
+public class SandboxInput : MonoBehaviour
 {
     // Threshold below which axis input is considered zero (dead zone)
     const float axesCutOffValue = 0.1f;
@@ -31,6 +33,8 @@ public class InputSystem : MonoBehaviour
 
     // Reference to the generated input actions class
     private static PlayerInputActions input;
+    // The input actions created by this component (cleaned up again in OnDestroy)
+    private PlayerInputActions ownInput;
     // Maps InputButton enum to actual InputAction from PlayerInputActions
     private static Dictionary<InputButton, InputAction> inputMap = new();
 
@@ -45,8 +49,9 @@ public class InputSystem : MonoBehaviour
     /// </summary>
     public void Awake()
     {
-        input = new PlayerInputActions();
-        input.Enable();
+        ownInput = new PlayerInputActions();
+        ownInput.Enable();
+        input = ownInput;
         inputMap = new(){
             { InputButton.Weld, input.Default.Weld },
             { InputButton.Unweld, input.Default.Unweld },
@@ -55,6 +60,27 @@ public class InputSystem : MonoBehaviour
             { InputButton.Jump, input.Default.Jump },
             { InputButton.ShowHierarchy, input.Default.ShowHierarchy }
         };
+    }
+
+    /// <summary>
+    /// Disables and cleans up the input actions when this object is destroyed
+    /// (for example when switching scenes), so no input actions are left running.
+    /// </summary>
+    private void OnDestroy()
+    {
+        if (ownInput == null) return;
+
+        ownInput.Disable();
+        ownInput.Dispose();
+
+        // Only clear the shared input if it is still ours
+        // (a SandboxInput in a newly loaded scene may already have replaced it)
+        if (input == ownInput)
+        {
+            input = null;
+            inputMap.Clear();
+        }
+        ownInput = null;
     }
 
     /// <summary>

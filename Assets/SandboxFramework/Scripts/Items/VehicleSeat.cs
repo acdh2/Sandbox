@@ -1,12 +1,12 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// Extends Seat to add vehicle-specific functionality such as steering and throttle input handling.
 /// Notifies vehicle listeners of seat and unseat events, as well as steering/throttle input.
 /// </summary>
 [DisallowMultipleComponent]
-public class VehicleSeat : Seat, IWeldListener
+public class VehicleSeat : Seat
 {
     // Tracks if the seat is currently occupied
     private bool isActive = false;
@@ -39,8 +39,6 @@ public class VehicleSeat : Seat, IWeldListener
     {
         base.OnWeld();
         SendInput(0f, 0f);
-        // Rigidbody addition commented out, uncomment if needed
-        // AddRigidbody(transform.root);
     }
 
     /// <summary>
@@ -51,33 +49,6 @@ public class VehicleSeat : Seat, IWeldListener
     {
         SendInput(0f, 0f);
         base.OnUnweld();
-        // Rigidbody removal commented out, uncomment if needed
-        // RemoveRigidbody(transform.root);
-    }
-
-    /// <summary>
-    /// Optionally adds a Rigidbody to the specified transform's GameObject.
-    /// Currently unused, uncomment calls if needed.
-    /// </summary>
-    private void AddRigidbody(Transform target)
-    {
-        if (target.gameObject.GetComponent<Rigidbody>() == null)
-        {
-            target.gameObject.AddComponent<Rigidbody>();
-        }
-    }
-
-    /// <summary>
-    /// Removes the Rigidbody component from the specified transform's GameObject if it exists.
-    /// Currently unused, uncomment calls if needed.
-    /// </summary>
-    private void RemoveRigidbody(Transform target)
-    {
-        Rigidbody rb = target.gameObject.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Destroy(rb);
-        }
     }
 
     /// <summary>
@@ -123,14 +94,12 @@ public class VehicleSeat : Seat, IWeldListener
     /// </summary>
     protected override void Update()
     {
-        if (!enabled) return;
-
         base.Update();
 
         if (isActive)
         {
-            float steer = InputSystem.GetAxis(InputAxis.Horizontal);
-            float throttle = InputSystem.GetAxis(InputAxis.Vertical);
+            float steer = SandboxInput.GetAxis(InputAxis.Horizontal);
+            float throttle = SandboxInput.GetAxis(InputAxis.Vertical);
             SendInput(steer, throttle);
         }
     }
@@ -150,7 +119,7 @@ public class VehicleSeat : Seat, IWeldListener
     }
 
     /// <summary>
-    /// Finds and returns all vehicle listeners in the root transform's children.
+    /// Finds all vehicle listeners on this seat's welded structure.
     /// </summary>
     private IReadOnlyList<IVehicleListener> FindAllVehicleListeners()
     {

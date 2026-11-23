@@ -23,7 +23,7 @@ public class CrossHairPositioning : MonoBehaviour
         Vector2 localMousePos;
         bool validPosition = RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvas.transform as RectTransform,
-            InputSystem.GetPointerPosition(),
+            SandboxInput.GetPointerPosition(),
             canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
             out localMousePos);
 

@@ -14,12 +14,6 @@ public class CustomFixedJoint : MonoBehaviour
 
     public WeldType weldType = WeldType.Undefined;
 
-    public enum WeldType
-    {
-        Undefined,
-        HierarchyBased,
-        PhysicsBased
-    }
 
     void Start()
     {

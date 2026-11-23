@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
-using Unity.VisualScripting;
 
 /// <summary>
 /// DebugMonitor creates an in-game debug console overlay to display custom logs

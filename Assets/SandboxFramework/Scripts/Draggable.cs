@@ -212,7 +212,7 @@ public class Draggable : MonoBehaviour
     {
         if (!enabled) return;
 
-        foreach (DragListener dragListener in GetConnectedDragListeners())
+        foreach (IDragListener dragListener in GetConnectedDragListeners())
         {
             dragListener.OnGrab();
         }
@@ -225,7 +225,7 @@ public class Draggable : MonoBehaviour
     {
         if (!enabled) return;
 
-        foreach (DragListener dragListener in GetConnectedDragListeners())
+        foreach (IDragListener dragListener in GetConnectedDragListeners())
         {
             dragListener.OnRelease();
         }

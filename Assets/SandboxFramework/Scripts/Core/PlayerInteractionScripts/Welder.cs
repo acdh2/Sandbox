@@ -1,6 +1,11 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// Lets the player weld (glue) the selected object to everything it overlaps with,
+/// or unweld it again, using the Weld and Unweld buttons.
+/// </summary>
 [RequireComponent(typeof(SelectionHandler))]
 [DisallowMultipleComponent]
 public class Welder : MonoBehaviour
@@ -8,9 +13,9 @@ public class Welder : MonoBehaviour
     private const int MaxWeldsAtTheSameTime = 640;
     private const float MaxPenetrationThreshold = 0.01f;
 
-    // Extra margin around the collider used to check for overlaps.
-    // This ensures neighboring cubes can still connect.
-    public float WeldProximityThreshold = 0.01f;
+    [Tooltip("Extra margin around the collider used to check for overlaps, so neighbouring blocks can still connect.")]
+    [FormerlySerializedAs("WeldProximityThreshold")]
+    public float weldProximityThreshold = 0.01f;
 
     public WeldType weldingType = WeldType.HierarchyBased;
 
@@ -24,17 +29,17 @@ public class Welder : MonoBehaviour
     private void Update()
     {
         // When the weld button is pressed, weld the currently selected object.
-        if (InputSystem.GetButtonDown(InputButton.Weld))
+        if (SandboxInput.GetButtonDown(InputButton.Weld))
         {
-            GameObject selected = selectionHandler.currentSelection;
+            GameObject selected = selectionHandler.CurrentSelection;
             selectionHandler.ClearSelection();
             Weld(selected);
         }
 
         // When the unweld button is pressed, unweld the currently selected object.
-        if (InputSystem.GetButtonDown(InputButton.Unweld))
+        if (SandboxInput.GetButtonDown(InputButton.Unweld))
         {
-            GameObject selected = selectionHandler.currentSelection;
+            GameObject selected = selectionHandler.CurrentSelection;
             selectionHandler.ClearSelection();
             Unweld(selected);
         }
@@ -44,30 +49,6 @@ public class Welder : MonoBehaviour
     /// Checks if the given object has an enabled Weldable component.
     /// </summary>
     private bool IsWeldable(GameObject obj)
-    {
-        var weldable = obj.GetComponent<Weldable>();
-        return weldable != null && weldable.enabled;
-    }
-
-    /// <summary>
-    /// Returns true if the object has any weldable children or a weldable ancestor.
-    /// </summary>
-    private bool IsWelded(GameObject obj)
-    {
-        foreach (Transform child in obj.transform)
-            if (IsWeldable(child.gameObject))
-                return true;
-
-        if (obj.transform.parent != null)
-            return GetWeldableAncestor(obj.transform.parent.gameObject) != null;
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks if the object currently has an enabled Weldable component.
-    /// </summary>
-    private bool CanBeWelded(GameObject obj)
     {
         var weldable = obj.GetComponent<Weldable>();
         return weldable != null && weldable.enabled;
@@ -99,11 +80,9 @@ public class Welder : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if two colliders are penetrating each other beyond a threshold.
-    /// 
-    /// NOTE: The comparison "distance >= effectiveThreshold" might be incorrect.
-    /// Typically, penetration occurs if the computed distance is negative (overlap),
-    /// so consider revising this condition.
+    /// Checks if two colliders overlap deeply enough to be welded together.
+    /// Physics.ComputePenetration only returns true when the colliders overlap;
+    /// 'distance' is then how far they overlap (always positive).
     /// </summary>
     private bool IsPenetrating(Collider a, Collider b)
     {
@@ -112,7 +91,7 @@ public class Welder : MonoBehaviour
             b, b.transform.position, b.transform.rotation,
             out _, out float distance))
         {
-            float effectiveThreshold = MaxPenetrationThreshold - WeldProximityThreshold;
+            float effectiveThreshold = MaxPenetrationThreshold - weldProximityThreshold;
             return distance >= effectiveThreshold;
         }
         return false;
@@ -124,7 +103,7 @@ public class Welder : MonoBehaviour
     private Collider[] FindPenetratingColliders(Collider collider)
     {
         Bounds bounds = collider.bounds;
-        Vector3 margin = new Vector3(WeldProximityThreshold, WeldProximityThreshold, WeldProximityThreshold);
+        Vector3 margin = Vector3.one * weldProximityThreshold;
 
         // Get all colliders overlapping the collider's bounds plus margin
         Collider[] candidates = Physics.OverlapBox(bounds.center, bounds.extents + margin, Quaternion.identity);

@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+/// <summary>
+/// Fires UnityEvents at set times, like a simple timeline.
+/// Can play once, loop, or ping-pong back and forth.
+/// </summary>
 public class TimerTrigger : MonoBehaviour
 {
     /// <summary>
@@ -91,7 +95,8 @@ public class TimerTrigger : MonoBehaviour
                 {
                     currentTime = Mathf.Clamp(currentTime, 0f, duration);
                     timeWindow = new TimeFrame(previousTime, currentTime);
-                    FireEventsInWindow(timeWindow);
+                    // Include the last moment, so an event placed exactly at the end also fires
+                    FireEventsInWindow(timeWindow, includeEnd: true);
                     Stop();
                     handledInSwitch = true;
                 }
@@ -147,8 +152,9 @@ public class TimerTrigger : MonoBehaviour
     /// <summary>
     /// Invokes all events whose scheduled times fall within the given timeframe.
     /// Handles forward and backward playback.
+    /// The end of the timeframe is only included when includeEnd is true.
     /// </summary>
-    private void FireEventsInWindow(TimeFrame time)
+    private void FireEventsInWindow(TimeFrame time, bool includeEnd = false)
     {
         if (!enabled) return;
 
@@ -160,16 +166,18 @@ public class TimerTrigger : MonoBehaviour
 
             if (forward)
             {
-                // Trigger events strictly after previous time and up to current time
-                if (evt >= time.start && evt < time.end)
+                // Trigger events from the previous time up to the current time
+                bool beforeEnd = evt < time.end || (includeEnd && evt == time.end);
+                if (evt >= time.start && beforeEnd)
                 {
                     unityEvent?.Invoke();
                 }
             }
             else
             {
-                // Trigger events strictly before previous time and down to current time
-                if (evt <= time.start && evt > time.end)
+                // Trigger events from the previous time down to the current time
+                bool afterEnd = evt > time.end || (includeEnd && evt == time.end);
+                if (evt <= time.start && afterEnd)
                 {
                     unityEvent?.Invoke();
                 }

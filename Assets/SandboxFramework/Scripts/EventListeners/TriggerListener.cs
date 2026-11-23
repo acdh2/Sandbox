@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 // The TriggerListener class handles the invocation of UnityEvents when a collider
 // enters or exits a trigger collider attached to the GameObject this script is assigned to.
@@ -20,13 +21,16 @@ public class TriggerListener : MonoBehaviour
     */
 
     // UnityEvent that is invoked when another collider enters the trigger.
-    public UnityEvent onTriggerEnterEvent;
+    [FormerlySerializedAs("onTriggerEnterEvent")]
+    public UnityEvent onTriggerEnter;
 
     // UnityEvent that is invoked when another collider stays on the trigger.
-    public UnityEvent onTriggerStayEvent;
+    [FormerlySerializedAs("onTriggerStayEvent")]
+    public UnityEvent onTriggerStay;
 
     // UnityEvent that is invoked when another collider exits the trigger.
-    public UnityEvent onTriggerExitEvent;
+    [FormerlySerializedAs("onTriggerExitEvent")]
+    public UnityEvent onTriggerExit;
 
     // This method is called when another collider enters the trigger collider
     // attached to the GameObject to which this script is attached.
@@ -40,8 +44,8 @@ public class TriggerListener : MonoBehaviour
         //if ((layerMask.value & (1 << other.gameObject.layer)) == 0) return;
         //if (!string.IsNullOrEmpty(tagFilter) && !other.gameObject.CompareTag(tagFilter)) return;
 
-        // Invoke the onTriggerEnterEvent when a collider enters the trigger.
-        onTriggerEnterEvent?.Invoke();
+        // Invoke the onTriggerEnter event when a collider enters the trigger.
+        onTriggerEnter?.Invoke();
     }
 
     // This method is called when another collider stays on the trigger collider
@@ -56,8 +60,8 @@ public class TriggerListener : MonoBehaviour
         //if ((layerMask.value & (1 << other.gameObject.layer)) == 0) return;
         //if (!string.IsNullOrEmpty(tagFilter) && !other.gameObject.CompareTag(tagFilter)) return;
 
-        // Invoke the onTriggerEnterEvent when a collider enters the trigger.
-        onTriggerStayEvent?.Invoke();
+        // Invoke the onTriggerStay event while a collider stays in the trigger.
+        onTriggerStay?.Invoke();
     }
 
     // This method is called when another collider exits the trigger collider
@@ -72,7 +76,7 @@ public class TriggerListener : MonoBehaviour
         //if ((layerMask.value & (1 << other.gameObject.layer)) == 0) return;
         //if (!string.IsNullOrEmpty(tagFilter) && !other.gameObject.CompareTag(tagFilter)) return;
 
-        // Invoke the onTriggerExitEvent when a collider exits the trigger.
-        onTriggerExitEvent?.Invoke();
+        // Invoke the onTriggerExit event when a collider exits the trigger.
+        onTriggerExit?.Invoke();
     }
 }

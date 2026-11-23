@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using UnityEngine.TextCore.Text;
 
 [DisallowMultipleComponent]
 public class PlayerComponentInstaller : MonoBehaviour

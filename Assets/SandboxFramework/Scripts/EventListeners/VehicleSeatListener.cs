@@ -1,13 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 /// <summary>
 /// VehicleSeatListener listens for seat, steering, throttle, and weld events on a vehicle part,
 /// processing input values and firing relevant UnityEvents.
 /// </summary>
-public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldListener
+public class VehicleSeatListener : SeatedKeyListener, IVehicleListener, IWeldListener
 {
     /// <summary>
     /// Represents possible wheel positions relative to the vehicle.
@@ -119,7 +118,7 @@ public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldList
     /// <returns>Processed value</returns>
     float PreprocessValue(float value, ValuePreprocessing settings)
     {
-        if (settings.invert) value = 1f - value;
+        if (settings.invert) value = -value;
         if (settings.makeAbsolute) value = Mathf.Abs(value);
 
         value = Mathf.Clamp(value, settings.cutoffMin, settings.cutoffMax);
@@ -135,11 +134,7 @@ public class VehicleSeatListener : KeyPressListener, IVehicleListener, IWeldList
     /// <summary>
     /// Enable or disable steering event firing.
     /// </summary>
-    public bool SteerListenerEnabled
-    {
-        get => steerListenerEnabled;
-        set => steerListenerEnabled = value;
-    }
+    public void SetSteerListenerEnabled(bool value) => steerListenerEnabled = value;
 
     /// <summary>
     /// Enable or disable throttle event firing.

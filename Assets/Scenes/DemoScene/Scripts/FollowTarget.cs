@@ -15,22 +15,23 @@ public class FollowTarget : MonoBehaviour
         if (!isFollowing || target == null)
             return;
 
-        float distance = Vector3.Distance(transform.position, target.position);
+        Vector3 toTarget = target.position - transform.position;
 
-        // Direction to the target
-        Vector3 direction = (target.position - transform.position).normalized;
+        // Already at the target: nothing to look at or move towards
+        if (toTarget == Vector3.zero)
+            return;
 
-        if (distance > stopDistance)
+        // Turn towards the target
+        transform.rotation = Quaternion.LookRotation(toTarget);
+
+        // Move forward until we are close enough
+        if (toTarget.magnitude > stopDistance)
         {
-            // --- Move forward ---
             transform.position += transform.forward * followSpeed * Time.deltaTime;
         }
-
-        // --- Add rotation ---
-        transform.rotation = Quaternion.LookRotation(direction);
     }
 
-    // Optional: Public method to enable/disable following
+    // Enable/disable following, e.g. from a UnityEvent
     public void SetFollowing(bool follow)
     {
         isFollowing = follow;

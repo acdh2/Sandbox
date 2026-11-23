@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
-using System.Collections.Generic;
 
-public class SeatListener : KeyPressListener, ISeatListener
+public class SeatListener : SeatedKeyListener, ISeatListener
 {
     /// <summary>
     /// UnityEvent that will be called when the player sits down

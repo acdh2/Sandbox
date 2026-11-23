@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;  // For Key type
 
 /// <summary>
-/// This class responds to keyboard events, they are global events
+/// Fires UnityEvents when a key is pressed or released, anywhere in the game
+/// (the player does not need to look at or select this object).
 /// </summary>
 public class KeyListener : MonoBehaviour
 {
@@ -16,8 +18,12 @@ public class KeyListener : MonoBehaviour
         public Key key;
 
         [Tooltip("Event triggered when the key is pressed")]
-        public UnityEvent onKeyPressEvent;
-        public UnityEvent onKeyReleaseEvent;
+        [FormerlySerializedAs("onKeyPressEvent")]
+        public UnityEvent onKeyPress;
+
+        [Tooltip("Event triggered when the key is released")]
+        [FormerlySerializedAs("onKeyReleaseEvent")]
+        public UnityEvent onKeyRelease;
     }
 
     [Tooltip("List of key-event mappings")]
@@ -25,20 +31,24 @@ public class KeyListener : MonoBehaviour
 
     private void Update()
     {
-        if (enabled)
+        // No keyboard connected (e.g. on a touch device)
+        if (Keyboard.current == null) return;
+
+        foreach (KeyEventPair keyEventPair in keyEvents)
         {
-            foreach (KeyEventPair keyEventPair in keyEvents)
+            // Skip entries where no key has been chosen yet
+            if (keyEventPair.key == Key.None) continue;
+
+            var keyControl = Keyboard.current[keyEventPair.key];
+
+            if (keyControl.wasPressedThisFrame)
             {
-                if (Keyboard.current[keyEventPair.key]?.wasPressedThisFrame == true)
-                {
-                    keyEventPair.onKeyPressEvent?.Invoke();
-                }
-                else if (Keyboard.current[keyEventPair.key]?.wasReleasedThisFrame == true)
-                {
-                    keyEventPair.onKeyReleaseEvent?.Invoke();
-                }
+                keyEventPair.onKeyPress?.Invoke();
+            }
+            else if (keyControl.wasReleasedThisFrame)
+            {
+                keyEventPair.onKeyRelease?.Invoke();
             }
         }
     }
-
 }

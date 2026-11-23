@@ -78,7 +78,7 @@ public class DragHandler : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (selectionHandler.currentSelection == null)
+        if (selectionHandler.CurrentSelection == null)
         {
             StopDragging();
             return;
@@ -99,12 +99,12 @@ public class DragHandler : MonoBehaviour
         switch (currentState)
         {
             case DragState.Idle:
-                if (InputSystem.GetPointerDown())
+                if (SandboxInput.GetPointerDown())
                     TryStartDragging();
                 break;
 
             case DragState.Dragging:
-                bool endDrag = toggleToDrag ? InputSystem.GetPointerDown() : InputSystem.GetPointerUp();
+                bool endDrag = toggleToDrag ? SandboxInput.GetPointerDown() : SandboxInput.GetPointerUp();
                 if (selectedDraggable == null || endDrag)
                 {
                     StopDragging();
@@ -120,7 +120,7 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void TryStartDragging()
     {
-        GameObject selectedObject = selectionHandler.currentSelection;
+        GameObject selectedObject = selectionHandler.CurrentSelection;
         if (selectedObject == null) return;
 
         var draggable = selectedObject.GetComponent<Draggable>();
@@ -167,10 +167,10 @@ public class DragHandler : MonoBehaviour
     /// </summary>
     private void HandleRotation()
     {
-        if (useRotationKey1 && InputSystem.GetButtonDown(InputButton.Rotate1))
+        if (useRotationKey1 && SandboxInput.GetButtonDown(InputButton.Rotate1))
             RotateSelected(0f, 90f, 0f);
 
-        if (useRotationKey2 && InputSystem.GetButtonDown(InputButton.Rotate2))
+        if (useRotationKey2 && SandboxInput.GetButtonDown(InputButton.Rotate2))
             RotateSelectedTowardsCamera(-90f);
     }
 
@@ -178,7 +178,7 @@ public class DragHandler : MonoBehaviour
     {
         if (selectedDraggable == null) return;
 
-        // Determine if we rotate the root of the hierarchy
+        // We rotate the whole (welded) structure, using the selected object as pivot
         Transform selectedRoot = selectedDraggable.transform.root;
         if (selectedRoot == null) return;
 
@@ -195,7 +195,7 @@ public class DragHandler : MonoBehaviour
         selectedRoot.position = pivotWorldPos + deltaRotation * direction;
         selectedRoot.rotation = deltaRotation * selectedRoot.rotation;
 
-        // Optional: snap rotation if you have a snapping function
+        // Snap the result to the configured rotation steps
         selectedRoot.rotation = GetSnappedRotation(selectedRoot.rotation);
 
         InitializeSelection(selectedDraggable.transform);
@@ -311,13 +311,5 @@ public class DragHandler : MonoBehaviour
         }
 
         return offset;
-    }
-
-    /// <summary>
-    /// Verifies whether a quaternion is normalized.
-    /// </summary>
-    private bool IsNormalized(Quaternion q)
-    {
-        return Mathf.Abs(1.0f - (q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w)) < 0.01f;
     }
 }

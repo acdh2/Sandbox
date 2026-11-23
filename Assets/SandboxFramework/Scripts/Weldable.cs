@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +12,10 @@ public enum WeldType
     PhysicsBased
 }
 
+/// <summary>
+/// Marks an object as weldable: the Welder can glue it to other Weldables.
+/// Keeps track of which Weldables it is connected to and notifies IWeldListeners.
+/// </summary>
 [DisallowMultipleComponent]
 public class Weldable : MonoBehaviour
 {
@@ -115,12 +118,12 @@ public class Weldable : MonoBehaviour
         }
 
         if (currentWeldType == WeldType.HierarchyBased)
-            RemoveHierarchyWelds(connections);
+            RemoveHierarchyWelds();
         else if (currentWeldType == WeldType.PhysicsBased)
             RemovePhysicsWelds(connections);
 
         connections.Clear();
-        if (connections.Count < 1) currentWeldType = WeldType.Undefined;
+        currentWeldType = WeldType.Undefined;
     }
 
     /// <summary>
@@ -143,20 +146,22 @@ public class Weldable : MonoBehaviour
     /// </summary>
     private void ApplyPhysicsWeld(Weldable target)
     {
-        Rigidbody thisRb = GetOrAddRigidbody(gameObject);
-        Rigidbody targetRb = GetOrAddRigidbody(target.gameObject);
+        // Both objects need a Rigidbody for physics-based welding
+        GetOrAddRigidbody(gameObject);
+        GetOrAddRigidbody(target.gameObject);
 
-        CustomFixedJoint joint = gameObject.AddComponent<CustomFixedJoint>();
-        joint.targetTransform = target.transform;
+        // Connect both objects to each other
+        CustomFixedJoint jointToTarget = gameObject.AddComponent<CustomFixedJoint>();
+        jointToTarget.targetTransform = target.transform;
 
-        CustomFixedJoint joint2 = target.gameObject.AddComponent<CustomFixedJoint>();
-        joint2.targetTransform = transform;
+        CustomFixedJoint jointFromTarget = target.gameObject.AddComponent<CustomFixedJoint>();
+        jointFromTarget.targetTransform = transform;
     }
 
     /// <summary>
     /// Removes hierarchy-based welds by unparenting connected weldables.
     /// </summary>
-    private void RemoveHierarchyWelds(IEnumerable<Weldable> connected)
+    private void RemoveHierarchyWelds()
     {
         List<Weldable> children = GetChildWeldables();
         transform.SetParent(null, true);
@@ -192,11 +197,8 @@ public class Weldable : MonoBehaviour
     /// </summary>
     private void ReparentWeldableAncestors()
     {
-        Weldable root = this;
-        if (root == null) return;
-
         List<Transform> weldableAncestors = new();
-        Transform current = root.transform;
+        Transform current = transform;
 
         while (current != null)
         {
@@ -208,8 +210,8 @@ public class Weldable : MonoBehaviour
             current = current.parent;
         }
 
-        foreach (Transform transform in weldableAncestors)
-            transform.SetParent(null, true);
+        foreach (Transform ancestor in weldableAncestors)
+            ancestor.SetParent(null, true);
 
         for (int i = weldableAncestors.Count - 1; i > 0; i--)
             weldableAncestors[i].SetParent(weldableAncestors[i - 1], true);
@@ -230,26 +232,6 @@ public class Weldable : MonoBehaviour
         }
 
         return rb;
-    }
-
-    /// <summary>
-    /// Returns the topmost Weldable in the parent hierarchy.
-    /// </summary>
-    private Weldable GetRootWeldable()
-    {
-        Transform current = transform;
-        Weldable lastFound = null;
-
-        while (current != null)
-        {
-            var weldable = current.GetComponent<Weldable>();
-            if (weldable != null)
-                lastFound = weldable;
-
-            current = current.parent;
-        }
-
-        return lastFound;
     }
 
     /// <summary>
@@ -392,12 +374,12 @@ public class Weldable : MonoBehaviour
     /// <summary>
     /// Notifies listeners that this object has been unwelded.
     /// </summary>
-    private void NotifyOnUnweld(bool leavedWeldGroup)
+    private void NotifyOnUnweld(bool leftWeldGroup)
     {
         foreach (var listener in GetDescendantWeldListeners())
         {
             listener.OnRemoved();
-            if (leavedWeldGroup) listener.OnUnweld();
+            if (leftWeldGroup) listener.OnUnweld();
         }
     }
 }

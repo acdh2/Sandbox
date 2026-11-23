@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Casts a ray from the center of the screen and triggers mouse events
-/// on objects that implement MouseEventInvoker when the left mouse button is used.
+/// Casts a ray from the mouse pointer and triggers the MouseListener
+/// of the object that was clicked (same aiming as the SelectionHandler).
 /// </summary>
 [DisallowMultipleComponent]
 public class RaycastMouseTrigger : MonoBehaviour
@@ -11,11 +11,19 @@ public class RaycastMouseTrigger : MonoBehaviour
     [SerializeField] private float rayDistance = 5f;
 
     /// <summary>
-    /// Performs a raycast from the center of the screen and returns the MouseEventInvoker component if found.
+    private Camera cam;
+
+    private void Start()
+    {
+        cam = Camera.main;
+    }
+
+    /// <summary>
+    /// Performs a raycast from the mouse pointer and returns the MouseListener component if found.
     /// </summary>
     private MouseListener GetMouseEventTarget()
     {
-        Ray ray = Camera.main.ViewportPointToRay(new Vector2(0.5f, 0.5f));
+        Ray ray = cam.ScreenPointToRay(SandboxInput.GetPointerPosition());
         if (Physics.Raycast(ray, out RaycastHit hit, rayDistance))
         {
             return hit.collider.GetComponent<MouseListener>();
@@ -26,13 +34,13 @@ public class RaycastMouseTrigger : MonoBehaviour
     private void Update()
     {
         // Check for left mouse button press
-        if (InputSystem.GetPointerDown())
+        if (SandboxInput.GetPointerDown())
         {
             GetMouseEventTarget()?.OnMouseDown();
         }
 
         // Check for left mouse button release
-        if (InputSystem.GetPointerUp())
+        if (SandboxInput.GetPointerUp())
         {
             GetMouseEventTarget()?.OnMouseUp();
         }

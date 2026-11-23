@@ -7,8 +7,7 @@ public class LookAt : MonoBehaviour
     // The transform this object should look at
     public Transform target;
 
-    // Property wrapper around the target field
-    //[SerializeField]
+    // Property so the target can also be set from a UnityEvent in the Inspector
     public Transform Target
     {
         get { return target; }
